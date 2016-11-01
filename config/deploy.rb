@@ -1,3 +1,28 @@
+server '46.101.15.23', user: 'serverpilot', port: 22, roles: [:web, :app, :db], primary: true
+
+set :repo_url,        'git@github.com:MaxHogervorst/lords.git'
+set :application,     'lords'
+set :user,            'serverpilot'
+set :local_user,          "serverpilot"
+
+set :repository_cache, "git_cache"
+set :deploy_via, :remote_cache
+
+set :use_sudo,        false
+
+set :deploy_via,      :copy
+set :deploy_to,       "/srv/users/serverpilot/apps/lords2"
+
+set :default_env, { path: "/usr/local/bin:$PATH" }
+set :composer_install_flags, ' --no-interaction --quiet --optimize-autoloader'
+
+## Defaults:
+set :scm,           :git
+# set :branch,        :master
+# set :format,        :pretty
+set :log_level,     3
+ set :keep_releases, 5
+
 # Which roles to consider as laravel roles
 set :laravel_roles, :all
 
@@ -29,7 +54,8 @@ set :laravel_set_linked_dirs, true
 # Linked directories for a standard Laravel 5 application
 set :laravel_5_linked_dirs, [
   'storage',
-  'vendor'
+  'vendor',
+  'bootstrap/cache',
 ]
 
 # Ensure the paths in :file_permissions_paths exist?
@@ -48,5 +74,7 @@ set :laravel_5_acl_paths, [
   'storage/framework/cache',
   'storage/framework/sessions',
   'storage/framework/views',
-  'storage/logs'
+  'storage/logs',
 ]
+
+invoke 'laravel:ensure_acl_paths_exist'

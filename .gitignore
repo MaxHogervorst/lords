@@ -11,6 +11,7 @@ app/storage/
 bootstrap/cache/
 .env.*.php
 .env.php
+.env.local
 .env
 
 # Rocketeer PHP task runner and deployment package. https://github.com/rocketeers/rocketeer
@@ -61,3 +62,5 @@ crashlytics.properties
 crashlytics-build.properties
 fabric.properties
 
+lib/
+log/
