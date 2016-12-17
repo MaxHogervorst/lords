@@ -8,7 +8,7 @@ set :local_user,          "serverpilot"
 set :repository_cache, "git_cache"
 set :deploy_via, :remote_cache
 
-set :use_sudo,        false
+set :use_sudo,        truedd
 
 set :deploy_via,      :copy
 set :deploy_to,       "/srv/users/serverpilot/apps/lords2"
@@ -77,4 +77,29 @@ set :laravel_5_acl_paths, [
   'storage/logs',
 ]
 
-invoke 'laravel:ensure_acl_paths_exist'
+namespace :laravel do
+
+    desc "Run Laravel Artisan migrate task."
+    task :migrate do
+        on roles(:app), in: :sequence, wait: 5 do
+            within release_path  do
+                execute :php, "artisan migrate"
+            end
+        end
+    end
+
+    desc "Run Laravel Artisan seed task."
+    task :seed do
+        on roles(:app), in: :sequence, wait: 5 do
+            within release_path  do
+                execute :php, "artisan db:seed"
+            end
+        end
+    end
+end
+
+namespace :deploy do
+    after :published, "laravel:migrate"
+    # after :published, "laravel:seed"
+
+end
