@@ -8,7 +8,7 @@ set :local_user,          "serverpilot"
 set :repository_cache, "git_cache"
 set :deploy_via, :remote_cache
 
-set :use_sudo,        truedd
+set :use_sudo,        true
 
 set :deploy_via,      :copy
 set :deploy_to,       "/srv/users/serverpilot/apps/lords2"
@@ -39,7 +39,8 @@ set :laravel_migration_artisan_flags, "--force --env=#{fetch(:stage)}"
 set :laravel_version, 5.3
 
 # Which dotenv file to transfer to the server
-set :laravel_dotenv_file, './.env'
+#set :laravel_dotenv_file, './.env'
+
 
 # The user that the server is running under (used for ACLs)
 set :laravel_server_user, 'serverpilot'
@@ -53,10 +54,14 @@ set :laravel_set_linked_dirs, true
 
 # Linked directories for a standard Laravel 5 application
 set :laravel_5_linked_dirs, [
-  'storage',
+  'storage/framework/cache',
+  'storage/framework/sessions',
+  'storage/framework/views',
   'vendor',
   'bootstrap/cache',
 ]
+
+set :linked_files, %w(.env)
 
 # Ensure the paths in :file_permissions_paths exist?
 set :laravel_ensure_acl_paths_exist, true
