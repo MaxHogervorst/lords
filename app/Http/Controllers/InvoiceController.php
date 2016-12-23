@@ -45,6 +45,10 @@ class InvoiceController extends Controller {
 
             $manor += $this->CalculateMemberOrders($m);
             $manor += $this->CalculateGroupOrders($m);
+            if($manor == 0)
+			{
+				continue;
+			}
 
             $memberinfo[] = $manor;
 
