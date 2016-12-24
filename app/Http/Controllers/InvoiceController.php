@@ -42,16 +42,14 @@ class InvoiceController extends Controller {
             $memberinfo = array();
             $memberinfo[] = $m->firstname . ' ' . $m->lastname;
             $manor = 0;
+            $total = 0;
 
             $manor += $this->CalculateMemberOrders($m);
             $manor += $this->CalculateGroupOrders($m);
-            if($manor == 0)
-			{
-				continue;
-			}
+         
 
             $memberinfo[] = $manor;
-
+			$total += $manor;
             $products = array();
             foreach(InvoiceProduct::where('invoice_group_id', '=', $currentmonth->id)->get() as $product)
             {
@@ -66,10 +64,15 @@ class InvoiceController extends Controller {
             }
             foreach($products as $p)
             {
+				$total += $p;
                 $memberinfo[] = $p;
             }
-
-
+            
+            if($total == 0)
+			{
+				continue;
+			}
+			
             $result[] = $memberinfo;
 
         }

@@ -38,9 +38,7 @@ set :laravel_migration_artisan_flags, "--force --env=#{fetch(:stage)}"
 # The version of laravel being deployed
 set :laravel_version, 5.3
 
-# Which dotenv file to transfer to the server
-#set :laravel_dotenv_file, './.env'
-
+set :laravel_dotenv_file, ''
 
 # The user that the server is running under (used for ACLs)
 set :laravel_server_user, 'serverpilot'
@@ -57,6 +55,7 @@ set :laravel_5_linked_dirs, [
   'storage/framework/cache',
   'storage/framework/sessions',
   'storage/framework/views',
+  'storage/SEPA',
   'vendor',
   'bootstrap/cache',
 ]
@@ -73,6 +72,7 @@ set :laravel_set_acl_paths, true
 set :laravel_5_acl_paths, [
   'bootstrap/cache',
   'storage',
+  'storage/SEPA',
   'storage/app',
   'storage/app/public',
   'storage/framework',
@@ -108,3 +108,4 @@ namespace :deploy do
     # after :published, "laravel:seed"
 
 end
+Rake::Task["laravel:upload_dotenv_file"].clear_actions

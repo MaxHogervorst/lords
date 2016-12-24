@@ -10,7 +10,8 @@
 | to using a Closure or controller method. Build something great!
 |
 */
-
+//echo 'Here i am';
+//exit;
 
 Route::get('auth/login', 'AuthController@getLogin');
 Route::get('auth/logout', 'AuthController@getLogout');
@@ -37,7 +38,6 @@ Route::group(['middleware' => ['auth', 'admin']], function() {
 	Route::get('fiscus/specificinvoicelines/{id}', 'FiscusController@getSpecificinvoicelines');
 	Route::get('fiscus/edit', 'FiscusController@getEdit');
 	Route::resource('fiscus', 'FiscusController', ['except' => ['edit']]);
-	
 	Route::get('invoice' ,'InvoiceController@getIndex');
 	Route::get('invoice/pdf' ,'InvoiceController@getPdf');
 	Route::get('invoice/excel' ,'InvoiceController@getExcel');
@@ -57,7 +57,6 @@ Route::group(['middleware' => 'auth'], function()
 	Route::resource('member', 'MemberController');
 	Route::get('/', 'HomeController@getIndex');
 });
-
 
 //Route::get('createuser', function()
 //{

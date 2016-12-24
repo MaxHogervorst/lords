@@ -383,11 +383,11 @@ function calcutatePrice() {
     }
     else if ($('#productTotalPrice').val()) {
         $('#finaltotalprice').val($('#productTotalPrice').val());
-        $('#finalpriceperperson').val(parseFloat($('#productTotalPrice').val() / $('.checkbox:checked:enabled').length).toFixed(2));
+        $('#finalpriceperperson').val(parseFloat($('#productTotalPrice').val().replace(',', '.') / $('.checkbox:checked:enabled').length).toFixed(2));
 
     }
     else if ($('#productPricePerPerson').val()) {
-        $('#finaltotalprice').val(parseFloat($('#productPricePerPerson').val() * $('.checkbox:checked:enabled').length).toFixed(2));
+        $('#finaltotalprice').val(parseFloat($('#productPricePerPerson').val().replace(',', '.') * $('.checkbox:checked:enabled').length).toFixed(2));
         $('#finalpriceperperson').val($('#productPricePerPerson').val());
     }
     else {

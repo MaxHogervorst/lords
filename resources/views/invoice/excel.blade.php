@@ -14,7 +14,13 @@
         <tr>
             @foreach($members as $m)
                 <?php $column++; ?>
-                <td>{{ $m }}</td>
+                <td>
+                @if(is_string($m))
+                    {{ $m }}
+                @else
+                    {{ money_format('%.2n', $m) }}
+                @endif
+                </td>
             @endforeach
             <?php $column--; $column--; ?>
             <td>=SUM(B{{ $row }}: {{ chr($column) . $row }})</td>

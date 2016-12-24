@@ -17,7 +17,17 @@
 
                     $('#finalproductname').val($('#productname').val());
                     $('#finalproductdescription').html($('#productdescription').val());
-                    $('#finalselectedmembers').val($('.checkbox:checked').length);
+                    var $count_selected_members = $('.checkbox:checked').length;
+                    if($count_selected_members == 0) {
+	                    $('#rootwizard').bootstrapWizard('back');
+	                    new PNotify({
+		                    title: 'No persons selected',
+		                    text: 'Select atleast 1 person',
+		                    addclass: 'notification-error',
+		                    icon: 'fa fa-exclamation'
+	                    });
+                    }
+                    $('#finalselectedmembers').val($count_selected_members);
                     calcutatePrice();
 
                 } else {
@@ -31,7 +41,7 @@
         });
 
         $('#rootwizard .finish').click(function() {
-
+            $(this).addClass('disabled');
             $.ajax({
                 url: '{{ url('fiscus') }}',
                 method: 'POST',
@@ -43,14 +53,14 @@
                     }
                     else
                     {
-                         $.each(data.errors, function (input_name) {
-                                            new PNotify({
-                                                           title: 'Missing field',
-                                                           text: input_name + ' is empty',
-                                                           addclass: 'notification-error',
-                                                           icon: 'fa fa-exclamation'
-                                                       });
-                                        });
+                        $.each(data.errors, function (input_name) {
+                            new PNotify({
+                                title: 'Missing field',
+                                text: input_name + ' is empty',
+                                addclass: 'notification-error',
+                                icon: 'fa fa-exclamation'
+                            });
+                        });
                     }
 
                 }

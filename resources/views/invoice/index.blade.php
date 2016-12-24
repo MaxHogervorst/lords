@@ -83,7 +83,7 @@
                         <td> {{ $o->product->name }}</td>
                         <td> {{ $o->product->name }}</td>
                         <td> {{ $o->amount }}</td>
-                        <td>&euro;{{ $price }}</td>
+                        <td>&euro;{{ money_format('%.2n', $price)  }}</td>
                     </tr>
                 @endforeach
 
@@ -100,7 +100,7 @@
                         <td>{{ $g->name }}</td>
                         <td>Groupmembers: {{ $totalmebers }} Total price: &euro;{{ $totalprice }}</td>
                         <td>1</td>
-                        <td>&euro;{{ $price }}</td>
+                        <td>&euro;{{ money_format('%.2n', $price)  }}</td>
                     </tr>
 
 
@@ -113,7 +113,7 @@
                             <td>{{ $il->productprice->product->name }}</td>
                             <td>{{ $il->productprice->description }}</td>
                             <td>1</td>
-                            <td>&euro;{{ $price }}</td>
+                            <td>&euro;{{ money_format('%.2n', $price)  }}</td>
                         </tr>
                     @endif
                 @endforeach

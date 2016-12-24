@@ -17,7 +17,9 @@
             $("#collection").change(function() {
                 if(this.checked) {
                     $('#members tbody tr').each(function() {
-                        if($(':nth-child(5)', this).text() == ' Yes ') $(this).hide();
+                    	console.log($(':nth-child(6)', this).text());
+                        if($(':nth-child(6)', this).text() == ' Yes ')
+                        	$(this).hide();
                     });
                 }
                 else{
