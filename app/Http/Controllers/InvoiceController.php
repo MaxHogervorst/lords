@@ -26,6 +26,37 @@ class InvoiceController extends Controller {
                                     ->with('currentmonth', $currentmonth)
                                     ->with('members', Member::with('orders.product', 'groups.orders.product', 'invoice_lines.productprice.product')->get());
 	}
+	
+	public function getPerPerson()
+	{
+		foreach(Member::with('orders.product', 'groups.orders.product', 'invoice_lines.productprice.product')->get() as $m) {
+			$memberinfo = array();
+			$memberinfo[] = $m->firstname . ' ' . $m->lastname;
+			$manor = 0;
+			$total = 0;
+			
+			$manor += $this->CalculateMemberOrders($m);
+			$manor += $this->CalculateGroupOrders($m);
+			
+			
+			$memberinfo[] = $manor;
+			$total += $manor;
+			$products = array();
+			foreach (InvoiceProduct::where('invoice_group_id', '=', $currentmonth->id)->get() as $product) {
+				$products[$product->id] = 0;
+			}
+			foreach ($m->invoice_lines as $il) {
+				if ($il->productprice->product->invoice_group_id == $currentmonth->id) {
+					$products[$il->productprice->product->id] = $il->productprice->price;
+				}
+			}
+			foreach ($products as $p) {
+				$total += $p;
+				$memberinfo[] = $p;
+			}
+		}
+	}
+	
     public function getPdf()
     {
         $currentmonth = InvoiceGroup::getCurrentMonth();
@@ -67,7 +98,7 @@ class InvoiceController extends Controller {
 				$total += $p;
                 $memberinfo[] = $p;
             }
-            
+			$memberinfo[] = $total;
 //            if($total == 0)
 //			{
 //				continue;

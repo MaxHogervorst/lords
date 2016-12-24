@@ -22,8 +22,8 @@
                 @endif
                 </td>
             @endforeach
-            <?php $column--; $column--; ?>
-            <td>=SUM(B{{ $row }}: {{ chr($column) . $row }})</td>
+            {{--<?php $column--; $column--; ?>--}}
+            {{--<td>=SUM(B{{ $row }}: {{ chr($column) . $row }})</td>--}}
         </tr>
         <?php $row++; ?>
     @endforeach
@@ -31,7 +31,7 @@
     <tr>
         <td></td>
           @for($i=0; $i < $products->count()+2; $i++)
-            <td>=SUM({{ chr($column) }}2: {{ chr($column) . $row }})</td>
+            <td>=SUM({{ chr($column) }}2:{{ chr($column) . $row }})</td>
              <?php $column++; ?>
          @endfor
 
