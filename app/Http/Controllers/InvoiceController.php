@@ -68,25 +68,25 @@ class InvoiceController extends Controller {
                 $memberinfo[] = $p;
             }
             
-            if($total == 0)
-			{
-				continue;
-			}
-			
+//            if($total == 0)
+//			{
+//				continue;
+//			}
+//
             $result[] = $memberinfo;
 
         }
         $this->exceldata = $result;
 
 
-//        Excel::create($currentmonth->name, function ($excel) {
-//
-//            $excel->sheet('First sheet', function ($sheet) {
-//
-//                $sheet->loadView('invoice.excel') ->with('result', $this->exceldata)
-//                    ->with('products', InvoiceProduct::where('invoice_group_id', '=', InvoiceGroup::getCurrentMonth()->id)->get());
-//            });
-//        })->download('xls');
+        Excel::create($currentmonth->name, function ($excel) {
+
+            $excel->sheet('First sheet', function ($sheet) {
+
+                $sheet->loadView('invoice.excel') ->with('result', $this->exceldata)
+                    ->with('products', InvoiceProduct::where('invoice_group_id', '=', InvoiceGroup::getCurrentMonth()->id)->get());
+            });
+        })->download('xls');
 
 
         return view('invoice.excel')
