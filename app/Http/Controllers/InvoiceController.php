@@ -189,15 +189,21 @@ class InvoiceController extends Controller {
         $memberswithoutbankinfo = Member::whereNull('bic')->whereNull('iban')->get();
 
         $members = array('RCUR' => array(), 'FRST' =>array());
-
-        foreach(Member::whereNotNull('bic')->whereNotNull('iban')->rcur()->get() as $m)
+		$member_rcur = Member::whereNotNull('bic')->whereNotNull('iban')->rcur()
+			->with(['orders'])
+			->with(['groups.orders.product'])
+			->with(['invoice_lines.productprice.product'])->get();
+        foreach($member_rcur as $m)
         {
             $info = $this->newMemberInfo($m);
             if($info != null)
                 $members['RCUR'][] = $info;
         }
-
-        foreach(Member::whereNotNull('bic')->whereNotNull('iban')->frst()->get() as $m)
+		$member_frst = Member::whereNotNull('bic')->whereNotNull('iban')->frst()
+			->with(['orders'])
+			->with(['groups.orders.product'])
+			->with(['invoice_lines.productprice.product'])->get();
+        foreach($member_frst as $m)
         {
             $info = $this->newMemberInfo($m);
             if($info != null)
