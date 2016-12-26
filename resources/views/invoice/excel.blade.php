@@ -10,7 +10,7 @@
     </tr>
     <?php $row = 2; ?>
      @foreach($result as $members)
-        <?php $column = 66; ?>
+        <?php $column = 'A'; $second_colum = false ?>
         <tr>
             @foreach($members as $m)
                 <?php $column++; ?>
@@ -27,12 +27,17 @@
         </tr>
         <?php $row++; ?>
     @endforeach
-    <?php $row--; $column = 66; ?>
+    <?php $row--; $column = 'B'; ?>
     <tr>
         <td></td>
-          @for($i=0; $i < $products->count()+2; $i++)
-            <td>=SUM({{ chr($column) }}2:{{ chr($column) . $row }})</td>
-             <?php $column++; ?>
+          @for($i=0, $column = 'B' ; $i < $products->count() +2, $column < 'ZZ'; $i++, $column++)
+              <?php
+                if($i === ($products->count() +2)) {
+                    break;
+                    break;
+                    }
+              ?>
+            <td>=SUM({{ $column }}2:{{ $column . $row }})</td>
          @endfor
 
     </tr>

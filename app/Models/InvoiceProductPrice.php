@@ -1,12 +1,13 @@
 <?php namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Redis;
 
 class InvoiceProductPrice extends Model {
 
 	protected $table = 'invoice_product_prices';
-
-
+	
+	
     public function product()
     {
         return $this->belongsTo('App\Models\InvoiceProduct', 'invoice_product_id', 'id');

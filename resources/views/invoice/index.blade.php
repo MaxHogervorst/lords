@@ -78,10 +78,10 @@
             <tbody>
                 <?php $total = 0; ?>
                 @foreach($m->orders()->where('invoice_group_id', '=', $currentmonth->id)->get() as $o)
-                    <?php $price = $o->amount * $o->product->price; $total += $price; ?>
+                    <?php $price = $o->amount * $products[$o->product_id]['price']; $total += $price; ?>
                     <tr>
-                        <td> {{ $o->product->name }}</td>
-                        <td> {{ $o->product->name }}</td>
+                        <td> {{ $products[$o->product_id]['name'] }}</td>
+                        <td> {{ $products[$o->product_id]['name'] }}</td>
                         <td> {{ $o->amount }}</td>
                         <td>&euro;{{ money_format('%.2n', $price)  }}</td>
                     </tr>
@@ -92,7 +92,7 @@
 
                     <?php $totalprice = 0; ?>
                     @foreach($g->orders as $o)
-                        <?php $totalprice += $o->amount * $o->product->price; ?>
+                        <?php $totalprice += $o->amount * $products[$o->product_id]['price']    ; ?>
                     @endforeach
                     <?php $totalmebers = $g->members->count(); $price = ($totalprice / $totalmebers); $total += $price; ?>
 
@@ -122,7 +122,7 @@
             <tfoot>
                 <tr class="info">
                     <td colspan="3" align="right"><b>Total:</b></td>
-                    <td align="left"><b>&euro;{{ number_format((float)$total,2) }}</b></td>
+                    <td align="left"><b>&euro;{{ money_format('%.2n', $total)}}</b></td>
                 </tr>
             </tfoot>
 

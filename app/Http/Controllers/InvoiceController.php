@@ -2,8 +2,11 @@
 
 use App\Models\InvoiceGroup;
 use App\Models\InvoiceProduct;
+use App\Models\InvoiceProductPrice;
 use App\Models\Member;
+use App\Models\Product;
 use Digitick\Sepa\TransferFile\Factory\TransferFileFacadeFactory;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Response;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Input;
@@ -19,12 +22,18 @@ class InvoiceController extends Controller {
 	 */
     private $exceldata;
     private $currentpaymentinfo;
+    private $total;
 	public function getIndex()
 	{
         $currentmonth = InvoiceGroup::getCurrentMonth();
-        return view('invoice.index')->with('invoicegroups', InvoiceGroup::all())
+		$products = Product::toArrayIdAsKey();
+        $members = Member::with(['orders'])
+			->with(['groups.orders.product'])
+			->with(['invoice_lines.productprice.product'])->get();
+        return view('invoice.index')->with('invoicegroups', InvoiceGroup::orderBy('id', SORT_DESC)->get())
                                     ->with('currentmonth', $currentmonth)
-                                    ->with('members', Member::with('orders.product', 'groups.orders.product', 'invoice_lines.productprice.product')->get());
+                                    ->with('members', $members)
+                                    ->with('products', $products);
 	}
 	
 	public function getPerPerson()
@@ -68,19 +77,20 @@ class InvoiceController extends Controller {
     {
         $currentmonth = InvoiceGroup::getCurrentMonth();
         $result = array();
+        $this->total = 0;
         foreach(Member::with('orders.product', 'groups.orders.product', 'invoice_lines.productprice.product')->get() as $m)
         {
             $memberinfo = array();
             $memberinfo[] = $m->firstname . ' ' . $m->lastname;
             $manor = 0;
-            $total = 0;
+            $member_total = 0;
 
             $manor += $this->CalculateMemberOrders($m);
             $manor += $this->CalculateGroupOrders($m);
          
 
             $memberinfo[] = $manor;
-			$total += $manor;
+			$member_total += $manor;
             $products = array();
             foreach(InvoiceProduct::where('invoice_group_id', '=', $currentmonth->id)->get() as $product)
             {
@@ -95,10 +105,11 @@ class InvoiceController extends Controller {
             }
             foreach($products as $p)
             {
-				$total += $p;
+				$member_total += $p;
                 $memberinfo[] = $p;
             }
-			$memberinfo[] = $total;
+			$memberinfo[] = $member_total;
+			$this->total += $member_total;
 //            if($total == 0)
 //			{
 //				continue;
@@ -115,7 +126,8 @@ class InvoiceController extends Controller {
             $excel->sheet('First sheet', function ($sheet) {
 
                 $sheet->loadView('invoice.excel') ->with('result', $this->exceldata)
-                    ->with('products', InvoiceProduct::where('invoice_group_id', '=', InvoiceGroup::getCurrentMonth()->id)->get());
+                    ->with('products', InvoiceProduct::where('invoice_group_id', '=', InvoiceGroup::getCurrentMonth()->id)->get())
+					->with('total', $this->total);
             });
         })->download('xls');
 
