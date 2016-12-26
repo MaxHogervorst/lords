@@ -12,7 +12,9 @@
 */
 //echo 'Here i am';
 //exit;
-
+Route::post('invoice/setperson', 'InvoiceController@postSetPerson');
+Route::post('invoice/setpersonalinvoicegroup', 'InvoiceController@postSetPersonalInvoiceGroup');
+Route::get('check-bill', 'InvoiceController@getPerPerson');
 Route::get('auth/login', 'AuthController@getLogin');
 Route::get('auth/logout', 'AuthController@getLogout');
 Route::post('auth/authenticate', 'AuthController@postAuthenticate');

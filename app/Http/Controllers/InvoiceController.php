@@ -37,32 +37,27 @@ class InvoiceController extends Controller {
 	
 	public function getPerPerson()
 	{
-		foreach(Member::with('orders.product', 'groups.orders.product', 'invoice_lines.productprice.product')->get() as $m) {
-			$memberinfo = array();
-			$memberinfo[] = $m->firstname . ' ' . $m->lastname;
-			$manor = 0;
-			$total = 0;
-			
-			$manor += $this->CalculateMemberOrders($m);
-			$manor += $this->CalculateGroupOrders($m);
-			
-			
-			$memberinfo[] = $manor;
-			$total += $manor;
-			$products = array();
-			foreach (InvoiceProduct::where('invoice_group_id', '=', $currentmonth->id)->get() as $product) {
-				$products[$product->id] = 0;
-			}
-			foreach ($m->invoice_lines as $il) {
-				if ($il->productprice->product->invoice_group_id == $currentmonth->id) {
-					$products[$il->productprice->product->id] = $il->productprice->price;
-				}
-			}
-			foreach ($products as $p) {
-				$total += $p;
-				$memberinfo[] = $p;
-			}
+		$m = null;
+		if( ! is_null(session('member'))) {
+			$m = Member::with('orders.product', 'groups.orders.product')
+				->whereHas('invoice_lines.productprice.product', function ($q) {
+					$q->where('member_id', session('member')->id);
+				})->first();
 		}
+		
+		$products = Product::toArrayIdAsKey();
+		if (is_null(session('personal_invoice_group'))) {
+			$currentmonth = InvoiceGroup::getCurrentMonth();
+		}else {
+			$currentmonth = session('personal_invoice_group');
+		}
+		
+		return view('invoice.person')
+			->with('invoicegroups', InvoiceGroup::orderBy('id', SORT_DESC)->get())
+			->with('currentmonth', $currentmonth)
+			->with('m', $m)
+			->with('products', $products);
+		
 	}
 	
     public function getPdf()
@@ -337,32 +332,66 @@ class InvoiceController extends Controller {
         }
 	}
 
-    public function postSelectinvoicegroup()
+    public function postSetPersonalInvoiceGroup()
     {
         $v = Validator::make(Input::all(), array('invoiceGroup' => 'required'));
 
         if (!$v->passes()) {
             return Response::json(['errors' => $v->errors()]);
         } else {
-            $invoicegroups = InvoiceGroup::where('status', '=', true);
-            $invoicegroups->update(array('status' =>false));
-
             $invoicegroup = InvoiceGroup::find(Input::get('invoiceGroup'));
-            $invoicegroup->status = true;
-            $invoicegroup->save();
-
-            $invoicegroups = InvoiceGroup::where('status', '=', true);
-
-            if ($invoicegroups->count() > 0) {
-				Cache::forget('invoice_group');
+			
+            if ( ! is_null($invoicegroup)) {
+				session(['personal_invoice_group' => $invoicegroup]);
                 return Response::json(array('success' => true));
             } else {
-                return Response::json(['errors' => "Could not be added to the database"]);
+                return Response::json(['errors' => "Could not find month"]);
             }
         }
 
     }
+    public function postSetPerson()
+    {
+        $v = Validator::make(Input::all(), array('name' => 'required', 'iban' => 'required'));
 
+        if (!$v->passes()) {
+            return Response::json(['errors' => $v->errors()]);
+        } else {
+            $member = Member::where(['lastname' => Input::get('name'), 'iban' => Input::get('iban')])->first();
+            if ( ! is_null($member)) {
+				session(['member' => $member]);
+                return Response::json(array('success' => true));
+            } else {
+                return Response::json(['errors' => "Could not find month"]);
+            }
+        }
+
+    }
+    
+    public function postSelectinvoicegroup()
+	{
+		$v = Validator::make(Input::all(), array('invoiceGroup' => 'required'));
+		
+		if (!$v->passes()) {
+			return Response::json(['errors' => $v->errors()]);
+		} else {
+			$invoicegroups = InvoiceGroup::where('status', '=', true);
+			$invoicegroups->update(array('status' =>false));
+			
+			$invoicegroup = InvoiceGroup::find(Input::get('invoiceGroup'));
+			$invoicegroup->status = true;
+			$invoicegroup->save();
+			
+			$invoicegroups = InvoiceGroup::where('status', '=', true);
+			
+			if ($invoicegroups->count() > 0) {
+				Cache::forget('invoice_group');
+				return Response::json(array('success' => true));
+			} else {
+				return Response::json(['errors' => "Could not be added to the database"]);
+			}
+		}
+	}
 
 
     private function CalculateMemberOrders($member)
