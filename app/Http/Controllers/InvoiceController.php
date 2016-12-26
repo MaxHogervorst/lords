@@ -362,7 +362,7 @@ class InvoiceController extends Controller {
 				session(['member' => $member]);
                 return Response::json(array('success' => true));
             } else {
-                return Response::json(['errors' => "Could not find month"]);
+                return Response::json(['errors' => "Could not find member"]);
             }
         }
 

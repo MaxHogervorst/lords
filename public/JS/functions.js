@@ -502,18 +502,31 @@ var reload = function() {
     form.ajaxSubmit({
 
         success: function (data) {
+           
             form.find('.has-error').removeClass('has-error');
             if (data.errors != undefined) {
-                $.each(data.errors, function (input_name) {
-                    var input = $('[name^=' + input_name + ']');
-                    var form_group = input.closest('.form-group');
-
-                    form_group.addClass('has-error');
-                });
+	            var title = 'Not all form values are valid';
+	            var text =  'Check the red marked form values.';
+	            if (typeof data.errors == 'object')
+                {
+	                $.each(data.errors, function (input_name) {
+		
+		                var input = $('[name^=' + input_name + ']');
+		
+		                var form_group = input.closest('.form-group');
+		
+		                form_group.addClass('has-error');
+	                });
+                }else
+                {
+                    title = 'Error';
+                    text = data.errors;
+                }
+              
 
                 new PNotify({
-                    title: 'Not all form values are valid',
-                    text: 'Check the red marked form values.',
+                    title: title,
+                    text: text,
                     addclass: 'notification-error',
                     icon: 'fa fa-exclamation'
                 });

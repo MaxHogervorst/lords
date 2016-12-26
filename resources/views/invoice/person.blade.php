@@ -28,7 +28,7 @@
 
 
     <div class="row">
-        <form id="invoicegroupForm" method="post" action="setpersonalinvoicegroup">
+        <form id="invoicegroupForm" method="post" action="invoice/setpersonalinvoicegroup">
         <label for="inputEmail" class="col-lg-1 control-label">Select Month</label>
         <div class="col-sm-4">
             <div class="input-group">
@@ -52,7 +52,7 @@
     </div>
     <h2>Viewing: {{ $currentmonth->name }}</h2>
 
-        <form id="invoicePersonGroup" method="post" action="setperson">
+        <form id="invoicePersonGroup" method="post" action="invoice/setperson">
             <label for="inputEmail" class="col-lg-1 control-label">Lastname</label>
             <div class="col-sm-4">
                 <div class="input-group">
