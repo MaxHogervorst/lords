@@ -139,6 +139,7 @@ class InvoiceController extends Controller {
     }
     private function newMemberInfo($m)
     {
+    	
         $memberinfo = array();
         $memberinfo['name'] = $m->firstname . ' ' . $m->lastname;
         $memberinfo['iban'] = $m->iban;
@@ -360,10 +361,14 @@ class InvoiceController extends Controller {
 
     private function CalculateMemberOrders($member)
     {
+    	
         $price = 0;
+	
+		$products = Product::toArrayIdAsKey();
         foreach($member->orders()->where('invoice_group_id', '=', InvoiceGroup::getCurrentMonth()->id)->get() as $o)
         {
-            $price += $o->amount * $o->product->price;
+        	
+            $price += $o->amount * $products[$o->product_id]['price'];
         }
 
         return $price;
@@ -371,12 +376,13 @@ class InvoiceController extends Controller {
     private function CalculateGroupOrders($member)
     {
         $price = 0;
+		$products = Product::toArrayIdAsKey();
         foreach($member->groups()->where('invoice_group_id', '=', InvoiceGroup::getCurrentMonth()->id)->get() as $g)
         {
             $totalprice = 0;
             foreach ($g->orders as $o)
             {
-                $totalprice += $o->amount * $o->product->price;
+                $totalprice += $o->amount * $products[$o->product_id]['price'];
             }
             $totalmebers = $g->members->count();
 
