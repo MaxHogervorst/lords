@@ -3,6 +3,7 @@
 use App\Http\Requests;
 
 use App\Models\Product;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Response;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Input;
@@ -39,6 +40,7 @@ class ProductController extends Controller
             $product->save();
 
             if ($product->exists) {
+				$this->updateProductCache();
                 return Response::json(array('success' => true, 'id' => $product->id, 'name' => $product->name, 'price' => $product->price));
 
             } else {
@@ -64,6 +66,7 @@ class ProductController extends Controller
             $product->Price = Input::get('productPrice');
 
             if ($product->save()) {
+				$this->updateProductCache();
                 return Response::json(array('success' => true, 'message' => $product->name . ' Successfully edited'));
 
             } else {
@@ -81,6 +84,7 @@ class ProductController extends Controller
         $product->delete();
 
         if (!$product->exists) {
+        	$this->updateProductCache();
             return Response::json(array('success' => true, 'message' => $product->name . ' Successfully deleted'));
 
         } else {
@@ -90,5 +94,13 @@ class ProductController extends Controller
 
 
     }
+    
+    private function updateProductCache()
+	{
+		if(Cache::has('products'))
+		{
+			Cache::forget('products');
+		}
+	}
 
 }

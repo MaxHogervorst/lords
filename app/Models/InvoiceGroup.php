@@ -1,6 +1,7 @@
 <?php namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Cache;
 
 class InvoiceGroup extends Model {
 
@@ -8,14 +9,17 @@ class InvoiceGroup extends Model {
 
     public static function getCurrentMonth()
     {
-        $invoicegroup = InvoiceGroup::where('status', '=', true)->first();
+		if( ! Cache::has('invoice_group')) {
+			$invoicegroup = InvoiceGroup::where('status', '=', true)->first();
+			
+			Cache::put('invoice_group', $invoicegroup, 1);
+			if (is_null($invoicegroup)) {
+				Cache::put('invoice_group', false, 1);
+				
+			}
+		}
 
-        if(is_null($invoicegroup))
-        {
-            return false;
-        }
-
-        return $invoicegroup;
+        return Cache::get('invoice_group');
     }
 
 }

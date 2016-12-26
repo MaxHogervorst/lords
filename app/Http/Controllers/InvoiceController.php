@@ -2,7 +2,6 @@
 
 use App\Models\InvoiceGroup;
 use App\Models\InvoiceProduct;
-use App\Models\InvoiceProductPrice;
 use App\Models\Member;
 use App\Models\Product;
 use Digitick\Sepa\TransferFile\Factory\TransferFileFacadeFactory;
@@ -323,6 +322,7 @@ class InvoiceController extends Controller {
 
 
             if ($invoicegroup->exists) {
+            	Cache::forget('invoice_group');
                 return Response::json(array('success' => true, 'id' => $invoicegroup->id, 'name' => $invoicegroup->name));
             } else {
                 return Response::json(['errors' => "Could not be added to the database"]);
@@ -347,6 +347,7 @@ class InvoiceController extends Controller {
             $invoicegroups = InvoiceGroup::where('status', '=', true);
 
             if ($invoicegroups->count() > 0) {
+				Cache::forget('invoice_group');
                 return Response::json(array('success' => true));
             } else {
                 return Response::json(['errors' => "Could not be added to the database"]);

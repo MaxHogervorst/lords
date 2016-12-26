@@ -15,7 +15,7 @@ class Product extends Model
 			{
 				$products_new[$product->id] = $product;
 			}
-			Cache::put('products', $products_new);
+			Cache::put('products', $products_new, 1);
 		}
 		return Cache::get('products');
 	}
