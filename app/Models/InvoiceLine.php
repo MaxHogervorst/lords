@@ -2,9 +2,9 @@
 
 use Illuminate\Database\Eloquent\Model;
 
-class InvoiceLine extends Model {
-
-	protected $table = 'invoice_lines';
+class InvoiceLine extends Model
+{
+    protected $table = 'invoice_lines';
 
     public function member()
     {
@@ -14,5 +14,4 @@ class InvoiceLine extends Model {
     {
         return $this->belongsTo('App\Models\InvoiceProductPrice', 'invoice_product_price_id', 'id');
     }
-
 }

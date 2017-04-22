@@ -1,42 +1,36 @@
 <?php namespace App\Http\Controllers;
 
-use App\Http\Requests;
-use App\Http\Controllers\Controller;
-
 use App\Models\InvoiceGroup;
+use App\Models\Member;
 use App\Models\Order;
-use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Input;
 use Illuminate\Support\Facades\Response;
-use App\Models\Member;
+use Illuminate\Support\Facades\Validator;
 
-class OrderController extends Controller {
+class OrderController extends Controller
+{
 
-
-	/**
-	 * Store a newly created resource in storage.
-	 *
-	 * @return Response
-	 */
-	public function postStore($type)
-	{
+    /**
+     * Store a newly created resource in storage.
+     *
+     * @return Response
+     */
+    public function postStore($type)
+    {
         $v = Validator::make(
             Input::all(),
-            array(
+            [
                 'memberId' => 'required|numeric',
                 'product' => 'required',
                 'amount' => 'required|numeric'
-            ));
+            ]);
 
         if (!$v->passes()) {
             return Response::json(['errors' => $v->errors()]);
         } else {
-            if($type == 'Member')
-            {
+            if ($type == 'Member') {
                 $type = 'App\Models\Member';
-            }
-            else
-            {
+            } else {
                 $type = 'App\Models\Group';
             }
 
@@ -49,19 +43,18 @@ class OrderController extends Controller {
             $order->save();
 
             if ($order->exists) {
-                return Response::json(array(
+                return Response::json([
                             'success' => true,
-                            'date' => date("Y-m-d G:i:s"),
+                            'date' => date('Y-m-d G:i:s'),
                             'product' => $order->product->name,
                             'amount' => $order->amount,
-							'product_id' => $order->product->id,
-							'member_id' => $order->ownerable_id,
+                            'product_id' => $order->product->id,
+                            'member_id' => $order->ownerable_id,
                             'message' => 'order successfully'
-                        ));
+                        ]);
             } else {
-                return Response::json(['errors' => "Could not be added to the database"]);
+                return Response::json(['errors' => 'Could not be added to the database']);
             }
         }
-	}
-
+    }
 }

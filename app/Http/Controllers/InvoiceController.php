@@ -6,60 +6,60 @@ use App\Models\Member;
 use App\Models\Product;
 use Digitick\Sepa\TransferFile\Factory\TransferFileFacadeFactory;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Input;
 use Illuminate\Support\Facades\Response;
 use Illuminate\Support\Facades\Validator;
-use Illuminate\Support\Facades\Input;
 use Maatwebsite\Excel\Facades\Excel;
 use Offline\Settings\Facades\Settings;
 
-class InvoiceController extends Controller {
+class InvoiceController extends Controller
+{
 
-	/**
-	 * Display a listing of the resource.
-	 *
-	 * @return Response
-	 */
+    /**
+     * Display a listing of the resource.
+     *
+     * @return Response
+     */
     private $exceldata;
     private $currentpaymentinfo;
     private $total;
-	public function getIndex()
-	{
+    public function getIndex()
+    {
         $currentmonth = InvoiceGroup::getCurrentMonth();
-		$products = Product::toArrayIdAsKey();
+        $products = Product::toArrayIdAsKey();
         $members = Member::with(['orders'])
-			->with(['groups.orders.product'])
-			->with(['invoice_lines.productprice.product'])->get();
+            ->with(['groups.orders.product'])
+            ->with(['invoice_lines.productprice.product'])->get();
         return view('invoice.index')->with('invoicegroups', InvoiceGroup::orderBy('id', SORT_DESC)->get())
                                     ->with('currentmonth', $currentmonth)
                                     ->with('members', $members)
                                     ->with('products', $products);
-	}
-	
-	public function getPerPerson()
-	{
-		$m = null;
-		if( ! is_null(session('member'))) {
-			$m = Member::with('orders.product', 'groups.orders.product')
-				->whereHas('invoice_lines.productprice.product', function ($q) {
-					$q->where('member_id', session('member')->id);
-				})->first();
-		}
-		
-		$products = Product::toArrayIdAsKey();
-		if (is_null(session('personal_invoice_group'))) {
-			$currentmonth = InvoiceGroup::getCurrentMonth();
-		}else {
-			$currentmonth = session('personal_invoice_group');
-		}
-		
-		return view('invoice.person')
-			->with('invoicegroups', InvoiceGroup::orderBy('id', SORT_DESC)->get())
-			->with('currentmonth', $currentmonth)
-			->with('m', $m)
-			->with('products', $products);
-		
-	}
-	
+    }
+
+    public function getPerPerson()
+    {
+        $m = null;
+        if (! is_null(session('member'))) {
+            $m = Member::with('orders.product', 'groups.orders.product')
+                ->whereHas('invoice_lines.productprice.product', function ($q) {
+                    $q->where('member_id', session('member')->id);
+                })->first();
+        }
+
+        $products = Product::toArrayIdAsKey();
+        if (is_null(session('personal_invoice_group'))) {
+            $currentmonth = InvoiceGroup::getCurrentMonth();
+        } else {
+            $currentmonth = session('personal_invoice_group');
+        }
+
+        return view('invoice.person')
+            ->with('invoicegroups', InvoiceGroup::orderBy('id', SORT_DESC)->get())
+            ->with('currentmonth', $currentmonth)
+            ->with('m', $m)
+            ->with('products', $products);
+    }
+
     public function getPdf()
     {
         $currentmonth = InvoiceGroup::getCurrentMonth();
@@ -70,72 +70,58 @@ class InvoiceController extends Controller {
     public function getExcel()
     {
         $currentmonth = InvoiceGroup::getCurrentMonth();
-        $result = array();
+        $result = [];
         $this->total = 0;
-        foreach(Member::with('orders.product', 'groups.orders.product', 'invoice_lines.productprice.product')->get() as $m)
-        {
-            $memberinfo = array();
+        foreach (Member::with('orders.product', 'groups.orders.product', 'invoice_lines.productprice.product')->get() as $m) {
+            $memberinfo = [];
             $memberinfo[] = $m->firstname . ' ' . $m->lastname;
             $manor = 0;
             $member_total = 0;
 
             $manor += $this->CalculateMemberOrders($m);
             $manor += $this->CalculateGroupOrders($m);
-         
 
             $memberinfo[] = $manor;
-			$member_total += $manor;
-            $products = array();
-            foreach(InvoiceProduct::where('invoice_group_id', '=', $currentmonth->id)->get() as $product)
-            {
+            $member_total += $manor;
+            $products = [];
+            foreach (InvoiceProduct::where('invoice_group_id', '=', $currentmonth->id)->get() as $product) {
                 $products[$product->id] = 0;
             }
-            foreach($m->invoice_lines as $il)
-            {
-                if($il->productprice->product->invoice_group_id == $currentmonth->id)
-                {
+            foreach ($m->invoice_lines as $il) {
+                if ($il->productprice->product->invoice_group_id == $currentmonth->id) {
                     $products[$il->productprice->product->id] = $il->productprice->price;
                 }
             }
-            foreach($products as $p)
-            {
-				$member_total += $p;
+            foreach ($products as $p) {
+                $member_total += $p;
                 $memberinfo[] = $p;
             }
-			$memberinfo[] = $member_total;
-			$this->total += $member_total;
+            $memberinfo[] = $member_total;
+            $this->total += $member_total;
 //            if($total == 0)
 //			{
 //				continue;
 //			}
 //
             $result[] = $memberinfo;
-
         }
         $this->exceldata = $result;
 
-
         Excel::create($currentmonth->name, function ($excel) {
-
             $excel->sheet('First sheet', function ($sheet) {
-
                 $sheet->loadView('invoice.excel') ->with('result', $this->exceldata)
                     ->with('products', InvoiceProduct::where('invoice_group_id', '=', InvoiceGroup::getCurrentMonth()->id)->get())
-					->with('total', $this->total);
+                    ->with('total', $this->total);
             });
         })->download('xls');
-
 
         return view('invoice.excel')
             ->with('result', $result)
             ->with('products', InvoiceProduct::where('invoice_group_id', '=', $currentmonth->id)->get());
-
-
     }
     private function newMemberInfo($m)
     {
-    	
-        $memberinfo = array();
+        $memberinfo = [];
         $memberinfo['name'] = $m->firstname . ' ' . $m->lastname;
         $memberinfo['iban'] = $m->iban;
         $memberinfo['bic'] = $m->bic;
@@ -146,78 +132,74 @@ class InvoiceController extends Controller {
         $manor += $this->CalculateMemberOrders($m);
         $manor += $this->CalculateGroupOrders($m);
 
-        foreach($m->invoice_lines as $il)
-        {
-            if($il->productprice->product->invoice_group_id == InvoiceGroup::getCurrentMonth()->id)
+        foreach ($m->invoice_lines as $il) {
+            if ($il->productprice->product->invoice_group_id == InvoiceGroup::getCurrentMonth()->id) {
                 $manor +=  $il->productprice->price;
+            }
         }
         $memberinfo['amount'] = $manor;
-        if($manor > 0)
+        if ($manor > 0) {
             return $memberinfo;
-        else
+        } else {
             return null;
-
-
+        }
     }
 
     private function newBatch($seqType)
     {
-        $this->currentpaymentinfo = 'GSRC' . date("Y-m-d H:i:s");
-        $currentbatch = TransferFileFacadeFactory::createDirectDebit('GSRC' . date("Y-m-d H:i:s"), "me", Settings::get('creditorPain'));
-        $currentbatch->addPaymentInfo($this->currentpaymentinfo, array(
-            'id'                    => 'GSRC' . date("Y-m-d H:i:s"),
+        $this->currentpaymentinfo = 'GSRC' . date('Y-m-d H:i:s');
+        $currentbatch = TransferFileFacadeFactory::createDirectDebit('GSRC' . date('Y-m-d H:i:s'), 'me', Settings::get('creditorPain'));
+        $currentbatch->addPaymentInfo($this->currentpaymentinfo, [
+            'id'                    => 'GSRC' . date('Y-m-d H:i:s'),
             'creditorName'          => Settings::get('creditorName'),
             'creditorAccountIBAN'   => Settings::get('creditorAccountIBAN'),
             'creditorAgentBIC'      => Settings::get('creditorAgentBIC'),
             'seqType'               =>  $seqType,
             'creditorId'            => Settings::get('creditorId'),
             'dueDate'               => new \DateTime(date('Y-m-d', strtotime('now +' . Settings::get('ReqdColltnDt') . ' weekdays')))
-        ));
+        ]);
 
         return $currentbatch;
     }
-
-
 
     public function getSepa()
     {
         $memberswithoutbankinfo = Member::whereNull('bic')->whereNull('iban')->get();
 
-        $members = array('RCUR' => array(), 'FRST' =>array());
-		$member_rcur = Member::whereNotNull('bic')->whereNotNull('iban')->rcur()
-			->with(['orders'])
-			->with(['groups.orders.product'])
-			->with(['invoice_lines.productprice.product'])->get();
-        foreach($member_rcur as $m)
-        {
+        $members = ['RCUR' => [], 'FRST' =>[]];
+        $member_rcur = Member::whereNotNull('bic')->whereNotNull('iban')->rcur()
+            ->with(['orders'])
+            ->with(['groups.orders.product'])
+            ->with(['invoice_lines.productprice.product'])->get();
+        foreach ($member_rcur as $m) {
             $info = $this->newMemberInfo($m);
-            if($info != null)
+            if ($info != null) {
                 $members['RCUR'][] = $info;
+            }
         }
-		$member_frst = Member::whereNotNull('bic')->whereNotNull('iban')->frst()
-			->with(['orders'])
-			->with(['groups.orders.product'])
-			->with(['invoice_lines.productprice.product'])->get();
-        foreach($member_frst as $m)
-        {
+        $member_frst = Member::whereNotNull('bic')->whereNotNull('iban')->frst()
+            ->with(['orders'])
+            ->with(['groups.orders.product'])
+            ->with(['invoice_lines.productprice.product'])->get();
+        foreach ($member_frst as $m) {
             $info = $this->newMemberInfo($m);
-            if($info != null)
+            if ($info != null) {
                 $members['FRST'][] = $info;
+            }
         }
-        $batches = array('RCUR' => array(), 'FRST' =>array());
+        $batches = ['RCUR' => [], 'FRST' =>[]];
 
-        $batchfailedmembers = array();
-
+        $batchfailedmembers = [];
 
         $transactions = 0;
         $batchtotalmoney = 0;
-        if(!empty($members['RCUR'])) {
+        if (!empty($members['RCUR'])) {
             $currentbatch = $this->newBatch('RCUR');
 
             foreach ($members['RCUR'] as $m) {
                 if ($batchtotalmoney + $m['amount'] > Settings::get('creditorMaxMoneyPerBatch') || $transactions == Settings::get('creditorMaxTransactionsPerBatch')) {
                     $batches['RCUR'][] = $currentbatch;
-                    $this->currentpaymentinfo = 'GSRC' . date("Y-m-d H:i:s");
+                    $this->currentpaymentinfo = 'GSRC' . date('Y-m-d H:i:s');
                     $currentbatch = $this->newBatch('RCUR');
                     $transactions = 0;
                     $batchtotalmoney = 0;
@@ -225,15 +207,15 @@ class InvoiceController extends Controller {
                 if ($m['amount'] > Settings::get('creditorMaxMoneyPerTransaction')) {
                     $batchfailedmembers[] = $m;
                 } else {
-                    $currentbatch->addTransfer($this->currentpaymentinfo, array(
+                    $currentbatch->addTransfer($this->currentpaymentinfo, [
                         'amount' => $m['amount'],
                         'debtorIban' => $m['iban'],
                         'debtorBic' => $m['bic'],
                         'debtorName' => $m['name'],
                         'debtorMandate' => $m['mandate'],
                         'debtorMandateSignDate' => '13.10.2012',
-                        'remittanceInformation' => 'GSRC Incasso ' . date("Y-m")
-                    ));
+                        'remittanceInformation' => 'GSRC Incasso ' . date('Y-m')
+                    ]);
                     $batchtotalmoney += $m['amount'];
                     $transactions++;
                 }
@@ -242,12 +224,12 @@ class InvoiceController extends Controller {
         }
         $transactions = 0;
         $batchtotalmoney = 0;
-        if(!empty($members['FRST'])) {
+        if (!empty($members['FRST'])) {
             $currentbatch = $this->newBatch('FRST');
             foreach ($members['FRST'] as $m) {
                 if ($batchtotalmoney + $m['amount'] > Settings::get('creditorMaxMoneyPerBatch') || $transactions == Settings::get('creditorMaxTransactionsPerBatch')) {
                     $batches['FRST'][] = $currentbatch;
-                    $this->currentpaymentinfo = 'GSRC' . date("Y-m-d H:i:s");
+                    $this->currentpaymentinfo = 'GSRC' . date('Y-m-d H:i:s');
                     $currentbatch = $this->newBatch('FRST');
                     $transactions = 0;
                     $batchtotalmoney = 0;
@@ -255,15 +237,15 @@ class InvoiceController extends Controller {
                 if ($m['amount'] > Settings::get('creditorMaxMoneyPerTransaction')) {
                     $batchfailedmembers[] = $m;
                 } else {
-                    $currentbatch->addTransfer($this->currentpaymentinfo, array(
+                    $currentbatch->addTransfer($this->currentpaymentinfo, [
                         'amount' => $m['amount'],
                         'debtorIban' => $m['iban'],
                         'debtorBic' => $m['bic'],
                         'debtorName' => $m['name'],
                         'debtorMandate' => $m['mandate'],
                         'debtorMandateSignDate' => '13.10.2012',
-                        'remittanceInformation' => 'GSRC Incasso ' . date("Y-m")
-                    ));
+                        'remittanceInformation' => 'GSRC Incasso ' . date('Y-m')
+                    ]);
                     $batchtotalmoney += $m['amount'];
                     $transactions++;
                 }
@@ -272,10 +254,10 @@ class InvoiceController extends Controller {
         }
         $total = 0;
         $i=0;
-        $batchlink = array();
+        $batchlink = [];
         foreach ($batches['RCUR'] as $b) {
             $i++;
-            $filename = 'GSRC RCUR '. $i . ' ' . date("Y-m-d") . '.xml';
+            $filename = 'GSRC RCUR ' . $i . ' ' . date('Y-m-d') . '.xml';
             $filepath = storage_path('SEPA/' . $filename);
             $file = fopen($filepath, 'w');
             fwrite($file, $b->asXML());
@@ -286,7 +268,7 @@ class InvoiceController extends Controller {
         $i=0;
         foreach ($batches['FRST'] as $b) {
             $i++;
-            $filename = 'GSRC FRST '. $i . ' ' . date("Y-m-d") . '.xml';
+            $filename = 'GSRC FRST ' . $i . ' ' . date('Y-m-d') . '.xml';
             $filepath = storage_path('SEPA/' . $filename);
             $file = fopen($filepath, 'w');
             fwrite($file, $b->asXML());
@@ -299,110 +281,102 @@ class InvoiceController extends Controller {
                     ->with('batchlink', $batchlink)
                     ->with('memberswithtohightransaction', $batchfailedmembers)
                     ->with('memberswithoutbankinfo', $memberswithoutbankinfo);
-         }
+    }
 
-
-	/**
-	 * Store a newly created resource in storage.
-	 *
-	 * @return Response
-	 */
-	public function postStoreinvoicegroup()
-	{
-        $v = Validator::make(Input::all(), array('invoiceMonth' => 'required'));
+    /**
+     * Store a newly created resource in storage.
+     *
+     * @return Response
+     */
+    public function postStoreinvoicegroup()
+    {
+        $v = Validator::make(Input::all(), ['invoiceMonth' => 'required']);
 
         if (!$v->passes()) {
             return Response::json(['errors' => $v->errors()]);
         } else {
             $invoicegroups = InvoiceGroup::where('status', '=', true);
-            $invoicegroups->update(array('status' =>false));
+            $invoicegroups->update(['status' =>false]);
 
             $invoicegroup = new InvoiceGroup();
             $invoicegroup->name = Input::get('invoiceMonth');
             $invoicegroup->status = true;
             $invoicegroup->save();
 
-
             if ($invoicegroup->exists) {
-            	Cache::forget('invoice_group');
-                return Response::json(array('success' => true, 'id' => $invoicegroup->id, 'name' => $invoicegroup->name));
+                Cache::forget('invoice_group');
+                return Response::json(['success' => true, 'id' => $invoicegroup->id, 'name' => $invoicegroup->name]);
             } else {
-                return Response::json(['errors' => "Could not be added to the database"]);
+                return Response::json(['errors' => 'Could not be added to the database']);
             }
         }
-	}
+    }
 
     public function postSetPersonalInvoiceGroup()
     {
-        $v = Validator::make(Input::all(), array('invoiceGroup' => 'required'));
+        $v = Validator::make(Input::all(), ['invoiceGroup' => 'required']);
 
         if (!$v->passes()) {
             return Response::json(['errors' => $v->errors()]);
         } else {
             $invoicegroup = InvoiceGroup::find(Input::get('invoiceGroup'));
-			
-            if ( ! is_null($invoicegroup)) {
-				session(['personal_invoice_group' => $invoicegroup]);
-                return Response::json(array('success' => true));
+
+            if (! is_null($invoicegroup)) {
+                session(['personal_invoice_group' => $invoicegroup]);
+                return Response::json(['success' => true]);
             } else {
-                return Response::json(['errors' => "Could not find month"]);
+                return Response::json(['errors' => 'Could not find month']);
             }
         }
-
     }
     public function postSetPerson()
     {
-        $v = Validator::make(Input::all(), array('name' => 'required', 'iban' => 'required'));
+        $v = Validator::make(Input::all(), ['name' => 'required', 'iban' => 'required']);
 
         if (!$v->passes()) {
             return Response::json(['errors' => $v->errors()]);
         } else {
             $member = Member::where(['lastname' => Input::get('name'), 'iban' => Input::get('iban')])->first();
-            if ( ! is_null($member)) {
-				session(['member' => $member]);
-                return Response::json(array('success' => true));
+            if (! is_null($member)) {
+                session(['member' => $member]);
+                return Response::json(['success' => true]);
             } else {
-                return Response::json(['errors' => "Could not find member"]);
+                return Response::json(['errors' => 'Could not find member']);
             }
         }
-
     }
-    
-    public function postSelectinvoicegroup()
-	{
-		$v = Validator::make(Input::all(), array('invoiceGroup' => 'required'));
-		
-		if (!$v->passes()) {
-			return Response::json(['errors' => $v->errors()]);
-		} else {
-			$invoicegroups = InvoiceGroup::where('status', '=', true);
-			$invoicegroups->update(array('status' =>false));
-			
-			$invoicegroup = InvoiceGroup::find(Input::get('invoiceGroup'));
-			$invoicegroup->status = true;
-			$invoicegroup->save();
-			
-			$invoicegroups = InvoiceGroup::where('status', '=', true);
-			
-			if ($invoicegroups->count() > 0) {
-				Cache::forget('invoice_group');
-				return Response::json(array('success' => true));
-			} else {
-				return Response::json(['errors' => "Could not be added to the database"]);
-			}
-		}
-	}
 
+    public function postSelectinvoicegroup()
+    {
+        $v = Validator::make(Input::all(), ['invoiceGroup' => 'required']);
+
+        if (!$v->passes()) {
+            return Response::json(['errors' => $v->errors()]);
+        } else {
+            $invoicegroups = InvoiceGroup::where('status', '=', true);
+            $invoicegroups->update(['status' =>false]);
+
+            $invoicegroup = InvoiceGroup::find(Input::get('invoiceGroup'));
+            $invoicegroup->status = true;
+            $invoicegroup->save();
+
+            $invoicegroups = InvoiceGroup::where('status', '=', true);
+
+            if ($invoicegroups->count() > 0) {
+                Cache::forget('invoice_group');
+                return Response::json(['success' => true]);
+            } else {
+                return Response::json(['errors' => 'Could not be added to the database']);
+            }
+        }
+    }
 
     private function CalculateMemberOrders($member)
     {
-    	
         $price = 0;
-	
-		$products = Product::toArrayIdAsKey();
-        foreach($member->orders()->where('invoice_group_id', '=', InvoiceGroup::getCurrentMonth()->id)->get() as $o)
-        {
-        	
+
+        $products = Product::toArrayIdAsKey();
+        foreach ($member->orders()->where('invoice_group_id', '=', InvoiceGroup::getCurrentMonth()->id)->get() as $o) {
             $price += $o->amount * $products[$o->product_id]['price'];
         }
 
@@ -411,12 +385,10 @@ class InvoiceController extends Controller {
     private function CalculateGroupOrders($member)
     {
         $price = 0;
-		$products = Product::toArrayIdAsKey();
-        foreach($member->groups()->where('invoice_group_id', '=', InvoiceGroup::getCurrentMonth()->id)->get() as $g)
-        {
+        $products = Product::toArrayIdAsKey();
+        foreach ($member->groups()->where('invoice_group_id', '=', InvoiceGroup::getCurrentMonth()->id)->get() as $g) {
             $totalprice = 0;
-            foreach ($g->orders as $o)
-            {
+            foreach ($g->orders as $o) {
                 $totalprice += $o->amount * $products[$o->product_id]['price'];
             }
             $totalmebers = $g->members->count();
@@ -426,5 +398,4 @@ class InvoiceController extends Controller {
 
         return $price;
     }
-
 }

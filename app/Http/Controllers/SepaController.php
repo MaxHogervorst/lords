@@ -1,34 +1,33 @@
 <?php namespace App\Http\Controllers;
 
-use App\Http\Requests;
-use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Input;
 use Illuminate\Support\Facades\Response;
+use Illuminate\Support\Facades\Validator;
 use Offline\Settings\Facades\Settings;
 
-class SepaController extends Controller {
+class SepaController extends Controller
+{
 
-	/**
-	 * Display a listing of the resource.
-	 *
-	 * @return Response
-	 */
-	public function index()
-	{
+    /**
+     * Display a listing of the resource.
+     *
+     * @return Response
+     */
+    public function index()
+    {
         return view('sepa.index');
-	}
+    }
 
-
-	/**
-	 * Store a newly created resource in storage.
-	 *
-	 * @return Response
-	 */
-	public function store()
-	{
+    /**
+     * Store a newly created resource in storage.
+     *
+     * @return Response
+     */
+    public function store()
+    {
         $v = Validator::make(
             Input::all(),
-            array(
+            [
                 'creditorName' => 'required',
                 'creditorAccountIBAN' => 'required',
                 'creditorAgentBIC' => 'required',
@@ -38,12 +37,11 @@ class SepaController extends Controller {
                 'creditorMaxMoneyPerTransaction' => 'required',
                 'ReqdColltnDt' => 'required',
                 'creditorMaxTransactionsPerBatch' => 'required'
-            ));
+            ]);
 
         if (!$v->passes()) {
             return Response::json(['errors' => $v->errors()]);
         } else {
-
             Settings::set('creditorName', Input::get('creditorName'));
             Settings::set('creditorAccountIBAN', Input::get('creditorAccountIBAN'));
             Settings::set('creditorAgentBIC', Input::get('creditorAgentBIC'));
@@ -55,10 +53,6 @@ class SepaController extends Controller {
             Settings::set('ReqdColltnDt', Input::get('ReqdColltnDt'));
 
             return Response::json(['success' => true]);
-
-
         }
-	}
-
-
+    }
 }

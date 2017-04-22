@@ -2,9 +2,9 @@
 
 use Illuminate\Database\Eloquent\Model;
 
-class InvoiceProduct extends Model {
-
-	protected $table = 'invoice_products';
+class InvoiceProduct extends Model
+{
+    protected $table = 'invoice_products';
 
     public function invoice_group()
     {
@@ -15,5 +15,4 @@ class InvoiceProduct extends Model {
     {
         return $this->hasMany('App\Models\InvoiceProductPrice');
     }
-
 }

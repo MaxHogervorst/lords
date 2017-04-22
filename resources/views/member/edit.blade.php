@@ -24,9 +24,9 @@
         </div>
         <div class="form-group">
             <label for="had_collection" class="control-label">Had Collection</label>
-            <?php $checked = ""; ?>
+            <?php $checked = ''; ?>
             @if($member->had_collection )
-                <?php $checked = "checked";?>
+                <?php $checked = 'checked';?>
             @endif
             <input type="checkbox" {{ $checked }} id="had_collection" name="had_collection" class="form-control"  >
         </div>

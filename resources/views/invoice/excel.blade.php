@@ -32,10 +32,10 @@
         <td></td>
           @for($i=0, $column = 'B' ; $i < $products->count() +2, $column < 'ZZ'; $i++, $column++)
               <?php
-                if($i === ($products->count() +2)) {
+                if ($i === ($products->count() +2)) {
                     break;
                     break;
-                    }
+                }
               ?>
             <td>=SUM({{ $column }}2:{{ $column . $row }})</td>
          @endfor

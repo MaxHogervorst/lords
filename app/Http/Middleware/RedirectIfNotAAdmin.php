@@ -16,17 +16,13 @@ class RedirectIfNotAAdmin
      */
     public function handle($request, Closure $next, $guard = null)
     {
-		if (! \Sentinel::inRole('admin'))
-		{
-			if ($request->ajax())
-			{
-				return response('Unauthorized.', 401);
-			}
-			else
-			{
-				return redirect()->guest('/');
-			}
-		}
-		return $next($request);
-	}
+        if (! \Sentinel::inRole('admin')) {
+            if ($request->ajax()) {
+                return response('Unauthorized.', 401);
+            } else {
+                return redirect()->guest('/');
+            }
+        }
+        return $next($request);
+    }
 }

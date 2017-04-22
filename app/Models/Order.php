@@ -1,5 +1,6 @@
 <?php
 namespace App\Models;
+
 use Illuminate\Database\Eloquent\Model;
 
 class Order extends Model
@@ -20,7 +21,4 @@ class Order extends Model
     {
         return $this->belongsTo('App\Models\InvoiceGroup');
     }
-
-
-
 }

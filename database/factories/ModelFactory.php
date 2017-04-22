@@ -24,12 +24,12 @@ $factory->define(App\User::class, function (Faker\Generator $faker) {
 $factory->define(App\Models\Order::class, function (Faker\Generator $faker) {
     return [
         'invoice_group_id' =>  function () {
-             return factory(App\Models\InvoiceGroup::class)->create()->id;
+            return factory(App\Models\InvoiceGroup::class)->create()->id;
         } ,
         'ownerable_id' =>  $faker->randomNumber() ,
         'ownerable_type' =>  $faker->word ,
         'product_id' =>  function () {
-             return factory(App\Models\Product::class)->create()->id;
+            return factory(App\Models\Product::class)->create()->id;
         } ,
         'amount' =>  $faker->randomNumber() ,
     ];
@@ -55,7 +55,7 @@ $factory->define(App\Models\Member::class, function (Faker\Generator $faker) {
 $factory->define(App\Models\InvoiceProductPrice::class, function (Faker\Generator $faker) {
     return [
         'invoice_product_id' =>  function () {
-             return factory(App\Models\InvoiceProduct::class)->create()->id;
+            return factory(App\Models\InvoiceProduct::class)->create()->id;
         } ,
         'price' =>  $faker->randomFloat() ,
         'description' =>  $faker->text ,
@@ -65,7 +65,7 @@ $factory->define(App\Models\InvoiceProductPrice::class, function (Faker\Generato
 $factory->define(App\Models\InvoiceProduct::class, function (Faker\Generator $faker) {
     return [
         'invoice_group_id' =>  function () {
-             return factory(App\Models\InvoiceGroup::class)->create()->id;
+            return factory(App\Models\InvoiceGroup::class)->create()->id;
         } ,
         'name' =>  $faker->name ,
     ];
@@ -81,7 +81,7 @@ $factory->define(App\Models\GroupMember::class, function (Faker\Generator $faker
 $factory->define(App\Models\Group::class, function (Faker\Generator $faker) {
     return [
         'invoice_group_id' =>  function () {
-             return factory(App\Models\InvoiceGroup::class)->create()->id;
+            return factory(App\Models\InvoiceGroup::class)->create()->id;
         } ,
         'name' =>  $faker->name ,
     ];
@@ -97,11 +97,10 @@ $factory->define(App\Models\Product::class, function (Faker\Generator $faker) {
 $factory->define(App\Models\InvoiceLine::class, function (Faker\Generator $faker) {
     return [
         'invoice_product_price_id' =>  function () {
-             return factory(App\Models\InvoiceProductPrice::class)->create()->id;
+            return factory(App\Models\InvoiceProductPrice::class)->create()->id;
         } ,
         'member_id' =>  function () {
-             return factory(App\Models\Member::class)->create()->id;
+            return factory(App\Models\Member::class)->create()->id;
         } ,
     ];
 });
-

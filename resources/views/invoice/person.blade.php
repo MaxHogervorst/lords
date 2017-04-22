@@ -104,7 +104,7 @@
 
                     <?php $totalprice = 0; ?>
                     @foreach($g->orders as $o)
-                        <?php $totalprice += $o->amount * $products[$o->product_id]['price']    ; ?>
+                        <?php $totalprice += $o->amount * $products[$o->product_id]['price']; ?>
                     @endforeach
                     <?php $totalmebers = $g->members->count(); $price = ($totalprice / $totalmebers); $total += $price; ?>
 
