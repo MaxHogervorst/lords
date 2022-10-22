@@ -1,0 +1,121 @@
+<?php namespace App\Http\Controllers;
+
+use App\Models\Group;
+use App\Models\GroupMember;
+use App\Models\InvoiceGroup;
+use App\Models\Member;
+use App\Models\Product;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Response;
+use Illuminate\Support\Facades\Validator;
+
+class GroupController extends Controller
+{
+    public function index()
+    {
+        $Group = Group::where('invoice_group_id', '=', InvoiceGroup::getCurrentMonth()->id)->get();
+        return view('group.index')->withResults([$Group, date('d-m-Y')]);
+    }
+
+    public function store(Request $request)
+    {
+        $v = Validator::make($request->all(), ['name' => 'required']);
+
+        if (!$v->passes()) {
+            return Response::json(['errors' => $v->errors()]);
+        } else {
+            $myDateTime = new \DateTime($request->input('groupDate'));
+            $date = $myDateTime->format('d-m-Y');
+            $name = $request->input('name') . ' ' . $date;
+            $group = new Group;
+            $group->name = $name;
+            $group->invoice_group_id = InvoiceGroup::getCurrentMonth()->id;
+            $group->save();
+            if ($group->exists) {
+                return Response::json(['success' => true, 'id' => $group->id, 'name' => $group->name]);
+            } else {
+                return Response::json(['errors' => 'Could not be added to the database']);
+            }
+        }
+    }
+    public function show($id)
+    {
+        return view('group.order')->with('group', Group::find($id))->with('products', Product::all())->with('members', Member::all())->with('currentmonth', InvoiceGroup::getCurrentMonth());
+    }
+
+    public function edit($id)
+    {
+        return view('group.edit')->with('group', Group::find($id));
+    }
+
+    public function update(Request $request, $id)
+    {
+        $v = Validator::make($request->all(), ['name' => 'required']);
+
+        if (!$v->passes()) {
+            return Response::json(['errors' => $v->errors()]);
+        } else {
+            $member = Group::find($id);
+            $member->name = $request->input('name');
+
+            $member->save();
+            if ($member->exists) {
+                return Response::json(['success' => true, 'message' => $member->name . ' Successfully edited']);
+            } else {
+                return Response::json(['errors' => $v->errors()]);
+            }
+        }
+    }
+
+    /**
+     * Remove the specified resource from storage.
+     *
+     * @param  int  $id
+     * @return Response
+     */
+    public function destroy($id)
+    {
+        $member = Group::find($id);
+        $member->delete();
+        if ($member->exists) {
+            return Response::json(['errors' => $member->name . " Couldn't be deleted"]);
+        } else {
+            return Response::json(['success' => true, 'message' => $member->name . ' Successfully deleted']);
+        }
+    }
+
+    public function postAddmember(Request $request)
+    {
+        $v = Validator::make(
+                $request->all(),
+                [
+                    'groupid' => 'required|numeric',
+                    'member' => 'required|numeric'
+                ]
+        );
+
+        if (!$v->passes()) {
+            return Response::json(['errors' => $v->errors()]);
+        } else {
+            $groupmember = new GroupMember();
+            $groupmember->group_id = $request->input('groupid');
+            $groupmember->member_id = $request->input('member');
+            $groupmember->save();
+            $member = Member::find($request->input('member'));
+
+            return Response::json(['success' => true, 'membername' => $member->firstname . ' ' . $member->lastname, 'memberid' => $member->member_id, 'id' => $groupmember->id]);
+        }
+    }
+
+    public function getDeletegroupmember($id)
+    {
+        $groupmember = GroupMember::find($id);
+        $groupmember->delete();
+
+        if ($groupmember->exists) {
+            return Response::json(['errors' => "Couldn't be deleted"]);
+        } else {
+            return Response::json(['success' => true, 'id' => $id]);
+        }
+    }
+}

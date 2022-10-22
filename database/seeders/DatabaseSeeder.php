@@ -3,7 +3,9 @@
 namespace Database\Seeders;
 
 // use Illuminate\Database\Console\Seeds\WithoutModelEvents;
+use App\Models\User;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\Hash;
 
 class DatabaseSeeder extends Seeder
 {
@@ -14,11 +16,26 @@ class DatabaseSeeder extends Seeder
      */
     public function run()
     {
-        // \App\Models\User::factory(10)->create();
+    //    Model::unguard();
 
-        // \App\Models\User::factory()->create([
-        //     'name' => 'Test User',
-        //     'email' => 'test@example.com',
-        // ]);
+        $credentials = [
+            'email'    => 'admin',
+            'password' => 'lotmgeil',
+        ];
+
+        $admin = \Sentinel::registerAndActivate($credentials);
+
+        $role = \Sentinel::getRoleRepository()->createModel()->create([
+            'name' => 'admin',
+            'slug' => 'admin',
+        ]);
+        $role->users()->attach($admin);
+
+        $credentials = [
+            'email'    => 'lord',
+            'password' => 'geil',
+        ];
+
+        \Sentinel::registerAndActivate($credentials);
     }
 }
