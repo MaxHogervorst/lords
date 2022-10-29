@@ -45,7 +45,8 @@ class FiscusController extends Controller
      */
     public function store(Request $request)
     {
-        $v = Validator::make($request->all(),
+        $v = Validator::make(
+            $request->all(),
             [
                 'finalproductname' => 'required',
                 'finalproductdescription' => 'required',
@@ -135,7 +136,8 @@ class FiscusController extends Controller
     public function update(Request $request, $id)
     {
         $update = 'added new price';
-        $v = Validator::make($request->all(),
+        $v = Validator::make(
+            $request->all(),
             [
                 'finalproductdescription' => 'required',
                 'finalpriceperperson' => 'required',

@@ -36,7 +36,7 @@ class MemberController extends Controller
             //return Redirect::back()->with('errors', $v->errors());
             return Response::json(['errors' => $v->errors()]);
         } else {
-            $member = new Member;
+            $member = new Member();
             $member->firstname = $request->input('name');
             $member->lastname = $request->input('lastname');
 
@@ -73,7 +73,8 @@ class MemberController extends Controller
      */
     public function update(Request $request, $id)
     {
-        $v = Validator::make($request->all(),
+        $v = Validator::make(
+            $request->all(),
             [
                 'name' => 'required',
                 'lastname' => 'required',

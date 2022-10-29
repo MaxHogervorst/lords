@@ -30,7 +30,7 @@ class GroupController extends Controller
             $myDateTime = new \DateTime($request->input('groupDate'));
             $date = $myDateTime->format('d-m-Y');
             $name = $request->input('name').' '.$date;
-            $group = new Group;
+            $group = new Group();
             $group->name = $name;
             $group->invoice_group_id = InvoiceGroup::getCurrentMonth()->id;
             $group->save();

@@ -39,7 +39,8 @@ class SepaController extends Controller
                 'creditorMaxMoneyPerTransaction' => 'required',
                 'ReqdColltnDt' => 'required',
                 'creditorMaxTransactionsPerBatch' => 'required',
-            ]);
+            ]
+        );
 
         if (! $v->passes()) {
             return Response::json(['errors' => $v->errors()]);

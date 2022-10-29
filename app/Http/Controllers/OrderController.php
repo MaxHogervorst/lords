@@ -23,7 +23,8 @@ class OrderController extends Controller
                 'memberId' => 'required|numeric',
                 'product' => 'required',
                 'amount' => 'required|numeric',
-            ]);
+            ]
+        );
 
         if (! $v->passes()) {
             return Response::json(['errors' => $v->errors()]);
@@ -34,7 +35,7 @@ class OrderController extends Controller
                 $type = 'App\Models\Group';
             }
 
-            $order = new Order;
+            $order = new Order();
             $order->invoice_group_id = InvoiceGroup::getCurrentMonth()->id;
             $order->ownerable_id = $request->input('memberId');
             $order->ownerable_type = $type;

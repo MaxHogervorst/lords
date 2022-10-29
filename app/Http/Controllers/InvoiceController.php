@@ -95,7 +95,7 @@ class InvoiceController extends Controller
 
     public function getExcel()
     {
-        return Excel::download(new InvoiceExport, 'users.xlsx');
+        return Excel::download(new InvoiceExport(), 'users.xlsx');
     }
 
     private function newMemberInfo($m)

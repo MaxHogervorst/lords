@@ -31,7 +31,7 @@ class ProductController extends Controller
         if (! $v->passes()) {
             return Response::json(['errors' => $v->errors()]);
         } else {
-            $product = new Product;
+            $product = new Product();
             $product->name = $request->input('name');
             $product->price = $request->input('productPrice');
             $product->save();
