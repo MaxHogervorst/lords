@@ -1,5 +1,4 @@
-@extends('layout.master')
-@section('script')
+<?php $__env->startSection('script'); ?>
     <script>
         $(document).ready(function(){
             $("#bankinfo").change(function() {
@@ -39,28 +38,28 @@
 
 
         $('#member-order').on('show.bs.modal', function (event) {
-          $('#memberordermodalcontent').load('{{ url('member/') }}/'+ $(event.relatedTarget).data('id'))
+          $('#memberordermodalcontent').load('<?php echo e(url('member/')); ?>/'+ $(event.relatedTarget).data('id'))
         });
 
         $('#member-edit').on('show.bs.modal', function (event) {
-          $('#membereditmodalcontent').load('{{ url('member/') }}/'+ $(event.relatedTarget).data('id') + '/edit')
+          $('#membereditmodalcontent').load('<?php echo e(url('member/')); ?>/'+ $(event.relatedTarget).data('id') + '/edit')
         });
     </script>
-@stop
+<?php $__env->stopSection(); ?>
 
 
-@section('content')
+<?php $__env->startSection('content'); ?>
 
-    <form id="member-form" name="member-form" class="form-inline" action="{{ URL::to('member') }}" method="post" enctype="multipart/form-data">
+    <form id="member-form" name="member-form" class="form-inline" action="<?php echo e(URL::to('member')); ?>" method="post" enctype="multipart/form-data">
         <input type="search" id="filter" name="name" placeholder="First Name" class="form-control" autofocus="" autocomplete="off">
         <input type="search" id="lastname" name="lastname" placeholder="Last Name" class="form-control" autofocus="" autocomplete="off">
-        <input type="hidden" name="_token" value="{{ csrf_token() }}">
+        <input type="hidden" name="_token" value="<?php echo e(csrf_token()); ?>">
         <button type="submit" class="btn btn-outline btn-primary" data-ajax-submit="#member-form" data-ajax-callback-function="addMember"><i class="fa fa-plus fa-fw">  </i>Add Member</button>
     </form>
-   @if(\Sentinel::check() && \Sentinel::inRole('admin'))
+   <?php if(\Sentinel::check() && \Sentinel::inRole('admin')): ?>
         Filter Bankinfo: <input type="checkbox" id="bankinfo"> <br />
         Filter Had Collection: <input type="checkbox" id="collection">
-    @endif
+    <?php endif; ?>
 
     <div class="row">&nbsp;</div>
 
@@ -73,32 +72,32 @@
                     <th>First Name</th>
                     <th>Last Name</th>
                     <th class="col-sm-1">Actions</th>
-                   @if(\Sentinel::check() && \Sentinel::inRole('admin'))
+                   <?php if(\Sentinel::check() && \Sentinel::inRole('admin')): ?>
                         <th>BIC</th>
                         <th>Iban</th>
                         <th class="col-sm-1">Had Collection</th>
-                    @endif
+                    <?php endif; ?>
 
                 </tr>
             </thead>
 
             <tbody>
-                @foreach ($members as $m)
+                <?php $__currentLoopData = $members; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $m): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
                 <tr>
-                    <td>{{ $m->firstname }}</td>
-                    <td>{{ $m->lastname }}</td>
+                    <td><?php echo e($m->firstname); ?></td>
+                    <td><?php echo e($m->lastname); ?></td>
                     <td>
-                        <button data-id="{{ $m->id }}" data-toggle="modal" data-target="#member-order"><i class="fa fa-plus fa-fw fa-lg"></i></button>
-                        <button data-id="{{ $m->id }}"  data-toggle="modal" data-target="#member-edit"><i class="fa fa-edit fa-fw">  </i></button>
+                        <button data-id="<?php echo e($m->id); ?>" data-toggle="modal" data-target="#member-order"><i class="fa fa-plus fa-fw fa-lg"></i></button>
+                        <button data-id="<?php echo e($m->id); ?>"  data-toggle="modal" data-target="#member-edit"><i class="fa fa-edit fa-fw">  </i></button>
                     </td>
-                    @if(\Sentinel::check() && \Sentinel::inRole('admin'))
-                        <td>{{ $m->bic }}</td>
-                        <td>{{ $m->iban }}</td>
-                        <td>@if($m->had_collection) Yes @else No @endif</td>
-                    @endif
+                    <?php if(\Sentinel::check() && \Sentinel::inRole('admin')): ?>
+                        <td><?php echo e($m->bic); ?></td>
+                        <td><?php echo e($m->iban); ?></td>
+                        <td><?php if($m->had_collection): ?> Yes <?php else: ?> No <?php endif; ?></td>
+                    <?php endif; ?>
 
                 </tr>
-                @endforeach
+                <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
             </tbody>
 
         </table>
@@ -107,9 +106,9 @@
 
 
 
-@stop
+<?php $__env->stopSection(); ?>
 
-@section('modal')
+<?php $__env->startSection('modal'); ?>
 <div id="member-order" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
 	<div class="modal-dialog" >
  		<div class="modal-content">
@@ -126,4 +125,5 @@
 	</div><!-- /.modal-dialog -->
 </div><!-- /.modal -->
 
-@stop
+<?php $__env->stopSection(); ?>
+<?php echo $__env->make('layout.master', \Illuminate\Support\Arr::except(get_defined_vars(), ['__data', '__path']))->render(); ?><?php /**PATH /var/www/html/resources/views/member/index.blade.php ENDPATH**/ ?>

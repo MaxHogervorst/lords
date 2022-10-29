@@ -1,6 +1,4 @@
-@extends('layout.master')
-
-@section('script')
+<?php $__env->startSection('script'); ?>
     <script>
         $(document).ready(function(){
             $('#invoiceGroup').selectize({
@@ -22,25 +20,25 @@
 
         });
     </script>
-@stop
+<?php $__env->stopSection(); ?>
 
-@section('content')
+<?php $__env->startSection('content'); ?>
 
     <form id="invoicegroupForm" method="post" action="invoice/selectinvoicegroup">
     <div class="row">
         <label for="inputEmail" class="col-lg-1 control-label">Select Month</label>
         <div class="col-sm-4">
             <div class="input-group">
-                <input type="hidden" name="_token" value="{{ csrf_token() }}">
+                <input type="hidden" name="_token" value="<?php echo e(csrf_token()); ?>">
                 <select id="invoiceGroup" name="invoiceGroup" class="form-control"  autocomplete="off">
                         <option value="">Search and select month/option>
-                        @foreach($invoicegroups as $i)
-                            @if($i->status)
-                                <option value={{ $i->id }}>Active Month: {{ $i->name}}</option>
-                            @else
-                                <option value={{ $i->id }}>{{ $i->name}}</option>
-                            @endif
-                        @endforeach
+                        <?php $__currentLoopData = $invoicegroups; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $i): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                            <?php if($i->status): ?>
+                                <option value=<?php echo e($i->id); ?>>Active Month: <?php echo e($i->name); ?></option>
+                            <?php else: ?>
+                                <option value=<?php echo e($i->id); ?>><?php echo e($i->name); ?></option>
+                            <?php endif; ?>
+                        <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                 </select>
                 <span class="input-group-btn">
                     <button type="button" class="btn btn-outline btn-primary" data-ajax-submit="#invoicegroupForm" data-ajax-callback-function="reload"><i class="fa fa-check fa-fw">  </i>Select </button>
@@ -61,12 +59,12 @@
     <a href="invoice/sepa" target="_blank"><button type="button" class="btn btn-outline btn-primary"><i class="fa fa-file-pdf-o fa-fw">  </i>Export to SEPA</button></a>
     <div class="row">&nbsp;</div>
 
-     @foreach($members as $m)
+     <?php $__currentLoopData = $members; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $m): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
 
         <table class="table table-striped">
             <thead>
                 <tr>
-                    <th colspan="4"><h3><b>{{ $m->firstname . ' ' . $m->lastname }}</b></h3></th>
+                    <th colspan="4"><h3><b><?php echo e($m->firstname . ' ' . $m->lastname); ?></b></h3></th>
                 </tr>
                 <tr>
                     <th>Product</th>
@@ -77,48 +75,50 @@
             </thead>
             <tbody>
                 <?php $total = 0; ?>
-                @foreach($m->orders()->where('invoice_group_id', '=', $currentmonth->id)->get() as $o)
+                <?php $__currentLoopData = $m->orders()->where('invoice_group_id', '=', $currentmonth->id)->get(); $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $o): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
                     <?php $price = $o->amount * $products[$o->product_id]['price']; $total += $price; ?>
                     <tr>
-                        <td> {{ $products[$o->product_id]['name'] }}</td>
-                        <td> {{ $products[$o->product_id]['name'] }}</td>
-                        <td> {{ $o->amount }}</td>
-                        <td>&euro;{{ sprintf('%.2f', $price)  }}</td>
+                        <td> <?php echo e($products[$o->product_id]['name']); ?></td>
+                        <td> <?php echo e($products[$o->product_id]['name']); ?></td>
+                        <td> <?php echo e($o->amount); ?></td>
+                        <td>&euro;<?php echo e(sprintf('%.2f', $price)); ?></td>
                     </tr>
-                @endforeach
+                <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
 
-                @foreach($m->groups()->where('invoice_group_id', '=', $currentmonth->id)->get() as $g)
+                <?php $__currentLoopData = $m->groups()->where('invoice_group_id', '=', $currentmonth->id)->get(); $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $g): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
                     <?php $totalprice = 0; ?>
-                    @foreach($g->orders as $o)
+                    <?php $__currentLoopData = $g->orders; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $o): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
                         <?php $totalprice += $o->amount * $products[$o->product_id]['price']; ?>
-                    @endforeach
+                    <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                     <?php $totalmebers = $g->members->count(); $price = ($totalprice / $totalmebers); $total += $price; ?>
 
                     <tr>
-                        <td>{{ $g->name }}</td>
-                        <td>Groupmembers: {{ $totalmebers }} Total price: &euro;{{ $totalprice }}</td>
+                        <td><?php echo e($g->name); ?></td>
+                        <td>Groupmembers: <?php echo e($totalmebers); ?> Total price: &euro;<?php echo e($totalprice); ?></td>
                         <td>1</td>
-                        <td>&euro;{{ sprintf('%.2f', $price)  }}</td>
+                        <td>&euro;<?php echo e(sprintf('%.2f', $price)); ?></td>
                     </tr>
-                @endforeach
 
-                @foreach($m->invoice_lines as $il)
-                    @if($il->productprice->product->invoice_group_id == $currentmonth->id)
+
+                <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+
+                <?php $__currentLoopData = $m->invoice_lines; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $il): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                    <?php if($il->productprice->product->invoice_group_id == $currentmonth->id): ?>
                         <?php $price = $il->productprice->price; $total += $price; ?>
                         <tr>
-                            <td>{{ $il->productprice->product->name }}</td>
-                            <td>{{ $il->productprice->description }}</td>
+                            <td><?php echo e($il->productprice->product->name); ?></td>
+                            <td><?php echo e($il->productprice->description); ?></td>
                             <td>1</td>
-                            <td>&euro;{{ sprintf('%.2f', $price)  }}</td>
+                            <td>&euro;<?php echo e(sprintf('%.2f', $price)); ?></td>
                         </tr>
-                    @endif
-                @endforeach
+                    <?php endif; ?>
+                <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
 
             </tbody>
             <tfoot>
                 <tr class="info">
                     <td colspan="3" align="right"><b>Total:</b></td>
-                    <td align="left"><b>&euro;{{ sprintf('%.2f', $total)}}</b></td>
+                    <td align="left"><b>&euro;<?php echo e(sprintf('%.2f', $total)); ?></b></td>
                 </tr>
             </tfoot>
 
@@ -126,13 +126,13 @@
         </table>
         <div class="row">&nbsp;</div>
         <div class="row">&nbsp;</div>
-    @endforeach
+    <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
 
 
 
-@stop
+<?php $__env->stopSection(); ?>
 
-@section('modal')
+<?php $__env->startSection('modal'); ?>
 
     <div id="newInvoiceGroupModal" class="modal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
     	<div class="modal-dialog" >
@@ -146,7 +146,7 @@
     			        <div class="form-group">
     			            Select Month and year:
     						<input type="text" id="invoiceMonth" name="invoiceMonth" class="form-control" value="" >
-    						<input type="hidden" name="_token" value="{{ csrf_token() }}">
+    						<input type="hidden" name="_token" value="<?php echo e(csrf_token()); ?>">
     						<button type="button" class="btn btn-outline btn-primary" data-ajax-submit="#NewInvoiceGroupForm" data-ajax-callback-function="reload"><i class="fa fa-save fa-fw">  </i>New Month</button>
 
     					</div>
@@ -156,4 +156,5 @@
     	</div><!-- /.modal-dialog -->
     </div><!-- /.modal -->
 
-@stop
+<?php $__env->stopSection(); ?>
+<?php echo $__env->make('layout.master', \Illuminate\Support\Arr::except(get_defined_vars(), ['__data', '__path']))->render(); ?><?php /**PATH /var/www/html/resources/views/invoice/index.blade.php ENDPATH**/ ?>

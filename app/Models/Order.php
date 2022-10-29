@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 class Order extends Model
 {
     protected $table = 'orders';
+    // protected $with = ['group', 'member']; 
 
     public function product()
     {

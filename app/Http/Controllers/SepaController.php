@@ -3,7 +3,8 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Response;
 use Illuminate\Support\Facades\Validator;
-use Offline\Settings\Facades\Settings;
+use Illuminate\Support\Facades\Storage;
+use App\Models\Setting;
 
 class SepaController extends Controller
 {
@@ -15,7 +16,7 @@ class SepaController extends Controller
      */
     public function index()
     {
-        return view('sepa.index');
+        return view('sepa.index', ['settings' => Setting::toMap()]);
     }
 
     /**
@@ -41,18 +42,21 @@ class SepaController extends Controller
 
         if (!$v->passes()) {
             return Response::json(['errors' => $v->errors()]);
-        } else {
-            Settings::set('creditorName', $request->input('creditorName'));
-            Settings::set('creditorAccountIBAN', $request->input('creditorAccountIBAN'));
-            Settings::set('creditorAgentBIC', $request->input('creditorAgentBIC'));
-            Settings::set('creditorId', $request->input('creditorId'));
-            Settings::set('creditorPain', $request->input('creditorPain'));
-            Settings::set('creditorMaxMoneyPerBatch', $request->input('creditorMaxMoneyPerBatch'));
-            Settings::set('creditorMaxMoneyPerTransaction', $request->input('creditorMaxMoneyPerTransaction'));
-            Settings::set('creditorMaxTransactionsPerBatch', $request->input('creditorMaxTransactionsPerBatch'));
-            Settings::set('ReqdColltnDt', $request->input('ReqdColltnDt'));
-
-            return Response::json(['success' => true]);
         }
+
+        foreach($request->all() as $key => $value){
+            Setting::where('key', '=', $key)->update(['key' => $key, 'value' => $value]);
+        }
+
+        return Response::json(['success' => true]);
+        
+    }
+
+    public function downloadFile($file_name)
+    {
+        // $file = Storage::disk('public')->get('SEPA/' . $file_name);
+        // $file_e = Storage::disk('public')->exists('SEPA/' . $file_name);
+
+        return response()->download(storage_path($file_name));
     }
 }

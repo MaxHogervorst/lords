@@ -39,21 +39,7 @@ Route::get('auth/login', [AuthController::class, 'getLogin'])->name('login');
 Route::get('auth/logout', [AuthController::class, 'getLogout']);
 Route::post('auth/authenticate', [AuthController::class, 'postAuthenticate']);
 Route::group(['middleware' => ['authAdmin']], function () {
-    Route::
-    get('downloadSEPA/{filename}', function ($filename) {
-        // Check if file exists in app/storage/file folder
-        $file_path = storage_path() . '/SEPA/' . $filename;
-        if (file_exists($file_path)) {
-            // Send Download
-            return Response::download($file_path, $filename, [
-                'Content-Length: ' . filesize($file_path)
-            ]);
-        } else {
-            // Error
-            exit('Requested file does not exist on our server!');
-        }
-    });
-
+    Route::get('sepa/download/{file_name}', [SepaController::class, 'downloadFile']);
     Route::resource('sepa', SepaController::class, ['only' => ['index', 'store']]);
     Route::get('fiscus/invoiceprices/{id}', [FiscusController::class, 'getInvoiceprices']);
     Route::get('fiscus/allinvoicelines/{id}', [FiscusController::class, 'getAllinvoicelines']);

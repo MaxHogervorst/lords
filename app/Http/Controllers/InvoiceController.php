@@ -2,17 +2,20 @@
 
 namespace App\Http\Controllers;
 
+use Illuminate\Database\Eloquent\Relations\MorphTo;
+use App\Exports\InvoiceExport;
 use App\Models\InvoiceGroup;
-use App\Models\InvoiceProduct;
 use App\Models\Member;
 use App\Models\Product;
+use App\Models\Setting;
 use Digitick\Sepa\TransferFile\Factory\TransferFileFacadeFactory;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Response;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Storage;
 use Maatwebsite\Excel\Facades\Excel;
-use Offline\Settings\Facades\Settings;
+
 
 class InvoiceController extends Controller
 {
@@ -22,16 +25,35 @@ class InvoiceController extends Controller
      *
      * @return Response
      */
-    private $exceldata;
     private $currentpaymentinfo;
-    private $total;
     public function getIndex()
     {
         $currentmonth = InvoiceGroup::getCurrentMonth();
         $products = Product::toArrayIdAsKey();
-        $members = Member::with(['orders'])
-            ->with(['groups.orders.product'])
-            ->with(['invoice_lines.productprice.product'])->get();
+        $members = Member::with([
+            'orders' => [
+                'product',
+                'ownerable' => function (MorphTo $morphTo) {
+                    $morphTo->morphWith([
+                        'group',
+                         'member'
+                        ]);
+                    },
+                ],
+            'groups' => [
+                'orders'  => [
+                'product',
+                'ownerable' => function (MorphTo $morphTo) {
+                    $morphTo->morphWith([
+                        'group',
+                         'member'
+                        ]);
+                    },
+                ],
+            ],
+            'invoice_lines.productprice.product'
+            ])
+            ->get();
         return view('invoice.index')->with('invoicegroups', InvoiceGroup::orderBy('id', 'desc')->get())
                                     ->with('currentmonth', $currentmonth)
                                     ->with('members', $members)
@@ -69,58 +91,12 @@ class InvoiceController extends Controller
             ->with('currentmonth', $currentmonth)
             ->with('members', Member::with('orders.product', 'groups.orders.product', 'invoice_lines.productprice.product')->get());
     }
+
     public function getExcel()
     {
-        $currentmonth = InvoiceGroup::getCurrentMonth();
-        $result = [];
-        $this->total = 0;
-        foreach (Member::with('orders.product', 'groups.orders.product', 'invoice_lines.productprice.product')->get() as $m) {
-            $memberinfo = [];
-            $memberinfo[] = $m->firstname . ' ' . $m->lastname;
-            $manor = 0;
-            $member_total = 0;
-
-            $manor += $this->CalculateMemberOrders($m);
-            $manor += $this->CalculateGroupOrders($m);
-
-            $memberinfo[] = $manor;
-            $member_total += $manor;
-            $products = [];
-            foreach (InvoiceProduct::where('invoice_group_id', '=', $currentmonth->id)->get() as $product) {
-                $products[$product->id] = 0;
-            }
-            foreach ($m->invoice_lines as $il) {
-                if ($il->productprice->product->invoice_group_id == $currentmonth->id) {
-                    $products[$il->productprice->product->id] = $il->productprice->price;
-                }
-            }
-            foreach ($products as $p) {
-                $member_total += $p;
-                $memberinfo[] = $p;
-            }
-            $memberinfo[] = $member_total;
-            $this->total += $member_total;
-//            if($total == 0)
-//			{
-//				continue;
-//			}
-//
-            $result[] = $memberinfo;
-        }
-        $this->exceldata = $result;
-
-        Excel::create($currentmonth->name, function ($excel) {
-            $excel->sheet('First sheet', function ($sheet) {
-                $sheet->loadView('invoice.excel') ->with('result', $this->exceldata)
-                    ->with('products', InvoiceProduct::where('invoice_group_id', '=', InvoiceGroup::getCurrentMonth()->id)->get())
-                    ->with('total', $this->total);
-            });
-        })->download('xls');
-
-        return view('invoice.excel')
-            ->with('result', $result)
-            ->with('products', InvoiceProduct::where('invoice_group_id', '=', $currentmonth->id)->get());
+        return Excel::download(new InvoiceExport, 'users.xlsx');
     }
+
     private function newMemberInfo($m)
     {
         $memberinfo = [];
@@ -147,18 +123,18 @@ class InvoiceController extends Controller
         }
     }
 
-    private function newBatch($seqType)
+    private function newBatch($seqType, $settings)
     {
         $this->currentpaymentinfo = 'GSRC' . date('Y-m-d H:i:s');
-        $currentbatch = TransferFileFacadeFactory::createDirectDebit('GSRC' . date('Y-m-d H:i:s'), 'me', Settings::get('creditorPain'));
+        $currentbatch = TransferFileFacadeFactory::createDirectDebit('GSRC' . date('Y-m-d H:i:s'), 'me', $settings['creditorPain']);
         $currentbatch->addPaymentInfo($this->currentpaymentinfo, [
             'id'                    => 'GSRC' . date('Y-m-d H:i:s'),
-            'creditorName'          => Settings::get('creditorName'),
-            'creditorAccountIBAN'   => Settings::get('creditorAccountIBAN'),
-            'creditorAgentBIC'      => Settings::get('creditorAgentBIC'),
+            'creditorName'          => $settings['creditorName'],
+            'creditorAccountIBAN'   => $settings['creditorAccountIBAN'],
+            'creditorAgentBIC'      => $settings['creditorAgentBIC'],
             'seqType'               =>  $seqType,
-            'creditorId'            => Settings::get('creditorId'),
-            'dueDate'               => new \DateTime(date('Y-m-d', strtotime('now +' . Settings::get('ReqdColltnDt') . ' weekdays')))
+            'creditorId'            => $settings['creditorId'],
+            'dueDate'               => new \DateTime(date('Y-m-d', strtotime('now +' . $settings['ReqdColltnDt'] . ' weekdays')))
         ]);
 
         return $currentbatch;
@@ -166,6 +142,7 @@ class InvoiceController extends Controller
 
     public function getSepa()
     {
+        $settings = Setting::toMap();
         $memberswithoutbankinfo = Member::whereNull('bic')->whereNull('iban')->get();
 
         $members = ['RCUR' => [], 'FRST' =>[]];
@@ -196,17 +173,17 @@ class InvoiceController extends Controller
         $transactions = 0;
         $batchtotalmoney = 0;
         if (!empty($members['RCUR'])) {
-            $currentbatch = $this->newBatch('RCUR');
+            $currentbatch = $this->newBatch('RCUR', $settings);
 
             foreach ($members['RCUR'] as $m) {
-                if ($batchtotalmoney + $m['amount'] > Settings::get('creditorMaxMoneyPerBatch') || $transactions == Settings::get('creditorMaxTransactionsPerBatch')) {
+                if ($batchtotalmoney + $m['amount'] > $settings['creditorMaxMoneyPerBatch'] || $transactions == $settings['creditorMaxTransactionsPerBatch']) {
                     $batches['RCUR'][] = $currentbatch;
                     $this->currentpaymentinfo = 'GSRC' . date('Y-m-d H:i:s');
-                    $currentbatch = $this->newBatch('RCUR');
+                    $currentbatch = $this->newBatch('RCUR', $settings);
                     $transactions = 0;
                     $batchtotalmoney = 0;
                 }
-                if ($m['amount'] > Settings::get('creditorMaxMoneyPerTransaction')) {
+                if ($m['amount'] > $settings['creditorMaxMoneyPerTransaction']) {
                     $batchfailedmembers[] = $m;
                 } else {
                     $currentbatch->addTransfer($this->currentpaymentinfo, [
@@ -227,16 +204,16 @@ class InvoiceController extends Controller
         $transactions = 0;
         $batchtotalmoney = 0;
         if (!empty($members['FRST'])) {
-            $currentbatch = $this->newBatch('FRST');
+            $currentbatch = $this->newBatch('FRST', $settings);
             foreach ($members['FRST'] as $m) {
-                if ($batchtotalmoney + $m['amount'] > Settings::get('creditorMaxMoneyPerBatch') || $transactions == Settings::get('creditorMaxTransactionsPerBatch')) {
+                if ($batchtotalmoney + $m['amount'] > $settings['creditorMaxMoneyPerBatch'] || $transactions == $settings['creditorMaxTransactionsPerBatch']) {
                     $batches['FRST'][] = $currentbatch;
                     $this->currentpaymentinfo = 'GSRC' . date('Y-m-d H:i:s');
-                    $currentbatch = $this->newBatch('FRST');
+                    $currentbatch = $this->newBatch('FRST', $settings);
                     $transactions = 0;
                     $batchtotalmoney = 0;
                 }
-                if ($m['amount'] > Settings::get('creditorMaxMoneyPerTransaction')) {
+                if ($m['amount'] > $settings['creditorMaxMoneyPerTransaction']) {
                     $batchfailedmembers[] = $m;
                 } else {
                     $currentbatch->addTransfer($this->currentpaymentinfo, [
@@ -260,22 +237,25 @@ class InvoiceController extends Controller
         foreach ($batches['RCUR'] as $b) {
             $i++;
             $filename = 'GSRC RCUR ' . $i . ' ' . date('Y-m-d') . '.xml';
-            $filepath = storage_path('SEPA/' . $filename);
-            $file = fopen($filepath, 'w');
-            fwrite($file, $b->asXML());
-            fclose($file);
-            $total++;
+      
+            Storage::disk('local')->put($filename, $b->asXML());
+            //       $filepath = storage_path('SEPA/' . $filename);
+            // $file = fopen($filepath, 'w');
+            // fwrite($file, );
+            // fclose($file);
+            // $total++;
             $batchlink[] = $filename;
         }
         $i=0;
         foreach ($batches['FRST'] as $b) {
             $i++;
             $filename = 'GSRC FRST ' . $i . ' ' . date('Y-m-d') . '.xml';
-            $filepath = storage_path('SEPA/' . $filename);
-            $file = fopen($filepath, 'w');
-            fwrite($file, $b->asXML());
-            fclose($file);
-            $total++;
+             Storage::disk('local')->put($filename, $b->asXML());
+            // $filepath = storage_path('SEPA/' . $filename);
+            // $file = fopen($filepath, 'w');
+            // fwrite($file, $b->asXML());
+            // fclose($file);
+            // $total++;
             $batchlink[] = $filename;
         }
         return view('invoice.sepa')

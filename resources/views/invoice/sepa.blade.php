@@ -7,7 +7,7 @@ Totaal batches: {{ $total }} <br>
 Sepa Download:
 <ul>
 @foreach($batchlink as $b)
-     <li><a href="{{ url('downloadSEPA/' . $b)  }}"> {{ $b }}</a> <br></li>
+     <li><a href="{{ url('sepa/download/' . $b)  }}"> {{ $b }}</a> <br></li>
 @endforeach
 </ul>
 
