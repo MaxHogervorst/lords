@@ -7,7 +7,6 @@ use Illuminate\Contracts\Auth\Guard;
 
 class Authenticate
 {
-
     /**
      * The Guard implementation.
      *
@@ -26,10 +25,10 @@ class Authenticate
         $this->auth = $auth;
     }
 
-     /**
+    /**
      * Handle an incoming request.
      *
-    * @param  \Illuminate\Http\Request  $request
+     * @param  \Illuminate\Http\Request  $request
      * @param  \Closure  $next
      * @return mixed
      */

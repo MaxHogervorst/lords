@@ -1,8 +1,10 @@
-<?php namespace App\Http\Controllers;
+<?php
+
+namespace App\Http\Controllers;
 
 use App\Models\Product;
-use Illuminate\Support\Facades\Cache;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Response;
 use Illuminate\Support\Facades\Validator;
 
@@ -10,13 +12,15 @@ class ProductController extends Controller
 {
     public function autocomplete()
     {
-        $product = Product::where('Name', 'LIKE', '%' . $request->input('term') . '%')->get();
+        $product = Product::where('Name', 'LIKE', '%'.$request->input('term').'%')->get();
+
         return Response::json($product->toArray());
     }
 
     public function index()
     {
         $product = Product::all();
+
         return view('product.index')->withResults($product);
     }
 
@@ -24,7 +28,7 @@ class ProductController extends Controller
     {
         $v = Validator::make($request->all(), ['name' => 'required', 'productPrice' => 'required|numeric']);
 
-        if (!$v->passes()) {
+        if (! $v->passes()) {
             return Response::json(['errors' => $v->errors()]);
         } else {
             $product = new Product;
@@ -34,6 +38,7 @@ class ProductController extends Controller
 
             if ($product->exists) {
                 $this->updateProductCache();
+
                 return Response::json(['success' => true, 'id' => $product->id, 'name' => $product->name, 'price' => $product->price]);
             } else {
                 return Response::json(['errors' => 'Could not be added to the database']);
@@ -50,7 +55,7 @@ class ProductController extends Controller
     {
         $v = Validator::make($request->all(), ['productName' => 'required', 'productPrice' => 'required|numeric']);
 
-        if (!$v->passes()) {
+        if (! $v->passes()) {
             return Response::json(['errors' => $v->errors()]);
         } else {
             $product = Product::find($id);
@@ -59,7 +64,8 @@ class ProductController extends Controller
 
             if ($product->save()) {
                 $this->updateProductCache();
-                return Response::json(['success' => true, 'message' => $product->name . ' Successfully edited']);
+
+                return Response::json(['success' => true, 'message' => $product->name.' Successfully edited']);
             } else {
                 return Response::json(['errors' => 'Could not be updated']);
             }
@@ -72,9 +78,10 @@ class ProductController extends Controller
 
         $product->delete();
 
-        if (!$product->exists) {
+        if (! $product->exists) {
             $this->updateProductCache();
-            return Response::json(['success' => true, 'message' => $product->name . ' Successfully deleted']);
+
+            return Response::json(['success' => true, 'message' => $product->name.' Successfully deleted']);
         } else {
             return Response::json(['errors' => 'Could not be deleted']);
         }

@@ -1,15 +1,15 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\HomeController;
-use App\Http\Controllers\MemberController;
-use App\Http\Controllers\ProductController;
-use App\Http\Controllers\GroupController;
-use App\Http\Controllers\OrderController;
 use App\Http\Controllers\AuthController;
-use App\Http\Controllers\InvoiceController;
 use App\Http\Controllers\FiscusController;
+use App\Http\Controllers\GroupController;
+use App\Http\Controllers\HomeController;
+use App\Http\Controllers\InvoiceController;
+use App\Http\Controllers\MemberController;
+use App\Http\Controllers\OrderController;
+use App\Http\Controllers\ProductController;
 use App\Http\Controllers\SepaController;
+use Illuminate\Support\Facades\Route;
 
 /*
 |--------------------------------------------------------------------------
@@ -34,7 +34,7 @@ use App\Http\Controllers\SepaController;
 
 Route::post('invoice/setperson', [InvoiceController::class, 'postSetPerson']);
 Route::post('invoice/setpersonalinvoicegroup', [InvoiceController::class, 'postSetPersonalInvoiceGroup']);
-Route::get('check-bill',  [InvoiceController::class, 'getPerPerson']);
+Route::get('check-bill', [InvoiceController::class, 'getPerPerson']);
 Route::get('auth/login', [AuthController::class, 'getLogin'])->name('login');
 Route::get('auth/logout', [AuthController::class, 'getLogout']);
 Route::post('auth/authenticate', [AuthController::class, 'postAuthenticate']);

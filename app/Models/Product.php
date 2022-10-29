@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
@@ -18,6 +19,7 @@ class Product extends Model
             }
             Cache::put('products', $products_new, 1);
         }
+
         return Cache::get('products');
     }
 }

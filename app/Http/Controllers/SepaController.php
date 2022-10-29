@@ -1,14 +1,15 @@
-<?php namespace App\Http\Controllers;
+<?php
 
+namespace App\Http\Controllers;
+
+use App\Models\Setting;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Response;
-use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Storage;
-use App\Models\Setting;
+use Illuminate\Support\Facades\Validator;
 
 class SepaController extends Controller
 {
-
     /**
      * Display a listing of the resource.
      *
@@ -37,19 +38,18 @@ class SepaController extends Controller
                 'creditorMaxMoneyPerBatch' => 'required',
                 'creditorMaxMoneyPerTransaction' => 'required',
                 'ReqdColltnDt' => 'required',
-                'creditorMaxTransactionsPerBatch' => 'required'
+                'creditorMaxTransactionsPerBatch' => 'required',
             ]);
 
-        if (!$v->passes()) {
+        if (! $v->passes()) {
             return Response::json(['errors' => $v->errors()]);
         }
 
-        foreach($request->all() as $key => $value){
+        foreach ($request->all() as $key => $value) {
             Setting::where('key', '=', $key)->update(['key' => $key, 'value' => $value]);
         }
 
         return Response::json(['success' => true]);
-        
     }
 
     public function downloadFile($file_name)

@@ -2,24 +2,23 @@
 
 namespace App\Exports;
 
-use App\Models\Product;
-use App\Models\Member;
 use App\Models\InvoiceGroup;
 use App\Models\InvoiceProduct;
+use App\Models\Member;
+use App\Models\Product;
 use Maatwebsite\Excel\Concerns\FromCollection;
 
 class InvoiceExport implements FromCollection
 {
     /**
-    * @return \Illuminate\Support\Collection
-    */
+     * @return \Illuminate\Support\Collection
+     */
     public function collection()
     {
-
         $currentmonth = InvoiceGroup::getCurrentMonth();
         $products = InvoiceProduct::where('invoice_group_id', '=', $currentmonth->id)->get();
         $header = ['Naam', 'Manor Expenses'];
-        foreach($products as $product) {
+        foreach ($products as $product) {
             $header[] = $product->name;
         }
         $header[] = 'Totaal';
@@ -28,7 +27,7 @@ class InvoiceExport implements FromCollection
         $member_infos = [];
         foreach (Member::with('orders.product', 'groups.orders.product', 'invoice_lines.productprice.product')->get() as $m) {
             $memberinfo = [];
-            $memberinfo[] = $m->firstname . ' ' . $m->lastname;
+            $memberinfo[] = $m->firstname.' '.$m->lastname;
             $manor = 0;
             $member_total = 0;
 
@@ -54,11 +53,11 @@ class InvoiceExport implements FromCollection
             $total += $member_total;
             $member_infos[] = $memberinfo;
         }
-        foreach($member_infos as $members) {
+        foreach ($member_infos as $members) {
             $row = [];
-            foreach($members as $m) {
-                if(is_string($m)){
-                  $row[] = $m;
+            foreach ($members as $m) {
+                if (is_string($m)) {
+                    $row[] = $m;
                 } else {
                     $row[] = sprintf('%.2f', $m);
                 }
@@ -67,7 +66,6 @@ class InvoiceExport implements FromCollection
         }
 
         return collect($result);
-        
     }
 
     private function CalculateMemberOrders($member)

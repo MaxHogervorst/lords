@@ -1,7 +1,8 @@
-<?php namespace App\Http\Controllers;
+<?php
+
+namespace App\Http\Controllers;
 
 use App\Models\InvoiceGroup;
-use App\Models\Member;
 use App\Models\Order;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Response;
@@ -9,7 +10,6 @@ use Illuminate\Support\Facades\Validator;
 
 class OrderController extends Controller
 {
-
     /**
      * Store a newly created resource in storage.
      *
@@ -22,10 +22,10 @@ class OrderController extends Controller
             [
                 'memberId' => 'required|numeric',
                 'product' => 'required',
-                'amount' => 'required|numeric'
+                'amount' => 'required|numeric',
             ]);
 
-        if (!$v->passes()) {
+        if (! $v->passes()) {
             return Response::json(['errors' => $v->errors()]);
         } else {
             if ($type == 'Member') {
@@ -44,14 +44,14 @@ class OrderController extends Controller
 
             if ($order->exists) {
                 return Response::json([
-                            'success' => true,
-                            'date' => date('Y-m-d G:i:s'),
-                            'product' => $order->product->name,
-                            'amount' => $order->amount,
-                            'product_id' => $order->product->id,
-                            'member_id' => $order->ownerable_id,
-                            'message' => 'order successfully'
-                        ]);
+                    'success' => true,
+                    'date' => date('Y-m-d G:i:s'),
+                    'product' => $order->product->name,
+                    'amount' => $order->amount,
+                    'product_id' => $order->product->id,
+                    'member_id' => $order->ownerable_id,
+                    'message' => 'order successfully',
+                ]);
             } else {
                 return Response::json(['errors' => 'Could not be added to the database']);
             }

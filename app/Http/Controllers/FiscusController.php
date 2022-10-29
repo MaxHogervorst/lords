@@ -1,18 +1,19 @@
-<?php namespace App\Http\Controllers;
+<?php
+
+namespace App\Http\Controllers;
 
 use App\Models\InvoiceGroup;
 use App\Models\InvoiceLine;
 use App\Models\InvoiceProduct;
 use App\Models\InvoiceProductPrice;
 use App\Models\Member;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Response;
 use Illuminate\Support\Facades\Validator;
 
 class FiscusController extends Controller
 {
-
     /**
      * Display a listing of the resource.
      *
@@ -20,9 +21,11 @@ class FiscusController extends Controller
      */
     public function index()
     {
-        $invoice_products  = InvoiceProduct::where('invoice_group_id', '=', InvoiceGroup::getCurrentMonth()->id)->get();
+        $invoice_products = InvoiceProduct::where('invoice_group_id', '=', InvoiceGroup::getCurrentMonth()->id)->get();
+
         return view('fiscus.index')->with('invoice_products', $invoice_products);
     }
+
     /**
      * Display a listing of the resource.
      *
@@ -30,7 +33,8 @@ class FiscusController extends Controller
      */
     public function create()
     {
-        $members= Member::all();
+        $members = Member::all();
+
         return view('fiscus.create')->with('members', $members);
     }
 
@@ -46,12 +50,12 @@ class FiscusController extends Controller
                 'finalproductname' => 'required',
                 'finalproductdescription' => 'required',
                 'finalpriceperperson' => 'required',
-                'finalselectedmembers' => 'min:1'
+                'finalselectedmembers' => 'min:1',
 
             ]
         );
 
-        if (!$v->passes()) {
+        if (! $v->passes()) {
             return Response::json(['errors' => $v->errors()]);
         } else {
             $currentmonth = InvoiceGroup::getCurrentMonth()->id;
@@ -77,9 +81,9 @@ class FiscusController extends Controller
                 }
             }
 
-            return Response::json(['success' => true, 'message' => $invoiceproduct->name . ' Successfully added, '
-                                                                        . $invoiceproductprice->price . ' per person.'
-                                                                        . $i . ' Total persons' ]);
+            return Response::json(['success' => true, 'message' => $invoiceproduct->name.' Successfully added, '
+                                                                        .$invoiceproductprice->price.' per person.'
+                                                                        .$i.' Total persons', ]);
         }
     }
 
@@ -91,8 +95,9 @@ class FiscusController extends Controller
      */
     public function getEdit()
     {
-        $members= Member::all();
+        $members = Member::all();
         $invoiceproducts = InvoiceProduct::where('invoice_group_id', '=', InvoiceGroup::getCurrentMonth()->id)->get();
+
         return view('fiscus.edit')->with('members', $members)
             ->with('products', $invoiceproducts);
     }
@@ -134,12 +139,12 @@ class FiscusController extends Controller
             [
                 'finalproductdescription' => 'required',
                 'finalpriceperperson' => 'required',
-                'member' => 'min:1'
+                'member' => 'min:1',
 
             ]
         );
 
-        if (!$v->passes()) {
+        if (! $v->passes()) {
             return Response::json(['errors' => $v->errors()]);
         } else {
             $invoiceproduct = InvoiceProduct::find($id);
@@ -177,9 +182,9 @@ class FiscusController extends Controller
                 }
             }
 
-            return Response::json(['success' => true, 'message' => $invoiceproduct->name . ' Successfully ' . $update . ', '
-                                                                        . $invoiceproductprice->price . ' per person.'
-                                                                        . $i . ' Total persons' ]);
+            return Response::json(['success' => true, 'message' => $invoiceproduct->name.' Successfully '.$update.', '
+                                                                        .$invoiceproductprice->price.' per person.'
+                                                                        .$i.' Total persons', ]);
         }
     }
 
@@ -201,7 +206,8 @@ class FiscusController extends Controller
                 $price->delete();
             }
             $product->delete();
-            return Response::json(['success' => true, 'message' => $name . ' Successfully deleted']);
+
+            return Response::json(['success' => true, 'message' => $name.' Successfully deleted']);
         } else {
             return Response::json(['success' => false, 'message' => 'Could not find product']);
         }

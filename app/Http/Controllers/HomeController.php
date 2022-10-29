@@ -1,8 +1,10 @@
-<?php namespace App\Http\Controllers;
+<?php
 
-use Illuminate\Database\Eloquent\Relations\MorphTo;
+namespace App\Http\Controllers;
+
 use App\Models\InvoiceGroup;
 use App\Models\Order;
+use Illuminate\Database\Eloquent\Relations\MorphTo;
 
 class HomeController extends Controller
 {
@@ -17,11 +19,12 @@ class HomeController extends Controller
             'product',
             'ownerable' => function (MorphTo $morphTo) {
                 $morphTo->morphWith(['group', 'member']);
-            }
-            ])
+            },
+        ])
             ->where('invoice_group_id', '=', $id)
             ->orderBy('id', 'DESC')
             ->get();
+
         return view('home.index')->with('orders', $orders);
     }
 }

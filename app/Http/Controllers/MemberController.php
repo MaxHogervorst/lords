@@ -1,4 +1,6 @@
-<?php namespace App\Http\Controllers;
+<?php
+
+namespace App\Http\Controllers;
 
 use App\Models\InvoiceGroup;
 use App\Models\Member;
@@ -9,7 +11,6 @@ use Illuminate\Support\Facades\Validator;
 
 class MemberController extends Controller
 {
-
     /**
      * Display a listing of the resource.
      *
@@ -18,6 +19,7 @@ class MemberController extends Controller
     public function index()
     {
         $members = Member::all();
+
         return view('member.index')->with('members', $members);
     }
 
@@ -30,7 +32,7 @@ class MemberController extends Controller
     {
         $v = Validator::make($request->all(), ['name' => 'required', 'lastname' => 'required']);
 
-        if (!$v->passes()) {
+        if (! $v->passes()) {
             //return Redirect::back()->with('errors', $v->errors());
             return Response::json(['errors' => $v->errors()]);
         } else {
@@ -72,15 +74,15 @@ class MemberController extends Controller
     public function update(Request $request, $id)
     {
         $v = Validator::make($request->all(),
-                            [
-                                'name' => 'required',
-                                'lastname' => 'required',
-                                'bic' => 'required',
-                                'iban' => 'required'
-                            ]
+            [
+                'name' => 'required',
+                'lastname' => 'required',
+                'bic' => 'required',
+                'iban' => 'required',
+            ]
         );
 
-        if (!$v->passes()) {
+        if (! $v->passes()) {
             return Response::json(['errors' => $v->errors()]);
         } else {
             $member = Member::find($id);
@@ -96,7 +98,7 @@ class MemberController extends Controller
 
             $member->save();
             if ($member->exists) {
-                return Response::json(['success' => true, 'message' => 'Succesfully edited' . $member->getFullName()]);
+                return Response::json(['success' => true, 'message' => 'Succesfully edited'.$member->getFullName()]);
             } else {
                 return Response::json(['errors' => $v->errors()]);
             }
@@ -114,9 +116,9 @@ class MemberController extends Controller
         $member = Member::find($id);
         $member->delete();
         if ($member->exists) {
-            return Response::json(['errors' => $member->firsname . " Couldn't be deleted"]);
+            return Response::json(['errors' => $member->firsname." Couldn't be deleted"]);
         } else {
-            return Response::json(['success' => true, 'message' => 'Succesfully deleted' . $member->getFullName()]);
+            return Response::json(['success' => true, 'message' => 'Succesfully deleted'.$member->getFullName()]);
         }
     }
 }

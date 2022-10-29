@@ -1,4 +1,6 @@
-<?php namespace App\Http\Controllers;
+<?php
+
+namespace App\Http\Controllers;
 
 use App\Models\Group;
 use App\Models\GroupMember;
@@ -14,6 +16,7 @@ class GroupController extends Controller
     public function index()
     {
         $Group = Group::where('invoice_group_id', '=', InvoiceGroup::getCurrentMonth()->id)->get();
+
         return view('group.index')->withResults([$Group, date('d-m-Y')]);
     }
 
@@ -21,12 +24,12 @@ class GroupController extends Controller
     {
         $v = Validator::make($request->all(), ['name' => 'required']);
 
-        if (!$v->passes()) {
+        if (! $v->passes()) {
             return Response::json(['errors' => $v->errors()]);
         } else {
             $myDateTime = new \DateTime($request->input('groupDate'));
             $date = $myDateTime->format('d-m-Y');
-            $name = $request->input('name') . ' ' . $date;
+            $name = $request->input('name').' '.$date;
             $group = new Group;
             $group->name = $name;
             $group->invoice_group_id = InvoiceGroup::getCurrentMonth()->id;
@@ -38,6 +41,7 @@ class GroupController extends Controller
             }
         }
     }
+
     public function show($id)
     {
         return view('group.order')->with('group', Group::find($id))->with('products', Product::all())->with('members', Member::all())->with('currentmonth', InvoiceGroup::getCurrentMonth());
@@ -52,7 +56,7 @@ class GroupController extends Controller
     {
         $v = Validator::make($request->all(), ['name' => 'required']);
 
-        if (!$v->passes()) {
+        if (! $v->passes()) {
             return Response::json(['errors' => $v->errors()]);
         } else {
             $member = Group::find($id);
@@ -60,7 +64,7 @@ class GroupController extends Controller
 
             $member->save();
             if ($member->exists) {
-                return Response::json(['success' => true, 'message' => $member->name . ' Successfully edited']);
+                return Response::json(['success' => true, 'message' => $member->name.' Successfully edited']);
             } else {
                 return Response::json(['errors' => $v->errors()]);
             }
@@ -78,23 +82,23 @@ class GroupController extends Controller
         $member = Group::find($id);
         $member->delete();
         if ($member->exists) {
-            return Response::json(['errors' => $member->name . " Couldn't be deleted"]);
+            return Response::json(['errors' => $member->name." Couldn't be deleted"]);
         } else {
-            return Response::json(['success' => true, 'message' => $member->name . ' Successfully deleted']);
+            return Response::json(['success' => true, 'message' => $member->name.' Successfully deleted']);
         }
     }
 
     public function postAddmember(Request $request)
     {
         $v = Validator::make(
-                $request->all(),
-                [
-                    'groupid' => 'required|numeric',
-                    'member' => 'required|numeric'
-                ]
+            $request->all(),
+            [
+                'groupid' => 'required|numeric',
+                'member' => 'required|numeric',
+            ]
         );
 
-        if (!$v->passes()) {
+        if (! $v->passes()) {
             return Response::json(['errors' => $v->errors()]);
         } else {
             $groupmember = new GroupMember();
@@ -103,7 +107,7 @@ class GroupController extends Controller
             $groupmember->save();
             $member = Member::find($request->input('member'));
 
-            return Response::json(['success' => true, 'membername' => $member->firstname . ' ' . $member->lastname, 'memberid' => $member->member_id, 'id' => $groupmember->id]);
+            return Response::json(['success' => true, 'membername' => $member->firstname.' '.$member->lastname, 'memberid' => $member->member_id, 'id' => $groupmember->id]);
         }
     }
 
