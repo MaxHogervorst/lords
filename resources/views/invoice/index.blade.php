@@ -98,12 +98,14 @@
 
                 @foreach($m->groups()->where('invoice_group_id', '=', $currentmonth->id)->get() as $g)
                         <?php $totalprice = 0; ?>
-                    @if(isset($products[$o->product_id]))
+
 
                         @foreach($g->orders as $o)
-                            <?php $totalprice += $o->amount * $products[$o->product_id]['price']; ?>
+                            @if(isset($products[$o->product_id]))
+                                <?php $totalprice += $o->amount * $products[$o->product_id]['price']; ?>
+                            @endif
                         @endforeach
-                    @endif
+
 
                     <?php $totalmebers = $g->members->count(); $price = ($totalprice / $totalmebers); $total += $price; ?>
 
