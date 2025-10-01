@@ -11,6 +11,12 @@ class InvoiceProductPrice extends Model
         return $this->belongsTo('App\Models\InvoiceProduct', 'invoice_product_id', 'id');
     }
 
+    // Alias for better readability
+    public function invoice_product()
+    {
+        return $this->product();
+    }
+
     public function invoiceline()
     {
         return $this->hasMany('App\Models\InvoiceLine');

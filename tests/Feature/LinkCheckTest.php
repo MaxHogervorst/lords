@@ -1,0 +1,176 @@
+<?php
+
+namespace Tests\Feature;
+
+use Tests\TestCase;
+use Illuminate\Foundation\Testing\DatabaseTransactions;
+use Sentinel;
+
+class LinkCheckTest extends TestCase
+{
+    use DatabaseTransactions;
+
+    private $adminUser;
+    private $regularUser;
+    private $adminRole;
+
+    public function setUp()
+    {
+        parent::setUp();
+
+        // Create admin role
+        $this->adminRole = Sentinel::getRoleRepository()->createModel()->firstOrCreate([
+            'slug' => 'admin',
+        ], [
+            'name' => 'Admin',
+        ]);
+
+        // Create admin user (user ID 3 equivalent)
+        $this->adminUser = Sentinel::registerAndActivate([
+            'email' => 'admin@linktest.com',
+            'password' => 'password',
+        ]);
+        $this->adminRole->users()->attach($this->adminUser);
+
+        // Create regular user (user ID 1 equivalent)
+        $this->regularUser = Sentinel::registerAndActivate([
+            'email' => 'regular@linktest.com',
+            'password' => 'password',
+        ]);
+    }
+
+    public function testHome()
+    {
+        $response = $this->get('/');
+        $this->assertEquals(302, $response->getStatusCode());
+
+        Sentinel::login($this->adminUser);
+        $user = \App\User::find($this->adminUser->id);
+
+        $this->actingAs($user)
+            ->withSession([])
+            ->get('/')
+            ->assertStatus(200)
+            ->assertDontSee('Whoops');
+    }
+
+    public function testMembers()
+    {
+        $response = $this->get('/member');
+        $this->assertEquals(302, $response->getStatusCode());
+
+        Sentinel::login($this->adminUser);
+        $user = \App\User::find($this->adminUser->id);
+
+        $this->actingAs($user)
+            ->withSession([])
+            ->get('/member')
+            ->assertStatus(200)
+            ->assertDontSee('Whoops');
+    }
+
+    public function testGroups()
+    {
+        $response = $this->get('/group');
+        $this->assertEquals(302, $response->getStatusCode());
+
+        Sentinel::login($this->adminUser);
+        $user = \App\User::find($this->adminUser->id);
+
+        $this->actingAs($user)
+            ->withSession([])
+            ->get('/group')
+            ->assertStatus(200)
+            ->assertDontSee('Whoops');
+    }
+
+    public function testProducts()
+    {
+        $response = $this->get('/product');
+        $this->assertEquals(302, $response->getStatusCode());
+
+        Sentinel::login($this->adminUser);
+        $user = \App\User::find($this->adminUser->id);
+
+        $this->actingAs($user)
+            ->withSession([])
+            ->get('/product')
+            ->assertStatus(200)
+            ->assertDontSee('Whoops');
+    }
+
+    public function testFiscus()
+    {
+        $response = $this->get('/fiscus');
+        $this->assertEquals(302, $response->getStatusCode());
+
+        Sentinel::login($this->adminUser);
+        $user = \App\User::find($this->adminUser->id);
+
+        $this->actingAs($user)
+            ->withSession([])
+            ->get('/fiscus')
+            ->assertStatus(200)
+            ->assertDontSee('Whoops');
+
+        Sentinel::logout();
+
+        Sentinel::login($this->regularUser);
+        $regularUser = \App\User::find($this->regularUser->id);
+
+        $response = $this->actingAs($regularUser)
+            ->withSession([])
+            ->get('/fiscus');
+        $this->assertEquals(302, $response->getStatusCode());
+    }
+
+    public function testInvoice()
+    {
+        $response = $this->get('/invoice');
+        $this->assertEquals(302, $response->getStatusCode());
+
+        Sentinel::login($this->adminUser);
+        $user = \App\User::find($this->adminUser->id);
+
+        $this->actingAs($user)
+            ->withSession([])
+            ->get('/invoice')
+            ->assertStatus(200)
+            ->assertDontSee('Whoops');
+
+        Sentinel::logout();
+
+        Sentinel::login($this->regularUser);
+        $regularUser = \App\User::find($this->regularUser->id);
+
+        $response = $this->actingAs($regularUser)
+            ->withSession([])
+            ->get('/invoice');
+        $this->assertEquals(302, $response->getStatusCode());
+    }
+
+    public function testSepa()
+    {
+        $response = $this->get('/sepa');
+        $this->assertEquals(302, $response->getStatusCode());
+
+        Sentinel::login($this->adminUser);
+        $user = \App\User::find($this->adminUser->id);
+
+        $this->actingAs($user)
+            ->withSession([])
+            ->get('/sepa')
+            ->assertStatus(200)
+            ->assertDontSee('Whoops');
+
+        Sentinel::logout();
+
+        Sentinel::login($this->regularUser);
+        $regularUser = \App\User::find($this->regularUser->id);
+
+        $response = $this->actingAs($regularUser)
+            ->withSession([])
+            ->get('/sepa');
+        $this->assertEquals(302, $response->getStatusCode());
+    }
+}

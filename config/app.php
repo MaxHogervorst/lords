@@ -169,7 +169,6 @@ return [
         Offline\Settings\SettingsServiceProvider::class,
         Cartalyst\Sentinel\Laravel\SentinelServiceProvider::class,
         Barryvdh\Debugbar\ServiceProvider::class,
-        Mpociot\LaravelTestFactoryHelper\TestFactoryHelperServiceProvider::class,
 
         /*
          * Package Service Providers...

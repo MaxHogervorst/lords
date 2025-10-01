@@ -1,5 +1,9 @@
 <?php
 
+namespace Tests\Feature;
+
+use Tests\TestCase;
+
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use App\Models\Member;
 use App\Models\Group;
@@ -250,14 +254,11 @@ class ModelRelationshipTest extends TestCase
     public function testMemberGetFullName()
     {
         $member = new Member();
-        $member->first_name = 'John';
-        $member->last_name = 'Doe';
+        $member->firstname = 'John';
+        $member->lastname = 'Doe';
 
-        // This test will fail because the method uses different property names
-        // This helps identify the bug in the Member model
         $fullName = $member->getFullName();
 
-        // The method should return null or empty since properties don't match
-        $this->assertTrue(empty($fullName) || $fullName === ' ');
+        $this->assertEquals('John Doe', $fullName);
     }
 }

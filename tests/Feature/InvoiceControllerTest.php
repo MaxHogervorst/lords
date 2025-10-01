@@ -1,6 +1,11 @@
 <?php
 
+namespace Tests\Feature;
+
+use Tests\TestCase;
+
 use Illuminate\Foundation\Testing\DatabaseTransactions;
+use Sentinel;
 use App\Models\Member;
 use App\Models\Group;
 use App\Models\Product;
@@ -14,6 +19,8 @@ class InvoiceControllerTest extends TestCase
 {
     use DatabaseTransactions;
 
+    private $adminRole;
+
     public function setUp()
     {
         parent::setUp();
@@ -22,6 +29,13 @@ class InvoiceControllerTest extends TestCase
 
         // Create at least one product to avoid count() issues with Product::all()
         factory(Product::class)->create();
+
+        // Create admin role for tests
+        $this->adminRole = Sentinel::getRoleRepository()->createModel()->firstOrCreate([
+            'slug' => 'admin',
+        ], [
+            'name' => 'Admin',
+        ]);
     }
 
     /**
@@ -29,13 +43,19 @@ class InvoiceControllerTest extends TestCase
      */
     public function testInvoiceIndexIsAccessibleByAdmin()
     {
-        $user = Sentinel::findById(3);
-        Sentinel::login($user);
+        $sentinelUser = Sentinel::registerAndActivate([
+            'email' => 'invoiceadmin@example.com',
+            'password' => 'password',
+        ]);
+        $this->adminRole->users()->attach($sentinelUser);
+        Sentinel::login($sentinelUser);
+        $user = \App\User::find($sentinelUser->id);
 
-        $this->actingAs(\App\User::find(3))
-            ->visit('/invoice')
-            ->dontSee('Unauthorized')
-            ->dontSee('Whoops');
+        $this->actingAs($user)
+            ->get('/invoice')
+            ->assertStatus(200)
+            ->assertDontSee('Unauthorized')
+            ->assertDontSee('Whoops');
     }
 
     /**
@@ -44,7 +64,7 @@ class InvoiceControllerTest extends TestCase
     public function testInvoiceIndexIsNotAccessibleByNonAdmin()
     {
         // Create a regular user without admin role
-        $user = Sentinel::registerAndActivate([
+        $sentinelUser = Sentinel::registerAndActivate([
             'email' => 'regular@example.com',
             'password' => 'password',
         ]);
@@ -60,17 +80,23 @@ class InvoiceControllerTest extends TestCase
      */
     public function testInvoicePageShowsInvoiceGroups()
     {
-        $user = Sentinel::findById(3);
-        Sentinel::login($user);
+        $sentinelUser = Sentinel::registerAndActivate([
+            'email' => 'invoicegroup@example.com',
+            'password' => 'password',
+        ]);
+        $this->adminRole->users()->attach($sentinelUser);
+        Sentinel::login($sentinelUser);
+        $user = \App\User::find($sentinelUser->id);
 
         $invoiceGroup = factory(InvoiceGroup::class)->create([
             'name' => 'Test Invoice Group',
             'status' => true,
         ]);
 
-        $this->actingAs(\App\User::find(3))
-            ->visit('/invoice')
-            ->see('Test Invoice Group');
+        $this->actingAs($user)
+            ->get('/invoice')
+            ->assertStatus(200)
+            ->assertSee('Test Invoice Group');
     }
 
     /**
@@ -78,16 +104,22 @@ class InvoiceControllerTest extends TestCase
      */
     public function testCreateInvoiceGroup()
     {
-        $user = Sentinel::findById(3);
-        Sentinel::login($user);
+        $sentinelUser = Sentinel::registerAndActivate([
+            'email' => 'invoicecreate@example.com',
+            'password' => 'password',
+        ]);
+        $this->adminRole->users()->attach($sentinelUser);
+        Sentinel::login($sentinelUser);
+        $user = \App\User::find($sentinelUser->id);
 
-        $this->actingAs(\App\User::find(3))
+        $this->actingAs($user)
             ->withSession([])
             ->json('POST', '/invoice/storeinvoicegroup', [
                 'invoiceMonth' => 'January 2025',
             ])
-            ->seeJson(['success' => true])
-            ->seeInDatabase('invoice_groups', ['name' => 'January 2025']);
+            ->assertJson(['success' => true]);
+
+        $this->assertDatabaseHas('invoice_groups', ['name' => 'January 2025']);
     }
 
     /**
@@ -95,8 +127,13 @@ class InvoiceControllerTest extends TestCase
      */
     public function testInvoicePdfPageIsAccessible()
     {
-        $user = Sentinel::findById(3);
-        Sentinel::login($user);
+        $sentinelUser = Sentinel::registerAndActivate([
+            'email' => 'invoicepdf@example.com',
+            'password' => 'password',
+        ]);
+        $this->adminRole->users()->attach($sentinelUser);
+        Sentinel::login($sentinelUser);
+        $user = \App\User::find($sentinelUser->id);
 
         $invoiceGroup = factory(InvoiceGroup::class)->create([
             'name' => 'Test Month',
@@ -106,10 +143,11 @@ class InvoiceControllerTest extends TestCase
         // Set current month in cache
         \Cache::put('currentmonth', $invoiceGroup->id, 60);
 
-        $this->actingAs(\App\User::find(3))
-            ->visit('/invoice/pdf')
-            ->dontSee('Unauthorized')
-            ->dontSee('Whoops');
+        $this->actingAs($user)
+            ->get('/invoice/pdf')
+            ->assertStatus(200)
+            ->assertDontSee('Unauthorized')
+            ->assertDontSee('Whoops');
     }
 
     /**
@@ -117,8 +155,13 @@ class InvoiceControllerTest extends TestCase
      */
     public function testSepaGenerationPageIsAccessible()
     {
-        $user = Sentinel::findById(3);
-        Sentinel::login($user);
+        $sentinelUser = Sentinel::registerAndActivate([
+            'email' => 'invoicesepa@example.com',
+            'password' => 'password',
+        ]);
+        $this->adminRole->users()->attach($sentinelUser);
+        Sentinel::login($sentinelUser);
+        $user = \App\User::find($sentinelUser->id);
 
         $invoiceGroup = factory(InvoiceGroup::class)->create([
             'name' => 'SEPA Test Month',
@@ -127,7 +170,7 @@ class InvoiceControllerTest extends TestCase
 
         \Cache::put('currentmonth', $invoiceGroup->id, 60);
 
-        $response = $this->actingAs(\App\User::find(3))
+        $response = $this->actingAs($user)
             ->call('GET', '/invoice/sepa');
 
         // SEPA generation should return 200 or redirect
@@ -139,8 +182,13 @@ class InvoiceControllerTest extends TestCase
      */
     public function testInvoicePageShowsMembersWithOrders()
     {
-        $user = Sentinel::findById(3);
-        Sentinel::login($user);
+        $sentinelUser = Sentinel::registerAndActivate([
+            'email' => 'invoicemember@example.com',
+            'password' => 'password',
+        ]);
+        $this->adminRole->users()->attach($sentinelUser);
+        Sentinel::login($sentinelUser);
+        $user = \App\User::find($sentinelUser->id);
 
         $member = factory(Member::class)->create([
             'firstname' => 'Invoice',
@@ -159,7 +207,7 @@ class InvoiceControllerTest extends TestCase
         ]);
 
         // Test that invoice page loads successfully with member orders
-        $response = $this->actingAs(\App\User::find(3))
+        $response = $this->actingAs($user)
             ->call('GET', '/invoice');
 
         $this->assertEquals(200, $response->getStatusCode());
@@ -170,8 +218,13 @@ class InvoiceControllerTest extends TestCase
      */
     public function testInvoicePageShowsGroupOrders()
     {
-        $user = Sentinel::findById(3);
-        Sentinel::login($user);
+        $sentinelUser = Sentinel::registerAndActivate([
+            'email' => 'invoicegroups@example.com',
+            'password' => 'password',
+        ]);
+        $this->adminRole->users()->attach($sentinelUser);
+        Sentinel::login($sentinelUser);
+        $user = \App\User::find($sentinelUser->id);
 
         $group = factory(Group::class)->create(['name' => 'Test Group']);
         $product = factory(Product::class)->create(['name' => 'Group Beer']);
@@ -186,7 +239,7 @@ class InvoiceControllerTest extends TestCase
         ]);
 
         // Just test that the invoice page loads without error with group orders
-        $response = $this->actingAs(\App\User::find(3))
+        $response = $this->actingAs($user)
             ->call('GET', '/invoice');
 
         $this->assertEquals(200, $response->getStatusCode());
@@ -197,11 +250,18 @@ class InvoiceControllerTest extends TestCase
      */
     public function testInvoiceWithInvoiceLines()
     {
-        $user = Sentinel::findById(3);
-        Sentinel::login($user);
+        $sentinelUser = Sentinel::registerAndActivate([
+            'email' => 'invoicelines@example.com',
+            'password' => 'password',
+        ]);
+        $this->adminRole->users()->attach($sentinelUser);
+        Sentinel::login($sentinelUser);
+        $user = \App\User::find($sentinelUser->id);
+
+        // Use the invoice group created in setUp
+        $invoiceGroup = InvoiceGroup::where('status', true)->first();
 
         $member = factory(Member::class)->create();
-        $invoiceGroup = factory(InvoiceGroup::class)->create();
         $invoiceProduct = factory(InvoiceProduct::class)->create([
             'invoice_group_id' => $invoiceGroup->id,
             'name' => 'Special Item',
@@ -215,10 +275,8 @@ class InvoiceControllerTest extends TestCase
             'invoice_product_price_id' => $invoiceProductPrice->id,
         ]);
 
-        \Cache::put('currentmonth', $invoiceGroup->id, 60);
-
         // Test that invoice page loads successfully with invoice lines
-        $response = $this->actingAs(\App\User::find(3))
+        $response = $this->actingAs($user)
             ->call('GET', '/invoice');
 
         $this->assertEquals(200, $response->getStatusCode());
