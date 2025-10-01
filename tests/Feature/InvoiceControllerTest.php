@@ -21,7 +21,7 @@ class InvoiceControllerTest extends TestCase
 
     private $adminRole;
 
-    public function setUp()
+    public function setUp(): void
     {
         parent::setUp();
         // Clear cache before each test to avoid stale product cache

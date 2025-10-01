@@ -14,7 +14,7 @@ class LinkCheckTest extends TestCase
     private $regularUser;
     private $adminRole;
 
-    public function setUp()
+    public function setUp(): void
     {
         parent::setUp();
 

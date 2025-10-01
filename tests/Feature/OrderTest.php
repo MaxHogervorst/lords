@@ -11,7 +11,7 @@ class OrderTest extends TestCase
 {
     use DatabaseTransactions;
 
-    public function setUp()
+    public function setUp(): void
     {
         parent::setUp();
         // Clear cache before each test

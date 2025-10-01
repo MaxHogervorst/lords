@@ -8,7 +8,6 @@ parameters:
         - '#Call to an undefined method Illuminate\\.*#'
         - '#Access to an undefined property Illuminate\\.*#'
         - '#Call to static method .* on an unknown class Sentinel#'
-        - '#Call to an undefined static method Illuminate\\Support\\Facades\\Input::.*#'
         - '#Call to an undefined static method Offline\\Settings\\Facades\\Settings::.*#'
         - '#Call to an undefined static method Illuminate\\Support\\Facades\\Broadcast::routes#'
         - '#Call to an undefined static method App\\Models\\.*#'

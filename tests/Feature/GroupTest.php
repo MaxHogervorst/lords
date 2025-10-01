@@ -11,7 +11,7 @@ class GroupTest extends TestCase
 {
     use DatabaseTransactions;
 
-    public function setUp()
+    public function setUp(): void
     {
         parent::setUp();
         // Create an active invoice group for tests that need it
