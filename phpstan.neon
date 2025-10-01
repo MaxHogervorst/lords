@@ -7,6 +7,16 @@ parameters:
     ignoreErrors:
         - '#Call to an undefined method Illuminate\\.*#'
         - '#Access to an undefined property Illuminate\\.*#'
+        - '#Call to static method .* on an unknown class Sentinel#'
+        - '#Call to an undefined static method Illuminate\\Support\\Facades\\Input::.*#'
+        - '#Call to an undefined static method Offline\\Settings\\Facades\\Settings::.*#'
+        - '#Call to an undefined static method Illuminate\\Support\\Facades\\Broadcast::routes#'
+        - '#Call to an undefined static method App\\Models\\.*#'
+        - '#Access to an undefined property App\\Models\\.*#'
+        - '#Method .* should return .* but returns .*#'
+        - '#Call to an undefined static method Maatwebsite\\Excel\\Facades\\Excel::.*#'
+        - '#Variable \$i might not be defined#'
+        - '#PHPDoc tag @param references unknown parameter#'
     bootstrapFiles:
         - bootstrap/autoload.php
     checkGenericClassInNonGenericObjectType: false

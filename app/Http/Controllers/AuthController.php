@@ -1,6 +1,6 @@
 <?php namespace App\Http\Controllers;
 
-use Illuminate\Support\Facades\Input;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Response;
 use Illuminate\Support\Facades\Validator;
 
@@ -16,16 +16,16 @@ class AuthController extends Controller
         return view('user.login');
     }
 
-    public function postAuthenticate()
+    public function postAuthenticate(Request $request)
     {
-        $v = Validator::make(Input::all(), ['username' => 'required', 'password' => 'required']);
+        $v = Validator::make($request->all(), ['username' => 'required', 'password' => 'required']);
 
         if (!$v->passes()) {
             return Response::json(['errors' => $v->errors()]);
         } else {
             $credentials = [
-                'email'    => Input::get('username'),
-                'password' => Input::get('password'),
+                'email'    => $request->get('username'),
+                'password' => $request->get('password'),
             ];
 
             if (\Sentinel::forceAuthenticateAndRemember($credentials)) {
