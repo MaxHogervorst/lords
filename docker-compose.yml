@@ -1,0 +1,66 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: lords-app
+    container_name: lords-app
+    restart: unless-stopped
+    working_dir: /var/www
+    volumes:
+      - ./:/var/www
+      - ./storage:/var/www/storage
+      - ./bootstrap/cache:/var/www/bootstrap/cache
+    networks:
+      - lords-network
+    depends_on:
+      - db
+      - redis
+
+  db:
+    image: mysql/mysql-server:5.7
+    container_name: lords-db
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: ${DB_DATABASE:-lords}
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD:-secret}
+      MYSQL_PASSWORD: ${DB_PASSWORD:-secret}
+      MYSQL_USER: ${DB_USERNAME:-lords_user}
+    volumes:
+      - dbdata:/var/lib/mysql
+    ports:
+      - "3306:3306"
+    networks:
+      - lords-network
+    command: --default-authentication-plugin=mysql_native_password --sql-mode=""
+
+  redis:
+    image: redis:alpine
+    container_name: lords-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    networks:
+      - lords-network
+
+  nginx:
+    image: nginx:alpine
+    container_name: lords-nginx
+    restart: unless-stopped
+    ports:
+      - "8000:80"
+    volumes:
+      - ./:/var/www
+      - ./docker/nginx:/etc/nginx/conf.d
+    networks:
+      - lords-network
+    depends_on:
+      - app
+
+networks:
+  lords-network:
+    driver: bridge
+
+volumes:
+  dbdata:
+    driver: local

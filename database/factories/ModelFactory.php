@@ -57,7 +57,7 @@ $factory->define(App\Models\InvoiceProductPrice::class, function (Faker\Generato
         'invoice_product_id' =>  function () {
             return factory(App\Models\InvoiceProduct::class)->create()->id;
         } ,
-        'price' =>  $faker->randomFloat() ,
+        'price' =>  $faker->randomFloat(2, 1, 99) , // 2 decimals, between 1 and 99
         'description' =>  $faker->text ,
     ];
 });
@@ -90,7 +90,7 @@ $factory->define(App\Models\Group::class, function (Faker\Generator $faker) {
 $factory->define(App\Models\Product::class, function (Faker\Generator $faker) {
     return [
         'name' =>  $faker->name ,
-        'price' =>  $faker->randomFloat() ,
+        'price' =>  $faker->randomFloat(2, 1, 99) , // 2 decimals, between 1 and 99
     ];
 });
 
