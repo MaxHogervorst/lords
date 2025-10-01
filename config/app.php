@@ -162,13 +162,14 @@ return [
         Illuminate\Translation\TranslationServiceProvider::class,
         Illuminate\Validation\ValidationServiceProvider::class,
         Illuminate\View\ViewServiceProvider::class,
-        Collective\Html\HtmlServiceProvider::class,
+        // Package auto-discovery enabled for Laravel 5.5+
+        // Collective\Html\HtmlServiceProvider::class, - auto-discovered
         Illuminate\Broadcasting\BroadcastServiceProvider::class,
         Clockwork\Support\Laravel\ClockworkServiceProvider::class,
-        Maatwebsite\Excel\ExcelServiceProvider::class,
+        // Maatwebsite\Excel\ExcelServiceProvider::class, - auto-discovered
         Offline\Settings\SettingsServiceProvider::class,
         Cartalyst\Sentinel\Laravel\SentinelServiceProvider::class,
-        Barryvdh\Debugbar\ServiceProvider::class,
+        // Barryvdh\Debugbar\ServiceProvider::class, - auto-discovered
 
         /*
          * Package Service Providers...

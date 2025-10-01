@@ -30,6 +30,11 @@ class InvoiceControllerTest extends TestCase
         // Create at least one product to avoid count() issues with Product::all()
         factory(Product::class)->create();
 
+        // Create an active invoice group for tests that need it
+        factory(InvoiceGroup::class)->create([
+            'status' => true,
+        ]);
+
         // Create admin role for tests
         $this->adminRole = Sentinel::getRoleRepository()->createModel()->firstOrCreate([
             'slug' => 'admin',
