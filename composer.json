@@ -23,7 +23,7 @@
         "itsgoingd/clockwork": "~1.7",
         "digitick/sepa-xml" : "~1.4",
         "maatwebsite/excel": "*",
-        "phpstan/phpstan": "^0.12"
+        "phpstan/phpstan": "^1.0"
     },
     "autoload": {
         "classmap": [
