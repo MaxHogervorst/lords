@@ -15,6 +15,6 @@ parameters:
         - '#Call to an undefined static method Maatwebsite\\Excel\\Facades\\Excel::.*#'
         - '#Variable \$i might not be defined#'
         - '#PHPDoc tag @param references unknown parameter#'
+        - '#Call to an undefined static method anlutro\\LaravelSettings\\Facade::.*#'
     bootstrapFiles:
         - bootstrap/autoload.php
-    checkGenericClassInNonGenericObjectType: false
