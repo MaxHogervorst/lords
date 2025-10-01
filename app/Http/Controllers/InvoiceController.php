@@ -10,7 +10,7 @@ use Illuminate\Support\Facades\Input;
 use Illuminate\Support\Facades\Response;
 use Illuminate\Support\Facades\Validator;
 use Maatwebsite\Excel\Facades\Excel;
-use Offline\Settings\Facades\Settings;
+use anlutro\LaravelSettings\Facade as Settings;
 
 class InvoiceController extends Controller
 {

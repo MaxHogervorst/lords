@@ -3,7 +3,7 @@
 use Illuminate\Support\Facades\Input;
 use Illuminate\Support\Facades\Response;
 use Illuminate\Support\Facades\Validator;
-use Offline\Settings\Facades\Settings;
+use anlutro\LaravelSettings\Facade as Settings;
 
 class SepaController extends Controller
 {
@@ -51,6 +51,7 @@ class SepaController extends Controller
             Settings::set('creditorMaxMoneyPerTransaction', Input::get('creditorMaxMoneyPerTransaction'));
             Settings::set('creditorMaxTransactionsPerBatch', Input::get('creditorMaxTransactionsPerBatch'));
             Settings::set('ReqdColltnDt', Input::get('ReqdColltnDt'));
+            Settings::save();
 
             return Response::json(['success' => true]);
         }

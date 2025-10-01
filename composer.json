@@ -5,23 +5,24 @@
     "license": "MIT",
     "type": "project",
     "require": {
-        "php": ">=7.1.3",
-        "laravel/framework": "5.8.*",
-        "laravel/tinker": "~1.0",
+        "php": ">=7.2.0",
+        "laravel/framework": "^6.0",
+        "laravel/tinker": "^2.0",
         "cartalyst/sentinel": "*",
-        "laravelcollective/html": "^5.8",
-        "barryvdh/laravel-debugbar": "^3.1"
+        "laravelcollective/html": "^6.0",
+        "barryvdh/laravel-debugbar": "^3.1",
+        "anlutro/l4-settings": "^1.4"
     },
     "require-dev": {
+        "facade/ignition": "^1.4",
         "fzaninotto/faker": "~1.4",
         "mockery/mockery": "0.9.*",
-        "phpunit/phpunit": "^7.5|^8.0",
+        "phpunit/phpunit": "^8.0",
         "symfony/css-selector": "3.1.*",
         "symfony/dom-crawler": "3.1.*",
         "itsgoingd/clockwork": "~1.7",
         "digitick/sepa-xml" : "~1.4",
         "maatwebsite/excel": "*",
-        "offline/persistent-settings": "*",
         "phpstan/phpstan": "^0.12"
     },
     "autoload": {

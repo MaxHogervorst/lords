@@ -286,4 +286,97 @@ class InvoiceControllerTest extends TestCase
 
         $this->assertEquals(200, $response->getStatusCode());
     }
+
+    /**
+     * Test SEPA file generation with actual data
+     */
+    public function testSepaFileGeneration()
+    {
+        // Create admin user
+        $sentinelUser = Sentinel::registerAndActivate([
+            'email' => 'sepatest@example.com',
+            'password' => 'password',
+        ]);
+        $this->adminRole->users()->attach($sentinelUser);
+        Sentinel::login($sentinelUser);
+        $user = \App\User::find($sentinelUser->id);
+
+        // Create invoice group and set as current month
+        $invoiceGroup = factory(InvoiceGroup::class)->create([
+            'name' => 'SEPA Test Month',
+            'status' => true,
+        ]);
+        \Cache::put('currentmonth', $invoiceGroup->id, 60);
+        \Cache::put('invoice_group', $invoiceGroup, 60);
+
+        // Set up SEPA settings
+        \Settings::set('creditorName', 'Test Creditor');
+        \Settings::set('creditorAccountIBAN', 'NL91ABNA0417164300');
+        \Settings::set('creditorAgentBIC', 'ABNANL2A');
+        \Settings::set('creditorId', 'NL00ZZZ000000000000');
+        \Settings::set('creditorPain', 'pain.008.001.02');
+        \Settings::set('creditorMaxMoneyPerBatch', 999999);
+        \Settings::set('creditorMaxMoneyPerTransaction', 100000);
+        \Settings::set('creditorMaxTransactionsPerBatch', 1000);
+        \Settings::set('ReqdColltnDt', 5);
+        \Settings::save();
+
+        // Create a member with bank info and RCUR status (recurring)
+        $member = factory(Member::class)->create([
+            'firstname' => 'John',
+            'lastname' => 'Doe',
+            'iban' => 'NL20INGB0001234567',
+            'bic' => 'INGBNL2A',
+            'had_collection' => true, // RCUR
+        ]);
+
+        // Create a product - note: price is stored on product
+        $product = factory(Product::class)->create([
+            'name' => 'Test Beer',
+            'price' => 2.50,
+        ]);
+
+        // Refresh product cache after creating product
+        \Cache::forget('products');
+        Product::toArrayIdAsKey();
+
+        // Create an order for the member
+        factory(Order::class)->create([
+            'ownerable_id' => $member->id,
+            'ownerable_type' => 'App\\Models\\Member',
+            'product_id' => $product->id,
+            'invoice_group_id' => $invoiceGroup->id,
+            'amount' => 10,
+        ]);
+
+        // Ensure SEPA directory exists
+        $sepaDir = storage_path('SEPA');
+        if (!file_exists($sepaDir)) {
+            mkdir($sepaDir, 0755, true);
+        }
+
+        // Call the SEPA generation endpoint
+        $response = $this->actingAs($user)
+            ->call('GET', '/invoice/sepa');
+
+        // Assert response is successful
+        $this->assertEquals(200, $response->getStatusCode());
+
+        // Check that SEPA XML file was created
+        $files = glob($sepaDir . '/GSRC RCUR *.xml');
+        $this->assertNotEmpty($files, 'SEPA XML file should be generated');
+
+        // Read and verify the XML content
+        $xmlContent = file_get_contents($files[0]);
+        $this->assertStringContainsString('Test Creditor', $xmlContent);
+        $this->assertStringContainsString('NL91ABNA0417164300', $xmlContent);
+        $this->assertStringContainsString('John Doe', $xmlContent);
+        $this->assertStringContainsString('NL20INGB0001234567', $xmlContent);
+        $this->assertStringContainsString('25.00', $xmlContent); // 10 * 2.50
+
+        // Clean up generated files
+        foreach ($files as $file) {
+            unlink($file);
+        }
+    }
 }
