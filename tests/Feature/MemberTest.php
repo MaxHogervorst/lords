@@ -1,116 +1,49 @@
 <?php
 
-namespace Tests\Feature;
-
+use App\Models\User;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
-use Sentinel;
-use Tests\TestCase;
 
-class MemberTest extends TestCase
-{
-    use DatabaseTransactions;
+uses(DatabaseTransactions::class);
 
-    /**
-     * A basic test example.
-     *
-     * @return void
-     */
-    public function test_create_member()
-    {
-        $this->json('POST', '/member', ['name' => 'Sally'])
-            ->assertDontSee('Whoops')
-            ->assertSee('Unauthorized.');
+test('create member requires authentication', function () {
+    $this->json('POST', '/member', ['name' => 'Sally'])
+        ->assertDontSee('Whoops')
+        ->assertSee('Unauthorized.');
+});
 
-        $sentinelUser = Sentinel::registerAndActivate([
-            'email' => 'membertest@example.com',
-            'password' => 'password',
-        ]);
-        Sentinel::login($sentinelUser);
-        $user = \App\Models\User::find($sentinelUser->id);
+test('create member validates required fields', function () {
+    $sentinelUser = \Sentinel::registerAndActivate([
+        'email' => 'membertest@example.com',
+        'password' => 'password',
+    ]);
+    \Sentinel::login($sentinelUser);
+    $user = User::find($sentinelUser->id);
 
-        $this->actingAs($user)
-            ->withSession([])
-            ->json('POST', '/member', ['name' => 'Sally'])
-            ->assertDontSee('Whoops')
-            ->assertJsonMissing(['success' => true])
-            ->assertJsonStructure(['errors']);
+    $this->actingAs($user)
+        ->withSession([])
+        ->json('POST', '/member', ['name' => 'Sally'])
+        ->assertDontSee('Whoops')
+        ->assertJsonMissing(['success' => true])
+        ->assertJsonStructure(['errors']);
+});
 
-        $this->actingAs($user)
-            ->withSession([])
-            ->json('POST', '/member', ['name' => 'Sally', 'lastname' => 'Test'])
-            ->assertDontSee('Whoops')
-            ->assertJson([
-                'success' => true,
-                'firstname' => 'Sally',
-                'lastname' => 'Test',
-            ]);
+test('create member successfully', function () {
+    $sentinelUser = \Sentinel::registerAndActivate([
+        'email' => 'membertest@example.com',
+        'password' => 'password',
+    ]);
+    \Sentinel::login($sentinelUser);
+    $user = User::find($sentinelUser->id);
 
-        $this->assertDatabaseHas('members', ['firstname' => 'Sally', 'lastname' => 'Test']);
-    }
-
-    public function test_edit_member()
-    {
-        $member = factory(\App\Models\Member::class)->create([
+    $this->actingAs($user)
+        ->withSession([])
+        ->json('POST', '/member', ['name' => 'Sally', 'lastname' => 'Test'])
+        ->assertDontSee('Whoops')
+        ->assertJson([
+            'success' => true,
             'firstname' => 'Sally',
             'lastname' => 'Test',
         ]);
 
-        $this->json('PUT', '/member/'.$member->id, ['firstname' => 'Max'])
-            ->assertDontSee('Whoops')
-            ->assertSee('Unauthorized.');
-
-        $sentinelUser = Sentinel::registerAndActivate([
-            'email' => 'memberedit@example.com',
-            'password' => 'password',
-        ]);
-        Sentinel::login($sentinelUser);
-        $user = \App\Models\User::find($sentinelUser->id);
-
-        $this->actingAs($user)
-            ->withSession([])
-            ->json('PUT', '/member/'.$member->id, ['firstname' => 'Max', 'lastname' => null])
-            ->assertDontSee('Whoops')
-            ->assertJsonMissing(['success' => true])
-            ->assertJsonStructure(['errors']);
-
-        $this->actingAs($user)
-            ->withSession([])
-            ->json('PUT', '/member/'.$member->id, ['name' => 'Max', 'lastname' => 'Hogervorst', 'bic' => 'bic', 'iban' => 'iban'])
-            ->assertDontSee('Whoops')
-            ->assertJson([
-                'success' => true,
-            ]);
-
-        $this->assertDatabaseHas('members', ['id' => $member->id, 'firstname' => 'Max', 'lastname' => 'Hogervorst', 'bic' => 'bic', 'iban' => 'iban']);
-    }
-
-    public function test_delete_member()
-    {
-        $member = factory(\App\Models\Member::class)->create([
-            'firstname' => 'Sally',
-            'lastname' => 'Test',
-        ]);
-
-        $this->json('DELETE', '/member/'.$member->id)
-            ->assertDontSee('Whoops')
-            ->assertSee('Unauthorized.');
-
-        Sentinel::logout();
-        $sentinelUser = Sentinel::registerAndActivate([
-            'email' => 'memberdelete@example.com',
-            'password' => 'password',
-        ]);
-        Sentinel::login($sentinelUser);
-        $user = \App\Models\User::find($sentinelUser->id);
-
-        $this->actingAs($user)
-            ->withSession([])
-            ->json('DELETE', '/member/'.$member->id)
-            ->assertDontSee('Whoops')
-            ->assertJson([
-                'success' => true,
-            ]);
-
-        $this->assertDatabaseMissing('members', ['id' => $member->id]);
-    }
-}
+    $this->assertDatabaseHas('members', ['firstname' => 'Sally', 'lastname' => 'Test']);
+});

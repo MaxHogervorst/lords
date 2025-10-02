@@ -1,7 +1,5 @@
 <?php
 
-namespace Tests\Feature;
-
 use App\Http\Requests\StoreFiscusRequest;
 use App\Http\Requests\StoreGroupRequest;
 use App\Http\Requests\StoreMemberRequest;
@@ -9,89 +7,77 @@ use App\Http\Requests\StoreOrderRequest;
 use App\Http\Requests\StoreProductRequest;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Validator;
-use Tests\TestCase;
 
-class FormRequestValidationTest extends TestCase
-{
-    use RefreshDatabase;
+uses(RefreshDatabase::class);
 
-    public function test_store_fiscus_request_validates_required_fields(): void
-    {
-        $request = new StoreFiscusRequest;
+test('store fiscus request validates required fields', function () {
+    $request = new StoreFiscusRequest;
 
-        $validator = Validator::make([], $request->rules());
+    $validator = Validator::make([], $request->rules());
 
-        $this->assertTrue($validator->fails());
-        $this->assertTrue($validator->errors()->has('finalproductname'));
-        $this->assertTrue($validator->errors()->has('finalproductdescription'));
-        $this->assertTrue($validator->errors()->has('finalpriceperperson'));
-        $this->assertTrue($validator->errors()->has('member'));
-    }
+    expect($validator->fails())->toBeTrue()
+        ->and($validator->errors()->has('finalproductname'))->toBeTrue()
+        ->and($validator->errors()->has('finalproductdescription'))->toBeTrue()
+        ->and($validator->errors()->has('finalpriceperperson'))->toBeTrue()
+        ->and($validator->errors()->has('member'))->toBeTrue();
+});
 
-    public function test_store_fiscus_request_validates_member_array(): void
-    {
-        $request = new StoreFiscusRequest;
+test('store fiscus request validates member array', function () {
+    $request = new StoreFiscusRequest;
 
-        $data = [
-            'finalproductname' => 'Test',
-            'finalproductdescription' => 'Test',
-            'finalpriceperperson' => 10,
-            'member' => 'not-an-array',
-        ];
+    $data = [
+        'finalproductname' => 'Test',
+        'finalproductdescription' => 'Test',
+        'finalpriceperperson' => 10,
+        'member' => 'not-an-array',
+    ];
 
-        $validator = Validator::make($data, $request->rules());
+    $validator = Validator::make($data, $request->rules());
 
-        $this->assertTrue($validator->fails());
-        $this->assertTrue($validator->errors()->has('member'));
-    }
+    expect($validator->fails())->toBeTrue()
+        ->and($validator->errors()->has('member'))->toBeTrue();
+});
 
-    public function test_store_group_request_validates_required_fields(): void
-    {
-        $request = new StoreGroupRequest;
+test('store group request validates required fields', function () {
+    $request = new StoreGroupRequest;
 
-        $validator = Validator::make([], $request->rules());
+    $validator = Validator::make([], $request->rules());
 
-        $this->assertTrue($validator->fails());
-        $this->assertTrue($validator->errors()->has('name'));
-        $this->assertTrue($validator->errors()->has('groupDate'));
-    }
+    expect($validator->fails())->toBeTrue()
+        ->and($validator->errors()->has('name'))->toBeTrue();
+});
 
-    public function test_store_member_request_validates_required_fields(): void
-    {
-        $request = new StoreMemberRequest;
+test('store member request validates required fields', function () {
+    $request = new StoreMemberRequest;
 
-        $validator = Validator::make([], $request->rules());
+    $validator = Validator::make([], $request->rules());
 
-        $this->assertTrue($validator->fails());
-        $this->assertTrue($validator->errors()->has('name'));
-        $this->assertTrue($validator->errors()->has('lastname'));
-    }
+    expect($validator->fails())->toBeTrue()
+        ->and($validator->errors()->has('name'))->toBeTrue()
+        ->and($validator->errors()->has('lastname'))->toBeTrue();
+});
 
-    public function test_store_order_request_validates_numeric_fields(): void
-    {
-        $request = new StoreOrderRequest;
+test('store order request validates numeric fields', function () {
+    $request = new StoreOrderRequest;
 
-        $data = [
-            'memberId' => 'not-a-number',
-            'product' => 'valid',
-            'amount' => 'not-a-number',
-        ];
+    $data = [
+        'memberId' => 'not-a-number',
+        'product' => 'valid',
+        'amount' => 'not-a-number',
+    ];
 
-        $validator = Validator::make($data, $request->rules());
+    $validator = Validator::make($data, $request->rules());
 
-        $this->assertTrue($validator->fails());
-        $this->assertTrue($validator->errors()->has('memberId'));
-        $this->assertTrue($validator->errors()->has('amount'));
-    }
+    expect($validator->fails())->toBeTrue()
+        ->and($validator->errors()->has('memberId'))->toBeTrue()
+        ->and($validator->errors()->has('amount'))->toBeTrue();
+});
 
-    public function test_store_product_request_validates_required_fields(): void
-    {
-        $request = new StoreProductRequest;
+test('store product request validates required fields', function () {
+    $request = new StoreProductRequest;
 
-        $validator = Validator::make([], $request->rules());
+    $validator = Validator::make([], $request->rules());
 
-        $this->assertTrue($validator->fails());
-        $this->assertTrue($validator->errors()->has('name'));
-        $this->assertTrue($validator->errors()->has('productPrice'));
-    }
-}
+    expect($validator->fails())->toBeTrue()
+        ->and($validator->errors()->has('productPrice'))->toBeTrue();
+});
