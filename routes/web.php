@@ -12,46 +12,66 @@ use App\Http\Controllers\OrderController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\SepaController;
 
-Route::post('invoice/setperson', [InvoiceController::class, 'postSetPerson']);
-Route::post('invoice/setpersonalinvoicegroup', [InvoiceController::class, 'postSetPersonalInvoiceGroup']);
-Route::get('check-bill', [InvoiceController::class, 'getPerPerson']);
-Route::get('auth/login', [AuthController::class, 'getLogin']);
-Route::get('auth/logout', [AuthController::class, 'getLogout']);
-Route::post('auth/authenticate', [AuthController::class, 'postAuthenticate']);
-Route::group(['middleware' => ['auth', 'admin']], function () {
-    Route::get('downloadSEPA/{filename}', function ($filename) {
-        // Check if file exists in app/storage/file folder
-        $file_path = storage_path().'/SEPA/'.$filename;
-        if (file_exists($file_path)) {
-            // Send Download
-            return response()->download($file_path, $filename, [
-                'Content-Length: '.filesize($file_path),
-            ]);
-        } else {
-            // Error
-            exit('Requested file does not exist on our server!');
-        }
+// Guest routes
+Route::get('auth/login', [AuthController::class, 'getLogin'])->name('auth.login');
+Route::post('auth/authenticate', [AuthController::class, 'postAuthenticate'])->name('auth.authenticate');
+
+// Public invoice check
+Route::get('check-bill', [InvoiceController::class, 'getPerPerson'])->name('invoice.check-bill');
+
+// Authenticated routes
+Route::middleware('auth')->group(function () {
+    // Auth
+    Route::get('auth/logout', [AuthController::class, 'getLogout'])->name('auth.logout');
+
+    // Home
+    Route::get('/', [HomeController::class, 'getIndex'])->name('home');
+
+    // Invoice management
+    Route::prefix('invoice')->name('invoice.')->group(function () {
+        Route::post('setperson', [InvoiceController::class, 'postSetPerson'])->name('setperson');
+        Route::post('setpersonalinvoicegroup', [InvoiceController::class, 'postSetPersonalInvoiceGroup'])->name('setpersonalinvoicegroup');
     });
 
-    Route::resource('sepa', SepaController::class, ['only' => ['index', 'store']]);
-    Route::get('fiscus/invoiceprices/{invoiceProduct}', [FiscusController::class, 'getInvoiceprices']);
-    Route::get('fiscus/allinvoicelines/{invoiceProduct}', [FiscusController::class, 'getAllinvoicelines']);
-    Route::get('fiscus/specificinvoicelines/{invoiceProductPrice}', [FiscusController::class, 'getSpecificinvoicelines']);
-    Route::get('fiscus/edit', [FiscusController::class, 'getEdit']);
-    Route::resource('fiscus', FiscusController::class, ['except' => ['edit']]);
-    Route::get('invoice', [InvoiceController::class, 'getIndex']);
-    Route::get('invoice/pdf', [InvoiceController::class, 'getPdf']);
-    Route::get('invoice/excel', [InvoiceController::class, 'getExcel']);
-    Route::get('invoice/sepa', [InvoiceController::class, 'getSepa']);
-    Route::post('invoice/storeinvoicegroup', [InvoiceController::class, 'postStoreinvoicegroup']);
-    Route::post('invoice/selectinvoicegroup', [InvoiceController::class, 'postSelectinvoicegroup']);
-});
-Route::group(['middleware' => 'auth'], function () {
-    Route::post('order/store/{type}', [OrderController::class, 'postStore']);
-    Route::post('group/addmember', [GroupController::class, 'postAddMember']);
-    Route::get('group/deletegroupmember/{groupMember}', [GroupController::class, 'getDeletegroupmember']);
+    // Orders
+    Route::post('order/store/{type}', [OrderController::class, 'postStore'])->name('order.store');
+
+    // Groups
+    Route::prefix('group')->name('group.')->group(function () {
+        Route::post('addmember', [GroupController::class, 'postAddMember'])->name('addmember');
+        Route::get('deletegroupmember/{groupMember}', [GroupController::class, 'getDeletegroupmember'])->name('deletegroupmember');
+    });
     Route::resource('group', GroupController::class);
+
+    // Resources
     Route::resource('product', ProductController::class);
     Route::resource('member', MemberController::class);
-    Route::get('/', [HomeController::class, 'getIndex'])->name('home');
+});
+
+// Admin routes
+Route::middleware(['auth', 'admin'])->group(function () {
+    // SEPA
+    Route::prefix('sepa')->name('sepa.')->group(function () {
+        Route::get('download/{filename}', [SepaController::class, 'download'])->name('download');
+    });
+    Route::resource('sepa', SepaController::class)->only(['index', 'store']);
+
+    // Fiscus
+    Route::prefix('fiscus')->name('fiscus.')->group(function () {
+        Route::get('invoiceprices/{invoiceProduct}', [FiscusController::class, 'getInvoiceprices'])->name('invoiceprices');
+        Route::get('allinvoicelines/{invoiceProduct}', [FiscusController::class, 'getAllinvoicelines'])->name('allinvoicelines');
+        Route::get('specificinvoicelines/{invoiceProductPrice}', [FiscusController::class, 'getSpecificinvoicelines'])->name('specificinvoicelines');
+        Route::get('edit', [FiscusController::class, 'getEdit'])->name('edit');
+    });
+    Route::resource('fiscus', FiscusController::class)->except(['edit'])->parameters(['fiscus' => 'invoiceProduct']);
+
+    // Invoice admin
+    Route::prefix('invoice')->name('invoice.')->group(function () {
+        Route::get('/', [InvoiceController::class, 'getIndex'])->name('index');
+        Route::get('pdf', [InvoiceController::class, 'getPdf'])->name('pdf');
+        Route::get('excel', [InvoiceController::class, 'getExcel'])->name('excel');
+        Route::get('sepa', [InvoiceController::class, 'getSepa'])->name('sepa');
+        Route::post('storeinvoicegroup', [InvoiceController::class, 'postStoreinvoicegroup'])->name('storeinvoicegroup');
+        Route::post('selectinvoicegroup', [InvoiceController::class, 'postSelectinvoicegroup'])->name('selectinvoicegroup');
+    });
 });

@@ -23,7 +23,7 @@ test('create group successfully via JSON', function () {
     $response = $this
         ->json('POST', '/group', [
             'name' => 'Party',
-            'groupDate' => '2025-10-02',
+            'groupdate' => '2025-10-02',
         ]);
 
     $response->assertJson(['success' => true]);

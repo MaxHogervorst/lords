@@ -9,6 +9,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\View\View;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 class SepaController extends Controller
 {
@@ -55,5 +56,19 @@ class SepaController extends Controller
 
             return response()->json(['success' => true]);
         }
+    }
+
+    /**
+     * Download a SEPA file.
+     */
+    public function download(string $filename): BinaryFileResponse
+    {
+        $filePath = storage_path('SEPA/'.$filename);
+
+        abort_if(! file_exists($filePath), 404, 'Requested file does not exist on our server!');
+
+        return response()->download($filePath, $filename, [
+            'Content-Length' => filesize($filePath),
+        ]);
     }
 }
