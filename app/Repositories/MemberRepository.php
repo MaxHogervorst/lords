@@ -31,7 +31,7 @@ class MemberRepository extends BaseRepository
      */
     public function getMembersWithRcur(array $relations = []): Collection
     {
-        $query = $this->model
+        $query = $this->model->newQuery()
             ->whereNotNull('bic')
             ->whereNotNull('iban')
             ->where('had_collection', true);
@@ -48,7 +48,7 @@ class MemberRepository extends BaseRepository
      */
     public function getMembersWithFrst(array $relations = []): Collection
     {
-        $query = $this->model
+        $query = $this->model->newQuery()
             ->whereNotNull('bic')
             ->whereNotNull('iban')
             ->where('had_collection', false);
@@ -65,7 +65,7 @@ class MemberRepository extends BaseRepository
      */
     public function getMembersWithoutBankInfo(): Collection
     {
-        return $this->model
+        return $this->model->newQuery()
             ->whereNull('bic')
             ->whereNull('iban')
             ->get();

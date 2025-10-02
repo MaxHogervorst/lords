@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Services;
 
 use App\Enums\SepaSequenceType;
-use App\Models\Member;
+use App\Repositories\MemberRepository;
 use DateTime;
 use Digitick\Sepa\TransferFile\Factory\TransferFileFacadeFactory;
 use Illuminate\Support\Facades\Storage;
@@ -16,7 +16,8 @@ class SepaGenerationService
     private string $currentPaymentInfo = '';
 
     public function __construct(
-        private readonly InvoiceCalculationService $calculationService
+        private readonly InvoiceCalculationService $calculationService,
+        private readonly MemberRepository $memberRepository
     ) {}
 
     /**
@@ -42,11 +43,9 @@ class SepaGenerationService
         $members = ['RCUR' => [], 'FRST' => []];
 
         // Recurring members
-        $memberRcur = Member::whereNotNull('bic')
-            ->whereNotNull('iban')
-            ->rcur()
-            ->with(['orders', 'groups.orders.product', 'invoice_lines.productprice.product'])
-            ->get();
+        $memberRcur = $this->memberRepository->getMembersWithRcur(
+            ['orders.product', 'groups.orders.product', 'invoice_lines.productprice.product']
+        );
 
         foreach ($memberRcur as $member) {
             $info = $this->calculationService->generateMemberInfo($member);
@@ -56,11 +55,9 @@ class SepaGenerationService
         }
 
         // First-time members
-        $memberFrst = Member::whereNotNull('bic')
-            ->whereNotNull('iban')
-            ->frst()
-            ->with(['orders', 'groups.orders.product', 'invoice_lines.productprice.product'])
-            ->get();
+        $memberFrst = $this->memberRepository->getMembersWithFrst(
+            ['orders.product', 'groups.orders.product', 'invoice_lines.productprice.product']
+        );
 
         foreach ($memberFrst as $member) {
             $info = $this->calculationService->generateMemberInfo($member);
@@ -241,6 +238,6 @@ class SepaGenerationService
      */
     public function getMembersWithoutBankInfo()
     {
-        return Member::whereNull('bic')->whereNull('iban')->get();
+        return $this->memberRepository->getMembersWithoutBankInfo();
     }
 }

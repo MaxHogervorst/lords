@@ -9,11 +9,15 @@ use App\Models\InvoiceGroup;
 use App\Models\Member;
 use App\Models\Order;
 use App\Models\Product;
+use App\Repositories\OrderRepository;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 
 class OrderService
 {
+    public function __construct(
+        private readonly OrderRepository $orderRepository
+    ) {}
     /**
      * Create an order for a member or group.
      */
@@ -92,9 +96,7 @@ class OrderService
      */
     public function getOrdersByInvoiceGroup(InvoiceGroup $invoiceGroup): Collection
     {
-        return Order::where('invoice_group_id', $invoiceGroup->id)
-            ->with(['product', 'ownerable'])
-            ->get();
+        return $this->orderRepository->getByInvoiceGroup($invoiceGroup, ['product', 'ownerable']);
     }
 
     /**
@@ -134,13 +136,7 @@ class OrderService
      */
     public function getAllWithRelations(array $relations = []): Collection
     {
-        $query = Order::query();
-
-        if (!empty($relations)) {
-            $query->with($relations);
-        }
-
-        return $query->get();
+        return $this->orderRepository->all(['*'], $relations);
     }
 
     /**
@@ -151,9 +147,7 @@ class OrderService
         $orders = collect();
 
         foreach ($ordersData as $orderData) {
-            $order = new Order();
-            $order->fill($orderData);
-            $order->save();
+            $order = $this->orderRepository->create($orderData);
             $orders->push($order);
         }
 

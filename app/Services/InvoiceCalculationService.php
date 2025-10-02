@@ -7,16 +7,25 @@ namespace App\Services;
 use App\Models\InvoiceGroup;
 use App\Models\InvoiceProduct;
 use App\Models\Member;
-use App\Models\Product;
+use App\Repositories\InvoiceProductRepository;
+use App\Repositories\InvoiceRepository;
+use App\Repositories\MemberRepository;
+use App\Repositories\ProductRepository;
 
 class InvoiceCalculationService
 {
+    public function __construct(
+        private readonly InvoiceRepository $invoiceRepository,
+        private readonly ProductRepository $productRepository,
+        private readonly InvoiceProductRepository $invoiceProductRepository,
+        private readonly MemberRepository $memberRepository
+    ) {}
     /**
      * Calculate total amount for a member including orders, group orders, and invoice lines.
      */
     public function calculateMemberTotal(Member $member, ?InvoiceGroup $invoiceGroup = null): float
     {
-        $invoiceGroup = $invoiceGroup ?? InvoiceGroup::getCurrentMonth();
+        $invoiceGroup = $invoiceGroup ?? $this->invoiceRepository->getCurrentMonth();
 
         $total = 0.0;
         $total += $this->calculateMemberOrders($member, $invoiceGroup);
@@ -31,9 +40,9 @@ class InvoiceCalculationService
      */
     public function calculateMemberOrders(Member $member, ?InvoiceGroup $invoiceGroup = null): float
     {
-        $invoiceGroup = $invoiceGroup ?? InvoiceGroup::getCurrentMonth();
+        $invoiceGroup = $invoiceGroup ?? $this->invoiceRepository->getCurrentMonth();
         $price = 0.0;
-        $products = Product::toArrayIdAsKey();
+        $products = $this->productRepository->getAllAsArrayIdAsKey();
 
         foreach ($member->orders()->where('invoice_group_id', '=', $invoiceGroup->id)->get() as $order) {
             $price += $order->amount * $products[$order->product_id]['price'];
@@ -47,9 +56,9 @@ class InvoiceCalculationService
      */
     public function calculateGroupOrders(Member $member, ?InvoiceGroup $invoiceGroup = null): float
     {
-        $invoiceGroup = $invoiceGroup ?? InvoiceGroup::getCurrentMonth();
+        $invoiceGroup = $invoiceGroup ?? $this->invoiceRepository->getCurrentMonth();
         $price = 0.0;
-        $products = Product::toArrayIdAsKey();
+        $products = $this->productRepository->getAllAsArrayIdAsKey();
 
         foreach ($member->groups()->where('invoice_group_id', '=', $invoiceGroup->id)->get() as $group) {
             $totalPrice = 0.0;
@@ -87,7 +96,7 @@ class InvoiceCalculationService
      */
     public function generateMemberInfo(Member $member, ?InvoiceGroup $invoiceGroup = null): ?array
     {
-        $invoiceGroup = $invoiceGroup ?? InvoiceGroup::getCurrentMonth();
+        $invoiceGroup = $invoiceGroup ?? $this->invoiceRepository->getCurrentMonth();
         $amount = $this->calculateMemberTotal($member, $invoiceGroup);
 
         if ($amount <= 0) {
@@ -122,8 +131,11 @@ class InvoiceCalculationService
         $result = [];
         $total = 0.0;
 
-        $members = Member::with('orders.product', 'groups.orders.product', 'invoice_lines.productprice.product')->get();
-        $invoiceProducts = InvoiceProduct::where('invoice_group_id', '=', $invoiceGroup->id)->get();
+        $members = $this->memberRepository->all(
+            ['*'],
+            ['orders.product', 'groups.orders.product', 'invoice_lines.productprice.product']
+        );
+        $invoiceProducts = $this->invoiceProductRepository->getByInvoiceGroup($invoiceGroup);
 
         foreach ($members as $member) {
             $memberInfo = [];

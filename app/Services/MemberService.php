@@ -6,22 +6,20 @@ namespace App\Services;
 
 use App\Models\Group;
 use App\Models\Member;
+use App\Repositories\MemberRepository;
 use Illuminate\Database\Eloquent\Collection;
 
 class MemberService
 {
+    public function __construct(
+        private readonly MemberRepository $memberRepository
+    ) {}
     /**
      * Get all members with relationships.
      */
     public function getAllWithRelations(array $relations = []): Collection
     {
-        $query = Member::query();
-
-        if (!empty($relations)) {
-            $query->with($relations);
-        }
-
-        return $query->get();
+        return $this->memberRepository->all(['*'], $relations);
     }
 
     /**
@@ -29,13 +27,7 @@ class MemberService
      */
     public function getByIdWithRelations(int $id, array $relations = []): ?Member
     {
-        $query = Member::query();
-
-        if (!empty($relations)) {
-            $query->with($relations);
-        }
-
-        return $query->find($id);
+        return $this->memberRepository->find($id, ['*'], $relations);
     }
 
     /**
@@ -43,11 +35,7 @@ class MemberService
      */
     public function create(array $data): Member
     {
-        $member = new Member();
-        $member->fill($data);
-        $member->save();
-
-        return $member;
+        return $this->memberRepository->create($data);
     }
 
     /**
@@ -55,10 +43,7 @@ class MemberService
      */
     public function update(Member $member, array $data): Member
     {
-        $member->fill($data);
-        $member->save();
-
-        return $member;
+        return $this->memberRepository->update($member, $data);
     }
 
     /**
@@ -66,7 +51,7 @@ class MemberService
      */
     public function delete(Member $member): bool
     {
-        return $member->delete();
+        return $this->memberRepository->delete($member);
     }
 
     /**
@@ -74,7 +59,7 @@ class MemberService
      */
     public function findByLastnameAndIban(string $lastname, string $iban): ?Member
     {
-        return Member::where(['lastname' => $lastname, 'iban' => $iban])->first();
+        return $this->memberRepository->findByLastnameAndIban($lastname, $iban);
     }
 
     /**
@@ -82,15 +67,7 @@ class MemberService
      */
     public function getMembersWithRcur(array $relations = []): Collection
     {
-        $query = Member::whereNotNull('bic')
-            ->whereNotNull('iban')
-            ->rcur();
-
-        if (!empty($relations)) {
-            $query->with($relations);
-        }
-
-        return $query->get();
+        return $this->memberRepository->getMembersWithRcur($relations);
     }
 
     /**
@@ -98,15 +75,7 @@ class MemberService
      */
     public function getMembersWithFrst(array $relations = []): Collection
     {
-        $query = Member::whereNotNull('bic')
-            ->whereNotNull('iban')
-            ->frst();
-
-        if (!empty($relations)) {
-            $query->with($relations);
-        }
-
-        return $query->get();
+        return $this->memberRepository->getMembersWithFrst($relations);
     }
 
     /**
@@ -114,9 +83,7 @@ class MemberService
      */
     public function getMembersWithoutBankInfo(): Collection
     {
-        return Member::whereNull('bic')
-            ->whereNull('iban')
-            ->get();
+        return $this->memberRepository->getMembersWithoutBankInfo();
     }
 
     /**

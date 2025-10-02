@@ -6,25 +6,33 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreFiscusRequest;
 use App\Http\Requests\UpdateFiscusRequest;
-use App\Models\InvoiceGroup;
-use App\Models\InvoiceLine;
 use App\Models\InvoiceProduct;
 use App\Models\InvoiceProductPrice;
-use App\Models\Member;
+use App\Repositories\InvoiceLineRepository;
+use App\Repositories\InvoiceProductRepository;
+use App\Repositories\InvoiceRepository;
+use App\Repositories\MemberRepository;
 use App\Services\FiscusService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\View\View;
 
 class FiscusController extends Controller
 {
-    public function __construct(protected FiscusService $fiscusService) {}
+    public function __construct(
+        protected FiscusService $fiscusService,
+        private readonly InvoiceProductRepository $invoiceProductRepository,
+        private readonly MemberRepository $memberRepository,
+        private readonly InvoiceRepository $invoiceRepository,
+        private readonly InvoiceLineRepository $invoiceLineRepository
+    ) {}
 
     /**
      * Display a listing of the resource.
      */
     public function index(): View
     {
-        $invoice_products = InvoiceProduct::where('invoice_group_id', '=', InvoiceGroup::getCurrentMonth()->id)->get();
+        $currentMonth = $this->invoiceRepository->getCurrentMonth();
+        $invoice_products = $this->invoiceProductRepository->getByInvoiceGroup($currentMonth);
 
         return view('fiscus.index')->with('invoice_products', $invoice_products);
     }
@@ -34,7 +42,7 @@ class FiscusController extends Controller
      */
     public function create(): View
     {
-        $members = Member::all();
+        $members = $this->memberRepository->all();
 
         return view('fiscus.create')->with('members', $members);
     }
@@ -45,9 +53,9 @@ class FiscusController extends Controller
     public function store(StoreFiscusRequest $request): JsonResponse
     {
         $validated = $request->validated();
-        $currentmonth = InvoiceGroup::getCurrentMonth()->id;
+        $currentMonth = $this->invoiceRepository->getCurrentMonth();
 
-        $result = $this->fiscusService->createInvoiceProduct($validated, $currentmonth);
+        $result = $this->fiscusService->createInvoiceProduct($validated, $currentMonth->id);
 
         return response()->json([
             'success' => true,
@@ -62,8 +70,9 @@ class FiscusController extends Controller
      */
     public function getEdit(): View
     {
-        $members = Member::all();
-        $invoiceproducts = InvoiceProduct::where('invoice_group_id', '=', InvoiceGroup::getCurrentMonth()->id)->get();
+        $members = $this->memberRepository->all();
+        $currentMonth = $this->invoiceRepository->getCurrentMonth();
+        $invoiceproducts = $this->invoiceProductRepository->getByInvoiceGroup($currentMonth);
 
         return view('fiscus.edit')->with('members', $members)
             ->with('products', $invoiceproducts);
@@ -76,9 +85,7 @@ class FiscusController extends Controller
 
     public function getAllinvoicelines(InvoiceProduct $invoiceProduct): JsonResponse
     {
-        $lines = InvoiceLine::whereHas('productprice', function ($query) use ($invoiceProduct) {
-            $query->where('invoice_product_id', $invoiceProduct->id);
-        })->get();
+        $lines = $this->invoiceLineRepository->getByInvoiceProduct($invoiceProduct);
 
         return response()->json($lines);
     }

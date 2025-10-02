@@ -6,14 +6,17 @@ namespace App\Services;
 
 use App\Exports\InvoicesExport;
 use App\Models\InvoiceGroup;
-use App\Models\InvoiceProduct;
+use App\Repositories\InvoiceProductRepository;
+use App\Repositories\InvoiceRepository;
 use Maatwebsite\Excel\Facades\Excel;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 class InvoiceExportService
 {
     public function __construct(
-        private readonly InvoiceCalculationService $calculationService
+        private readonly InvoiceCalculationService $calculationService,
+        private readonly InvoiceRepository $invoiceRepository,
+        private readonly InvoiceProductRepository $invoiceProductRepository
     ) {}
 
     /**
@@ -21,10 +24,10 @@ class InvoiceExportService
      */
     public function exportToExcel(?InvoiceGroup $invoiceGroup = null): BinaryFileResponse
     {
-        $invoiceGroup = $invoiceGroup ?? InvoiceGroup::getCurrentMonth();
+        $invoiceGroup = $invoiceGroup ?? $this->invoiceRepository->getCurrentMonth();
 
         $excelData = $this->calculationService->buildExcelData($invoiceGroup);
-        $products = InvoiceProduct::where('invoice_group_id', '=', $invoiceGroup->id)->get();
+        $products = $this->invoiceProductRepository->getByInvoiceGroup($invoiceGroup);
 
         return Excel::download(
             new InvoicesExport($excelData['data'], $products, $excelData['total'], $invoiceGroup),
