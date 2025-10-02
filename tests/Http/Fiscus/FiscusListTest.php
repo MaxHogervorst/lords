@@ -60,5 +60,5 @@ test('fiscus requires admin authentication', function () {
 
     $response = $this->get('/fiscus');
 
-    $response->assertRedirect('/');
+    $response->assertForbidden();
 });

@@ -47,16 +47,15 @@ class SepaControllerTest extends TestCase
      */
     public function test_sepa_settings_page_is_not_accessible_by_non_admin(): void
     {
-        \App\Models\User::factory()->create([
+        $user = \App\Models\User::factory()->create([
             'email' => 'regular@example.com',
             'password' => bcrypt('password'),
             'is_admin' => false,
         ]);
 
-        $response = $this->call('GET', '/sepa');
+        $response = $this->actingAs($user)->get('/sepa');
 
-        // Should redirect or show unauthorized
-        $this->assertEquals(302, $response->getStatusCode());
+        $response->assertForbidden();
     }
 
     /**

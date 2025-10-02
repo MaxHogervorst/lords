@@ -30,7 +30,7 @@ test('invoice page requires admin authentication', function () {
 
     $response = $this->get('/invoice');
 
-    $response->assertRedirect('/');
+    $response->assertForbidden();
 });
 
 test('select invoice group successfully', function () {

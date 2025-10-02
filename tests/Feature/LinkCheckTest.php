@@ -115,7 +115,7 @@ class LinkCheckTest extends TestCase
         $response = $this->actingAs($regularUser)
             ->withSession([])
             ->get('/fiscus');
-        $this->assertEquals(302, $response->getStatusCode());
+        $this->assertEquals(403, $response->getStatusCode());
     }
 
     public function test_invoice()
@@ -136,7 +136,7 @@ class LinkCheckTest extends TestCase
         $response = $this->actingAs($regularUser)
             ->withSession([])
             ->get('/invoice');
-        $this->assertEquals(302, $response->getStatusCode());
+        $this->assertEquals(403, $response->getStatusCode());
     }
 
     public function test_sepa()
@@ -157,6 +157,6 @@ class LinkCheckTest extends TestCase
         $response = $this->actingAs($regularUser)
             ->withSession([])
             ->get('/sepa');
-        $this->assertEquals(302, $response->getStatusCode());
+        $this->assertEquals(403, $response->getStatusCode());
     }
 }

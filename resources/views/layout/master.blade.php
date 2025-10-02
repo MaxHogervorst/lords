@@ -85,7 +85,7 @@
 						<li><a href="{{ url('group') }}" {!! (Request::is('*group') ? 'class="active"' : '') !!}><i class="fa fa-users fa-fw fa-2x"></i>GROUPS</a></li>
 						<li><a href="{{ url('product') }}" {!! (Request::is('*product') ? 'class="active"' : '') !!}><i class="fa fa-beer fa-fw fa-2x"> </i>PRODUCTS </a></li>
 
-                        @if(Auth::check() && Auth::user()->isAdmin())
+                        @can('admin')
                             <li>
                                 <a href="#" {!! (Request::is('*fiscus*') ? 'class="active"' : '') !!}><i class="fa fa-money fa-fw fa-2x"> </i>FISCUS </a>
                                 <ul class="nav nav-seconf-level collapse {!! (Request::is('*fiscus*') ? 'in' : '') !!}">
@@ -96,7 +96,7 @@
                             </li>
                             <li><a href="{{ url('invoice') }}" {!! (Request::is('*invoice') ? 'class="active"' : '') !!}><i class="fa fa-eur fa-fw fa-2x"> </i>INVOICE </a>  </li>
                             <li><a href="{{ url('sepa') }}" {!! (Request::is('*sepa') ? 'class="active"' : '') !!}><i class="fa fa-eur fa-fw fa-2x"> </i>SEPA </a>  </li>
-                        @endif
+                        @endcan
 
 
 					</ul>

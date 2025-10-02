@@ -45,8 +45,6 @@ return Application::configure(basePath: dirname(__DIR__))
             'bindings' => \Illuminate\Routing\Middleware\SubstituteBindings::class,
             'can' => \Illuminate\Auth\Middleware\Authorize::class,
             'throttle' => \Illuminate\Routing\Middleware\ThrottleRequests::class,
-            'guest' => \App\Http\Middleware\RedirectIfAuthenticated::class,
-            'admin' => \App\Http\Middleware\RedirectIfNotAAdmin::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {

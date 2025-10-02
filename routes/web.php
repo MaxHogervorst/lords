@@ -13,8 +13,8 @@ use App\Http\Controllers\ProductController;
 use App\Http\Controllers\SepaController;
 
 // Guest routes
-Route::get('auth/login', [AuthController::class, 'getLogin'])->name('auth.login');
-Route::post('auth/authenticate', [AuthController::class, 'postAuthenticate'])->name('auth.authenticate');
+Route::get('auth/login', [AuthController::class, 'getLogin'])->name('auth.login')->can('guest');
+Route::post('auth/authenticate', [AuthController::class, 'postAuthenticate'])->name('auth.authenticate')->can('guest');
 
 // Public invoice check
 Route::get('check-bill', [InvoiceController::class, 'getPerPerson'])->name('invoice.check-bill');
@@ -49,7 +49,7 @@ Route::middleware('auth')->group(function () {
 });
 
 // Admin routes
-Route::middleware(['auth', 'admin'])->group(function () {
+Route::middleware(['auth', 'can:admin'])->group(function () {
     // SEPA
     Route::prefix('sepa')->name('sepa.')->group(function () {
         Route::get('download/{filename}', [SepaController::class, 'download'])->name('download');

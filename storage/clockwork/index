@@ -113,3 +113,5 @@
 1759378063-0731-1096457386,1759378063.055,GET,/invoice,App\Http\Controllers\InvoiceController@getIndex,200,78.938007354736,request
 1759378065-6570-51184526,1759378065.6384,POST,/invoice/selectinvoicegroup,App\Http\Controllers\InvoiceController@postSelectinvoicegroup,200,58.976888656616,request
 1759378065-7286-2135665280,1759378065.7065,GET,/invoice,App\Http\Controllers\InvoiceController@getIndex,200,90.533971786499,request
+1759431350-3594-1578685344,1759431350.2808,GET,/invoice,App\Http\Controllers\InvoiceController@getIndex,302,131.54292106628,request
+1759431350-4282-1173254891,1759431350.4193,GET,/auth/login,App\Http\Controllers\AuthController@getLogin,200,32.658100128174,request

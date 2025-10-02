@@ -130,4 +130,37 @@ class AuthControllerTest extends TestCase
         // Should redirect to login
         $this->assertEquals(302, $response->getStatusCode());
     }
+
+    /**
+     * Test that authenticated users cannot access login page
+     */
+    public function test_authenticated_user_cannot_access_login()
+    {
+        $user = \App\Models\User::factory()->create([
+            'email' => 'alreadyloggedin@example.com',
+            'password' => bcrypt('password'),
+        ]);
+
+        $response = $this->actingAs($user)->get('/auth/login');
+
+        $response->assertForbidden();
+    }
+
+    /**
+     * Test that authenticated users cannot access authenticate endpoint
+     */
+    public function test_authenticated_user_cannot_post_authenticate()
+    {
+        $user = \App\Models\User::factory()->create([
+            'email' => 'alreadyloggedin2@example.com',
+            'password' => bcrypt('password'),
+        ]);
+
+        $response = $this->actingAs($user)->post('/auth/authenticate', [
+            'username' => 'test@example.com',
+            'password' => 'password',
+        ]);
+
+        $response->assertForbidden();
+    }
 }

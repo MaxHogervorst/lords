@@ -56,16 +56,15 @@ class InvoiceControllerTest extends TestCase
     public function test_invoice_index_is_not_accessible_by_non_admin()
     {
         // Create a regular user without admin role
-        \App\Models\User::factory()->create([
+        $user = \App\Models\User::factory()->create([
             'email' => 'regular@example.com',
             'password' => bcrypt('password'),
             'is_admin' => false,
         ]);
 
-        $response = $this->call('GET', '/invoice');
+        $response = $this->actingAs($user)->get('/invoice');
 
-        // Should redirect or show unauthorized
-        $this->assertEquals(302, $response->getStatusCode());
+        $response->assertForbidden();
     }
 
     /**

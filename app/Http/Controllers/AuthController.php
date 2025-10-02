@@ -12,11 +12,6 @@ use Illuminate\View\View;
 
 class AuthController extends Controller
 {
-    public function __construct()
-    {
-        $this->middleware('guest', ['except' => 'getLogout']);
-    }
-
     public function getLogin(): View
     {
         return view('user.login');
