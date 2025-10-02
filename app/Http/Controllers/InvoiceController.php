@@ -251,7 +251,7 @@ class InvoiceController extends Controller
                     $batchfailedmembers[] = $m;
                 } else {
                     $currentbatch->addTransfer($this->currentpaymentinfo, [
-                        'amount' => $m['amount'],
+                        'amount' => (int) round($m['amount'] * 100),
                         'debtorIban' => $m['iban'],
                         'debtorBic' => $m['bic'],
                         'debtorName' => $m['name'],
@@ -280,7 +280,7 @@ class InvoiceController extends Controller
                     $batchfailedmembers[] = $m;
                 } else {
                     $currentbatch->addTransfer($this->currentpaymentinfo, [
-                        'amount' => $m['amount'],
+                        'amount' => (int) round($m['amount'] * 100),
                         'debtorIban' => $m['iban'],
                         'debtorBic' => $m['bic'],
                         'debtorName' => $m['name'],
