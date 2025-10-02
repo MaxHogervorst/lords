@@ -7,6 +7,7 @@ namespace App\Http\Controllers;
 use anlutro\LaravelSettings\Facade as Settings;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\View\View;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
@@ -63,12 +64,8 @@ class SepaController extends Controller
      */
     public function download(string $filename): BinaryFileResponse
     {
-        $filePath = storage_path('SEPA/'.$filename);
+        abort_if(! Storage::disk('sepa')->exists($filename), 404, 'Requested file does not exist on our server!');
 
-        abort_if(! file_exists($filePath), 404, 'Requested file does not exist on our server!');
-
-        return response()->download($filePath, $filename, [
-            'Content-Length' => filesize($filePath),
-        ]);
+        return Storage::disk('sepa')->download($filename);
     }
 }

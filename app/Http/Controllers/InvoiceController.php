@@ -15,6 +15,7 @@ use Digitick\Sepa\TransferFile\Factory\TransferFileFacadeFactory;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\View\View;
 use Maatwebsite\Excel\Facades\Excel;
@@ -27,6 +28,26 @@ class InvoiceController extends Controller
     private string $currentpaymentinfo = '';
 
     private float $total = 0.0;
+
+    /**
+     * Get member from session by ID.
+     */
+    private function getSessionMember(): ?Member
+    {
+        $memberId = session('member_id');
+
+        return $memberId ? Member::find($memberId) : null;
+    }
+
+    /**
+     * Get invoice group from session by ID.
+     */
+    private function getSessionInvoiceGroup(): ?InvoiceGroup
+    {
+        $invoiceGroupId = session('personal_invoice_group_id');
+
+        return $invoiceGroupId ? InvoiceGroup::find($invoiceGroupId) : null;
+    }
 
     public function getIndex(): View
     {
@@ -45,19 +66,17 @@ class InvoiceController extends Controller
     public function getPerPerson(): View
     {
         $m = null;
-        if (! is_null(session('member'))) {
+        $sessionMember = $this->getSessionMember();
+
+        if (! is_null($sessionMember)) {
             $m = Member::with('orders.product', 'groups.orders.product')
-                ->whereHas('invoice_lines.productprice.product', function ($q) {
-                    $q->where('member_id', session('member')->id);
+                ->whereHas('invoice_lines.productprice.product', function ($q) use ($sessionMember) {
+                    $q->where('member_id', $sessionMember->id);
                 })->first();
         }
 
         $products = Product::toArrayIdAsKey();
-        if (is_null(session('personal_invoice_group'))) {
-            $currentmonth = InvoiceGroup::getCurrentMonth();
-        } else {
-            $currentmonth = session('personal_invoice_group');
-        }
+        $currentmonth = $this->getSessionInvoiceGroup() ?? InvoiceGroup::getCurrentMonth();
 
         return view('invoice.person')
             ->with('invoicegroups', InvoiceGroup::orderBy('id', 'desc')->get())
@@ -281,10 +300,7 @@ class InvoiceController extends Controller
         foreach ($batches['RCUR'] as $b) {
             $i++;
             $filename = "{$filePrefix} RCUR {$i} ".date('Y-m-d').'.xml';
-            $filepath = storage_path("{$storagePath}/{$filename}");
-            $file = fopen($filepath, 'w');
-            fwrite($file, $b->asXML());
-            fclose($file);
+            Storage::disk('sepa')->put($filename, $b->asXML());
             $total++;
             $batchlink[] = $filename;
         }
@@ -292,10 +308,7 @@ class InvoiceController extends Controller
         foreach ($batches['FRST'] as $b) {
             $i++;
             $filename = "{$filePrefix} FRST {$i} ".date('Y-m-d').'.xml';
-            $filepath = storage_path("{$storagePath}/{$filename}");
-            $file = fopen($filepath, 'w');
-            fwrite($file, $b->asXML());
-            fclose($file);
+            Storage::disk('sepa')->put($filename, $b->asXML());
             $total++;
             $batchlink[] = $filename;
         }
@@ -345,7 +358,7 @@ class InvoiceController extends Controller
             $invoicegroup = InvoiceGroup::find($request->get('invoiceGroup'));
 
             if (! is_null($invoicegroup)) {
-                session(['personal_invoice_group' => $invoicegroup]);
+                session(['personal_invoice_group_id' => $invoicegroup->id]);
 
                 return response()->json(['success' => true]);
             } else {
@@ -363,7 +376,7 @@ class InvoiceController extends Controller
         } else {
             $member = Member::where(['lastname' => $request->get('name'), 'iban' => $request->get('iban')])->first();
             if (! is_null($member)) {
-                session(['member' => $member]);
+                session(['member_id' => $member->id]);
 
                 return response()->json(['success' => true]);
             } else {
