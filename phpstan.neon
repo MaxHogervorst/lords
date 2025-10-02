@@ -6,7 +6,6 @@ parameters:
         - app/Http/Middleware/VerifyCsrfToken.php
     ignoreErrors:
         - '#Call to an undefined method Illuminate\\.*#'
-        - '#Access to an undefined property Illuminate\\.*#'
         - '#Call to static method .* on an unknown class Sentinel#'
         - '#Call to static method .* on an unknown class Illuminate\\Support\\Facades\\Input#'
         - '#Call to an undefined static method App\\Models\\.*#'
