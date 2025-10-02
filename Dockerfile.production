@@ -15,10 +15,14 @@ RUN apk add --no-cache \
     nginx \
     supervisor \
     nodejs \
-    npm
+    npm \
+    freetype-dev \
+    libjpeg-turbo-dev \
+    linux-headers
 
 # Install PHP extensions
-RUN docker-php-ext-install pdo_pgsql pgsql mbstring exif pcntl bcmath gd zip sockets
+RUN docker-php-ext-configure gd --with-freetype --with-jpeg \
+    && docker-php-ext-install pdo_pgsql pgsql mbstring exif pcntl bcmath gd zip sockets
 
 # Get latest Composer
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
