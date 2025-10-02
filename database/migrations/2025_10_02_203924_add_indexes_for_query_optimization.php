@@ -47,10 +47,10 @@ return new class extends Migration
             $table->index('invoice_product_id', 'invoice_product_prices_invoice_product_id_index');
         });
 
-        // Invoice lines table - frequently joined with member_id and productprice_id
+        // Invoice lines table - frequently joined with member_id and invoice_product_price_id
         Schema::table('invoice_lines', function (Blueprint $table) {
             $table->index('member_id', 'invoice_lines_member_id_index');
-            $table->index('productprice_id', 'invoice_lines_productprice_id_index');
+            $table->index('invoice_product_price_id', 'invoice_lines_invoice_product_price_id_index');
         });
     }
 
@@ -90,7 +90,7 @@ return new class extends Migration
 
         Schema::table('invoice_lines', function (Blueprint $table) {
             $table->dropIndex('invoice_lines_member_id_index');
-            $table->dropIndex('invoice_lines_productprice_id_index');
+            $table->dropIndex('invoice_lines_invoice_product_price_id_index');
         });
     }
 };
