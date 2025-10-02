@@ -14,8 +14,6 @@ RUN apk add --no-cache \
     postgresql-dev \
     nginx \
     supervisor \
-    nodejs \
-    npm \
     freetype-dev \
     libjpeg-turbo-dev \
     linux-headers
@@ -35,12 +33,6 @@ COPY composer.json composer.lock ./
 
 # Install PHP dependencies (production, no dev dependencies)
 RUN composer install --no-dev --no-scripts --no-autoloader --prefer-dist --optimize-autoloader
-
-# Copy package files
-COPY package*.json ./
-
-# Install npm dependencies and build assets
-RUN npm ci && npm run build
 
 # Copy application code
 COPY . .
