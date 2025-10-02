@@ -1,19 +1,18 @@
 # Laravel Application Modernization Plan
 
 ## Overview
-This document outlines a comprehensive plan to modernize the Laravel application to follow current PHP 8.4 and Laravel 12 best practices.
+This document outlines the remaining tasks to modernize the Laravel application to follow current PHP 8.4 and Laravel 12 best practices.
+
+**Completed:** Route optimization, test infrastructure, basic security improvements
 
 ---
 
 ## Phase 1: Security & Critical Issues (Priority: Critical)
 
-### 1.1 Fix File Download Security Vulnerability ✓
-**Location:** `routes/web.php:32-44`
-- [x] Move download logic to dedicated controller
-- [x] Add proper file path validation
-- [x] Implement authorization checks (via middleware)
-- [x] Add file existence validation
-- [ ] Use Laravel's `Storage` facade instead of raw file operations
+### 1.1 Use Laravel Storage Facade
+**Location:** `app/Http/Controllers/SepaController.php`
+- [ ] Replace `storage_path()` with `Storage` facade
+- [ ] Use proper disk configuration for SEPA files
 
 ### 1.2 Fix Session Security Issues
 **Locations:** `InvoiceController.php:330, 348`
@@ -87,7 +86,7 @@ For single-responsibility operations:
 - [ ] `MemberData`
 - [ ] `SepaTransferData`
 - [ ] `OrderData`
-- [ ] Install `spatie/data-transfer-object` or `spatie/laravel-data`
+- [ ] Install `spatie/laravel-data`
 
 ---
 
@@ -107,10 +106,8 @@ Replace `Validator::make()` with Form Requests:
 - [ ] `SelectInvoiceGroupRequest`
 - [ ] `SetPersonRequest`
 - [ ] `SetPersonalInvoiceGroupRequest`
-- [ ] `StoreOrderRequest`
-- [ ] `StoreMemberRequest`
-- [ ] `StoreGroupRequest`
-- [ ] `StoreProductRequest`
+
+**Note:** Already implemented: `StoreOrderRequest`, `StoreMemberRequest`, `StoreGroupRequest`, `StoreProductRequest`, `StoreFiscusRequest`, `UpdateFiscusRequest`
 
 ### 4.3 Implement API Resources
 For consistent JSON responses:
@@ -125,7 +122,7 @@ For consistent JSON responses:
 Apply consistent patterns:
 - [ ] `AuthController` - use actions
 - [ ] `FiscusController` - extract services
-- [ ] `GroupController` - use form requests
+- [ ] `GroupController` - clean up logic
 - [ ] `HomeController` - optimize queries
 - [ ] `InvoiceController` - major refactor (covered above)
 - [ ] `MemberController` - use repositories
@@ -142,8 +139,9 @@ Apply consistent patterns:
 - [ ] Add property type hints using `@property` annotations
 - [ ] Implement casting for date/boolean fields
 - [ ] Add accessors/mutators where needed
-- [ ] Add model factories for all models
 - [ ] Add database seeders
+
+**Note:** Model factories already exist for all models
 
 ### 5.2 Optimize Queries
 - [ ] Review N+1 query problems
@@ -154,44 +152,28 @@ Apply consistent patterns:
 
 ---
 
-## Phase 6: Route Optimization (Priority: Medium) ✓
+## Phase 6: Code Quality & Standards (Priority: Medium)
 
-### 6.1 Refactor Route File ✓
-**Location:** `routes/web.php`
-- [x] Remove commented code
-- [x] Move download route to controller
-- [x] Use route model binding
-- [x] Group routes more logically
-- [x] Add route names to all routes
-
-### 6.2 Implement Route Model Binding ✓
-- [x] Use implicit binding where possible
-- [x] Create custom route bindings for complex lookups (fiscus -> invoiceProduct)
-- [x] Update controller methods to accept model parameters (already using model parameters)
-
----
-
-## Phase 7: Code Quality & Standards (Priority: Medium)
-
-### 7.1 Remove Magic Strings
+### 6.1 Remove Magic Strings
 - [ ] Create config files for constants
 - [ ] Use enums for status values (PHP 8.1+)
 - [ ] Create constants classes where appropriate
 - [ ] Examples: SEPA creditor info, invoice statuses
 
-### 7.2 Add Type Hints Everywhere
+### 6.2 Add Type Hints Everywhere
 - [ ] Add property type hints to controllers
 - [ ] Add return types to all methods
 - [ ] Add parameter types to all methods
 - [ ] Enable strict types: `declare(strict_types=1);`
 
-### 7.3 Remove Dead Code
-- [x] Remove commented code in routes
+**Note:** Many controllers already use strict types and type hints
+
+### 6.3 Remove Dead Code
 - [ ] Remove commented code in controllers
 - [ ] Remove unused imports
 - [ ] Remove unused methods
 
-### 7.4 Implement Logging
+### 6.4 Implement Logging
 - [ ] Add structured logging for important operations
 - [ ] Log SEPA file generation
 - [ ] Log invoice generation
@@ -200,51 +182,41 @@ Apply consistent patterns:
 
 ---
 
-## Phase 8: Testing (Priority: Medium)
+## Phase 7: Testing (Priority: Medium)
 
-### 8.1 Increase Test Coverage ✓
-Current structure appears to have Pest tests already.
-- [x] Add feature tests for all controllers
-- [x] Add unit tests for services
-- [ ] Add unit tests for actions
-- [x] Add integration tests for SEPA generation
-- [x] Add integration tests for invoice generation
-- [x] Target: 80%+ code coverage (142 tests, 349 assertions)
+### 7.1 Add Unit Tests for Actions
+- [ ] Add unit tests for action classes (once implemented)
+- [ ] Maintain 80%+ code coverage
 
-### 8.2 Add Database Testing ✓
-- [x] Use in-memory SQLite for tests
-- [x] Create comprehensive factories
-- [x] Test database transactions
-- [x] Test model relationships
+**Current Status:** 142 tests, 349 assertions, strong test coverage
 
-### 8.3 Add Browser Tests
-Playwright is already set up.
-- [x] Test authentication flow (tests exist but currently skipped)
-- [ ] Test invoice generation flow
-- [ ] Test member management
-- [ ] Test group management
-- [ ] Test order creation
-
-**Note:** Browser tests temporarily excluded from test suite in phpunit.xml
+### 7.2 Re-enable Browser Tests
+- [ ] Fix Playwright configuration issues
+- [ ] Re-enable browser tests in phpunit.xml
+- [ ] Add remaining browser test coverage:
+  - [ ] Invoice generation flow
+  - [ ] Member management
+  - [ ] Group management
+  - [ ] Order creation
 
 ---
 
-## Phase 9: Performance Optimization (Priority: Low)
+## Phase 8: Performance Optimization (Priority: Low)
 
-### 9.1 Implement Caching Strategy
+### 8.1 Implement Caching Strategy
 - [ ] Cache invoice group queries
 - [ ] Cache product lists
 - [ ] Implement cache tags
 - [ ] Add cache invalidation logic
 - [ ] Consider Redis for session storage
 
-### 9.2 Optimize Database
+### 8.2 Optimize Database
 - [ ] Add missing indexes
 - [ ] Review query performance with Debugbar
 - [ ] Optimize N+1 queries
 - [ ] Consider database query caching
 
-### 9.3 Implement Queue Jobs
+### 8.3 Implement Queue Jobs
 - [ ] Move SEPA file generation to queue
 - [ ] Move Excel export to queue
 - [ ] Move email notifications to queue
@@ -252,16 +224,15 @@ Playwright is already set up.
 
 ---
 
-## Phase 10: Frontend & Views (Priority: Low)
+## Phase 9: Frontend & Views (Priority: Low)
 
-### 10.1 Update Blade Templates
+### 9.1 Update Blade Templates
 - [ ] Review and optimize view queries
 - [ ] Implement view composers for shared data
 - [ ] Add Blade components for reusable UI
 - [ ] Remove logic from views
 
-### 10.2 Modern Frontend Build
-Already has npm setup.
+### 9.2 Modern Frontend Build
 - [ ] Review and update npm dependencies
 - [ ] Implement proper asset versioning
 - [ ] Consider Vite if not already using
@@ -269,15 +240,15 @@ Already has npm setup.
 
 ---
 
-## Phase 11: Documentation (Priority: Low)
+## Phase 10: Documentation (Priority: Low)
 
-### 11.1 Add Code Documentation
+### 10.1 Add Code Documentation
 - [ ] Document all public methods
 - [ ] Add PHPDoc blocks with parameter descriptions
 - [ ] Document complex business logic
 - [ ] Add inline comments for non-obvious code
 
-### 11.2 Add Project Documentation
+### 10.2 Add Project Documentation
 - [ ] API documentation (if applicable)
 - [ ] Setup/installation guide
 - [ ] Deployment guide
@@ -286,15 +257,15 @@ Already has npm setup.
 
 ---
 
-## Phase 12: Configuration & Environment (Priority: Low)
+## Phase 11: Configuration & Environment (Priority: Low)
 
-### 12.1 Review Configuration Files
+### 11.1 Review Configuration Files
 - [ ] Move hardcoded values to config files
 - [ ] Use environment variables appropriately
 - [ ] Document required environment variables
 - [ ] Add `.env.example` with all variables
 
-### 12.2 Implement Feature Flags
+### 11.2 Implement Feature Flags
 - [ ] Use Laravel Pennant for feature flags
 - [ ] Allow gradual rollout of new features
 - [ ] Make migration safer
@@ -310,30 +281,55 @@ Already has npm setup.
 4. **Code Review**: Review all changes before merging
 5. **Rollback Plan**: Ensure ability to roll back any phase
 
-### Estimated Timeline
-- **Phase 1 (Critical)**: 1 week
+### Revised Timeline
+- **Phase 1 (Security)**: 3-4 days
 - **Phase 2 (Auth)**: 2 weeks
 - **Phase 3 (Architecture)**: 3 weeks
 - **Phase 4 (Controllers)**: 3 weeks
-- **Phase 5 (Models)**: 2 weeks
-- **Phase 6 (Routes)**: 1 week
-- **Phase 7 (Code Quality)**: 2 weeks
-- **Phase 8 (Testing)**: 3 weeks
-- **Phase 9 (Performance)**: 1 week
-- **Phase 10 (Frontend)**: 1 week
-- **Phase 11 (Documentation)**: 1 week
-- **Phase 12 (Config)**: 1 week
+- **Phase 5 (Models)**: 1-2 weeks
+- **Phase 6 (Code Quality)**: 1-2 weeks
+- **Phase 7 (Testing)**: 3-5 days
+- **Phase 8 (Performance)**: 1 week
+- **Phase 9 (Frontend)**: 1 week
+- **Phase 10 (Documentation)**: 1 week
+- **Phase 11 (Config)**: 3-4 days
 
-**Total Estimated Time**: ~21 weeks (5 months)
+**Total Remaining Time**: ~13-15 weeks
 
 ### Success Metrics
 - [ ] All PHPStan level 8 checks pass
-- [ ] 80%+ test coverage
+- [x] 80%+ test coverage (142 tests, 349 assertions)
 - [ ] No security vulnerabilities
 - [ ] All controllers under 200 lines
 - [ ] All methods under 20 lines
 - [ ] Response time improved by 30%
 - [ ] Zero N+1 query issues
+
+---
+
+## Completed Items ✓
+
+### Routes & Organization
+- ✓ Refactored route file with logical grouping
+- ✓ Added route names to all routes
+- ✓ Implemented route model binding
+- ✓ Moved download logic to controller
+- ✓ Removed commented code from routes
+
+### Testing Infrastructure
+- ✓ Feature tests for all controllers
+- ✓ Unit tests for services
+- ✓ Integration tests for SEPA/invoice generation
+- ✓ In-memory SQLite for tests
+- ✓ Comprehensive model factories
+- ✓ Database transaction tests
+- ✓ Model relationship tests
+
+### Security Improvements
+- ✓ Moved file download logic to dedicated controller
+- ✓ Added file path validation
+- ✓ Added authorization checks (via middleware)
+- ✓ Added file existence validation
 
 ---
 
@@ -343,3 +339,4 @@ Already has npm setup.
 - Monitor error logs during rollout
 - Consider feature flags for major changes
 - Keep stakeholders informed of progress
+- Browser tests temporarily excluded but exist
