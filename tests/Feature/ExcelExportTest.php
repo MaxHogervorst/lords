@@ -11,13 +11,11 @@ use App\Models\InvoiceProductPrice;
 use App\Models\Member;
 use App\Models\Order;
 use App\Models\Product;
-use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Sentinel;
 use Tests\TestCase;
 
 class ExcelExportTest extends TestCase
 {
-    use DatabaseTransactions;
 
     private $adminRole;
 

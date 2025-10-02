@@ -2,19 +2,40 @@
 
 namespace Tests\Feature;
 
-use Illuminate\Foundation\Testing\DatabaseTransactions;
+use App\Models\Group;
+use App\Models\GroupMember;
+use App\Models\InvoiceGroup;
+use App\Models\Member;
+use App\Models\Product;
 use Sentinel;
 use Tests\TestCase;
 
 class GroupTest extends TestCase
 {
-    use DatabaseTransactions;
 
     protected function setUp(): void
     {
         parent::setUp();
-        // Create an active invoice group for tests that need it
-        factory(\App\Models\InvoiceGroup::class)->create(['status' => true]);
+
+        // Clear cache and logout any existing session
+        \Cache::flush();
+        if (Sentinel::check()) {
+            Sentinel::logout();
+        }
+
+        // Create required data for tests
+        Product::factory()->create();
+        InvoiceGroup::factory()->create(['status' => true]);
+    }
+
+    protected function tearDown(): void
+    {
+        // Logout after each test
+        if (Sentinel::check()) {
+            Sentinel::logout();
+        }
+
+        parent::tearDown();
     }
 
     public function test_create_group()
@@ -36,10 +57,11 @@ class GroupTest extends TestCase
             ->assertDontSee('Whoops')
             ->assertJsonMissing(['success' => true])
             ->assertJsonStructure(['errors']);
+
         $name = 'Sally '.date('d-m-Y');
         $this->actingAs($user)
             ->withSession([])
-            ->json('POST', '/group', ['name' => 'Sally'])
+            ->json('POST', '/group', ['name' => 'Sally', 'groupdate' => date('Y-m-d')])
             ->assertDontSee('Whoops')
             ->assertJson([
                 'success' => true,
@@ -53,7 +75,7 @@ class GroupTest extends TestCase
     {
         $name = 'Sally '.date('d-m-Y');
         $name2 = 'Max '.date('d-m-Y');
-        $group = factory(\App\Models\Group::class)->create([
+        $group = Group::factory()->create([
             'name' => $name,
         ]);
 
@@ -89,7 +111,7 @@ class GroupTest extends TestCase
     public function test_delete_group()
     {
         $name = 'Sally '.date('d-m-Y');
-        $group = factory(\App\Models\Group::class)->create([
+        $group = Group::factory()->create([
             'name' => $name,
         ]);
 
@@ -119,11 +141,11 @@ class GroupTest extends TestCase
     public function test_group_members()
     {
         $name = 'Sally '.date('d-m-Y');
-        $group = factory(\App\Models\Group::class)->create([
+        $group = Group::factory()->create([
             'name' => $name,
         ]);
 
-        $member = factory(\App\Models\Member::class)->create([
+        $member = Member::factory()->create([
             'firstname' => 'Sally',
             'lastname' => 'Test',
         ]);
@@ -161,16 +183,16 @@ class GroupTest extends TestCase
     public function test_delete_group_member()
     {
         $name = 'Sally '.date('d-m-Y');
-        $group = factory(\App\Models\Group::class)->create([
+        $group = Group::factory()->create([
             'name' => $name,
         ]);
 
-        $member = factory(\App\Models\Member::class)->create([
+        $member = Member::factory()->create([
             'firstname' => 'Sally',
             'lastname' => 'Test',
         ]);
 
-        $group_member = factory(\App\Models\GroupMember::class)->create([
+        $group_member = GroupMember::factory()->create([
             'group_id' => $group->id,
             'member_id' => $member->id,
         ]);

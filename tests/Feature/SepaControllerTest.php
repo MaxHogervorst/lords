@@ -6,13 +6,11 @@ namespace Tests\Feature;
 
 use App\Models\InvoiceGroup;
 use App\Models\Product;
-use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Sentinel;
 use Tests\TestCase;
 
 class SepaControllerTest extends TestCase
 {
-    use DatabaseTransactions;
 
     private $adminRole;
 

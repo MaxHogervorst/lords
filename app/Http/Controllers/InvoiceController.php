@@ -18,6 +18,7 @@ use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\View\View;
 use Maatwebsite\Excel\Facades\Excel;
+use Settings;
 
 class InvoiceController extends Controller
 {
@@ -124,7 +125,7 @@ class InvoiceController extends Controller
 
     private function newMemberInfo(Member $m): ?array
     {
-        $mandatePadding = config('sepa.mandate.id_padding');
+        $mandatePadding = Settings::get('mandatePadding', 8);
 
         $memberinfo = [];
         $memberinfo['name'] = $m->firstname.' '.$m->lastname;
@@ -152,26 +153,26 @@ class InvoiceController extends Controller
 
     private function newBatch(SepaSequenceType $seqType): mixed
     {
-        $prefix = config('sepa.file.prefix');
+        $prefix = Settings::get('filePrefix', 'GSRC');
         $timestamp = date('Y-m-d H:i:s');
         $this->currentpaymentinfo = $prefix.$timestamp;
 
         $currentbatch = TransferFileFacadeFactory::createDirectDebit(
             $prefix.$timestamp,
             'me',
-            config('sepa.creditor.pain')
+            Settings::get('creditorPain', 'pain.008.001.02')
         );
 
-        $daysOffset = config('sepa.collection.due_date_weekdays');
+        $daysOffset = Settings::get('ReqdColltnDt', 5);
         $dueDate = new DateTime(date('Y-m-d', strtotime("now +{$daysOffset} weekdays")));
 
         $currentbatch->addPaymentInfo($this->currentpaymentinfo, [
             'id' => $prefix.$timestamp,
-            'creditorName' => config('sepa.creditor.name'),
-            'creditorAccountIBAN' => config('sepa.creditor.account_iban'),
-            'creditorAgentBIC' => config('sepa.creditor.agent_bic'),
+            'creditorName' => Settings::get('creditorName'),
+            'creditorAccountIBAN' => Settings::get('creditorAccountIBAN'),
+            'creditorAgentBIC' => Settings::get('creditorAgentBIC'),
             'seqType' => $seqType->value,
-            'creditorId' => config('sepa.creditor.id'),
+            'creditorId' => Settings::get('creditorId'),
             'dueDate' => $dueDate,
         ]);
 
@@ -207,13 +208,13 @@ class InvoiceController extends Controller
 
         $batchfailedmembers = [];
 
-        $maxMoneyPerBatch = config('sepa.batch.max_money_per_batch');
-        $maxTransactionsPerBatch = config('sepa.batch.max_transactions_per_batch');
-        $maxMoneyPerTransaction = config('sepa.batch.max_money_per_transaction');
-        $mandateSignDate = config('sepa.mandate.sign_date');
-        $remittancePrefix = config('sepa.remittance.prefix');
-        $filePrefix = config('sepa.file.prefix');
-        $storagePath = config('sepa.file.storage_path');
+        $maxMoneyPerBatch = Settings::get('creditorMaxMoneyPerBatch', 999999);
+        $maxTransactionsPerBatch = Settings::get('creditorMaxTransactionsPerBatch', 1000);
+        $maxMoneyPerTransaction = Settings::get('creditorMaxMoneyPerTransaction', 100000);
+        $mandateSignDate = Settings::get('mandateSignDate', '2014-01-01');
+        $remittancePrefix = Settings::get('remittancePrefix', 'Contributie');
+        $filePrefix = Settings::get('filePrefix', 'GSRC');
+        $storagePath = Settings::get('storagePath', 'SEPA');
 
         $transactions = 0;
         $batchtotalmoney = 0;

@@ -10,12 +10,10 @@ use App\Models\InvoiceProductPrice;
 use App\Models\Member;
 use App\Models\Order;
 use App\Models\Product;
-use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Tests\TestCase;
 
 class ModelRelationshipTest extends TestCase
 {
-    use DatabaseTransactions;
 
     /**
      * Test Member has many Groups relationship

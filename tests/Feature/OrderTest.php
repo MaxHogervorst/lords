@@ -2,13 +2,11 @@
 
 namespace Tests\Feature;
 
-use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Sentinel;
 use Tests\TestCase;
 
 class OrderTest extends TestCase
 {
-    use DatabaseTransactions;
 
     protected function setUp(): void
     {

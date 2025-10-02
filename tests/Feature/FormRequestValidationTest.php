@@ -5,10 +5,7 @@ use App\Http\Requests\StoreGroupRequest;
 use App\Http\Requests\StoreMemberRequest;
 use App\Http\Requests\StoreOrderRequest;
 use App\Http\Requests\StoreProductRequest;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Validator;
-
-uses(RefreshDatabase::class);
 
 test('store fiscus request validates required fields', function () {
     $request = new StoreFiscusRequest;

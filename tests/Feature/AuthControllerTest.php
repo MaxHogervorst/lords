@@ -2,13 +2,11 @@
 
 namespace Tests\Feature;
 
-use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Sentinel;
 use Tests\TestCase;
 
 class AuthControllerTest extends TestCase
 {
-    use DatabaseTransactions;
 
     /**
      * Test that login page is accessible

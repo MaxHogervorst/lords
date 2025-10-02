@@ -1,9 +1,27 @@
 <?php
 
+use App\Models\InvoiceGroup;
+use App\Models\Product;
 use App\Models\User;
-use Illuminate\Foundation\Testing\DatabaseTransactions;
 
-uses(DatabaseTransactions::class);
+beforeEach(function () {
+    // Clear cache and logout any existing session
+    \Cache::flush();
+    if (\Sentinel::check()) {
+        \Sentinel::logout();
+    }
+
+    // Create required data for tests
+    Product::factory()->create();
+    InvoiceGroup::factory()->create(['status' => true]);
+});
+
+afterEach(function () {
+    // Logout after each test
+    if (\Sentinel::check()) {
+        \Sentinel::logout();
+    }
+});
 
 test('create member requires authentication', function () {
     $this->json('POST', '/member', ['name' => 'Sally'])

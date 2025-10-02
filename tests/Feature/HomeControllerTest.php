@@ -8,13 +8,11 @@ use App\Models\InvoiceGroup;
 use App\Models\Member;
 use App\Models\Order;
 use App\Models\Product;
-use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Sentinel;
 use Tests\TestCase;
 
 class HomeControllerTest extends TestCase
 {
-    use DatabaseTransactions;
 
     protected function setUp(): void
     {

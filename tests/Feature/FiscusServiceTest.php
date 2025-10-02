@@ -4,9 +4,6 @@ use App\Models\InvoiceGroup;
 use App\Models\InvoiceProduct;
 use App\Models\Member;
 use App\Services\FiscusService;
-use Illuminate\Foundation\Testing\RefreshDatabase;
-
-uses(RefreshDatabase::class);
 
 beforeEach(function () {
     $this->fiscusService = new FiscusService;

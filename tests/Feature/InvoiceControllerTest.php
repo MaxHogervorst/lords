@@ -10,13 +10,11 @@ use App\Models\InvoiceProductPrice;
 use App\Models\Member;
 use App\Models\Order;
 use App\Models\Product;
-use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Sentinel;
 use Tests\TestCase;
 
 class InvoiceControllerTest extends TestCase
 {
-    use DatabaseTransactions;
 
     private $adminRole;
 
@@ -27,10 +25,10 @@ class InvoiceControllerTest extends TestCase
         \Cache::flush();
 
         // Create at least one product to avoid count() issues with Product::all()
-        factory(Product::class)->create();
+        Product::factory()->create();
 
         // Create an active invoice group for tests that need it
-        factory(InvoiceGroup::class)->create([
+        InvoiceGroup::factory()->create([
             'status' => true,
         ]);
 
@@ -92,7 +90,7 @@ class InvoiceControllerTest extends TestCase
         Sentinel::login($sentinelUser);
         $user = \App\Models\User::find($sentinelUser->id);
 
-        $invoiceGroup = factory(InvoiceGroup::class)->create([
+        $invoiceGroup = InvoiceGroup::factory()->create([
             'name' => 'Test Invoice Group',
             'status' => true,
         ]);
@@ -139,7 +137,7 @@ class InvoiceControllerTest extends TestCase
         Sentinel::login($sentinelUser);
         $user = \App\Models\User::find($sentinelUser->id);
 
-        $invoiceGroup = factory(InvoiceGroup::class)->create([
+        $invoiceGroup = InvoiceGroup::factory()->create([
             'name' => 'Test Month',
             'status' => true,
         ]);
@@ -167,7 +165,7 @@ class InvoiceControllerTest extends TestCase
         Sentinel::login($sentinelUser);
         $user = \App\Models\User::find($sentinelUser->id);
 
-        $invoiceGroup = factory(InvoiceGroup::class)->create([
+        $invoiceGroup = InvoiceGroup::factory()->create([
             'name' => 'SEPA Test Month',
             'status' => true,
         ]);
@@ -194,15 +192,15 @@ class InvoiceControllerTest extends TestCase
         Sentinel::login($sentinelUser);
         $user = \App\Models\User::find($sentinelUser->id);
 
-        $member = factory(Member::class)->create([
+        $member = Member::factory()->create([
             'firstname' => 'Invoice',
             'lastname' => 'Tester',
         ]);
 
-        $product = factory(Product::class)->create(['name' => 'Test Beer']);
-        $invoiceGroup = factory(InvoiceGroup::class)->create();
+        $product = Product::factory()->create(['name' => 'Test Beer']);
+        $invoiceGroup = InvoiceGroup::factory()->create();
 
-        $order = factory(Order::class)->create([
+        $order = Order::factory()->create([
             'ownerable_id' => $member->id,
             'ownerable_type' => 'App\\Models\\Member',
             'product_id' => $product->id,
@@ -230,11 +228,11 @@ class InvoiceControllerTest extends TestCase
         Sentinel::login($sentinelUser);
         $user = \App\Models\User::find($sentinelUser->id);
 
-        $group = factory(Group::class)->create(['name' => 'Test Group']);
-        $product = factory(Product::class)->create(['name' => 'Group Beer']);
-        $invoiceGroup = factory(InvoiceGroup::class)->create();
+        $group = Group::factory()->create(['name' => 'Test Group']);
+        $product = Product::factory()->create(['name' => 'Group Beer']);
+        $invoiceGroup = InvoiceGroup::factory()->create();
 
-        $order = factory(Order::class)->create([
+        $order = Order::factory()->create([
             'ownerable_id' => $group->id,
             'ownerable_type' => 'App\\Models\\Group',
             'product_id' => $product->id,
@@ -265,16 +263,16 @@ class InvoiceControllerTest extends TestCase
         // Use the invoice group created in setUp
         $invoiceGroup = InvoiceGroup::where('status', true)->first();
 
-        $member = factory(Member::class)->create();
-        $invoiceProduct = factory(InvoiceProduct::class)->create([
+        $member = Member::factory()->create();
+        $invoiceProduct = InvoiceProduct::factory()->create([
             'invoice_group_id' => $invoiceGroup->id,
             'name' => 'Special Item',
         ]);
-        $invoiceProductPrice = factory(InvoiceProductPrice::class)->create([
+        $invoiceProductPrice = InvoiceProductPrice::factory()->create([
             'invoice_product_id' => $invoiceProduct->id,
             'price' => 5.50,
         ]);
-        $invoiceLine = factory(InvoiceLine::class)->create([
+        $invoiceLine = InvoiceLine::factory()->create([
             'member_id' => $member->id,
             'invoice_product_price_id' => $invoiceProductPrice->id,
         ]);
@@ -301,7 +299,7 @@ class InvoiceControllerTest extends TestCase
         $user = \App\Models\User::find($sentinelUser->id);
 
         // Create invoice group and set as current month
-        $invoiceGroup = factory(InvoiceGroup::class)->create([
+        $invoiceGroup = InvoiceGroup::factory()->create([
             'name' => 'SEPA Test Month',
             'status' => true,
         ]);
@@ -321,7 +319,7 @@ class InvoiceControllerTest extends TestCase
         \Settings::save();
 
         // Create a member with bank info and RCUR status (recurring)
-        $member = factory(Member::class)->create([
+        $member = Member::factory()->create([
             'firstname' => 'John',
             'lastname' => 'Doe',
             'iban' => 'NL20INGB0001234567',
@@ -330,7 +328,7 @@ class InvoiceControllerTest extends TestCase
         ]);
 
         // Create a product - note: price is stored on product
-        $product = factory(Product::class)->create([
+        $product = Product::factory()->create([
             'name' => 'Test Beer',
             'price' => 2.50,
         ]);
@@ -340,7 +338,7 @@ class InvoiceControllerTest extends TestCase
         Product::toArrayIdAsKey();
 
         // Create an order for the member
-        factory(Order::class)->create([
+        Order::factory()->create([
             'ownerable_id' => $member->id,
             'ownerable_type' => 'App\\Models\\Member',
             'product_id' => $product->id,

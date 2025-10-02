@@ -2,13 +2,13 @@
 
 namespace Tests\Feature;
 
-use Illuminate\Foundation\Testing\DatabaseTransactions;
+use App\Models\InvoiceGroup;
+use App\Models\Product;
 use Sentinel;
 use Tests\TestCase;
 
 class LinkCheckTest extends TestCase
 {
-    use DatabaseTransactions;
 
     private $adminUser;
 
@@ -19,6 +19,16 @@ class LinkCheckTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
+
+        // Clear cache and logout any existing session
+        \Cache::flush();
+        if (Sentinel::check()) {
+            Sentinel::logout();
+        }
+
+        // Create required data for tests
+        Product::factory()->create();
+        InvoiceGroup::factory()->create(['status' => true]);
 
         // Create admin role
         $this->adminRole = Sentinel::getRoleRepository()->createModel()->firstOrCreate([
@@ -39,6 +49,16 @@ class LinkCheckTest extends TestCase
             'email' => 'regular@linktest.com',
             'password' => 'password',
         ]);
+    }
+
+    protected function tearDown(): void
+    {
+        // Logout after each test
+        if (Sentinel::check()) {
+            Sentinel::logout();
+        }
+
+        parent::tearDown();
     }
 
     public function test_home()
