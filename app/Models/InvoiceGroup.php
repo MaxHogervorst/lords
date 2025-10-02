@@ -12,6 +12,11 @@ class InvoiceGroup extends Model
 
     protected $table = 'invoice_groups';
 
+    protected $fillable = [
+        'name',
+        'status',
+    ];
+
     public static function getCurrentMonth(): self
     {
         if (! Cache::has('invoice_group')) {

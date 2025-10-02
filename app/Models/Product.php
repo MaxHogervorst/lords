@@ -14,6 +14,12 @@ class Product extends Model
 
     protected $table = 'products';
 
+    protected $fillable = [
+        'name',
+        'price',
+        'active',
+    ];
+
     public static function toArrayIdAsKey(): array
     {
         if (! Cache::has('products')) {

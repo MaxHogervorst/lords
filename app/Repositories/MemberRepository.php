@@ -93,4 +93,12 @@ class MemberRepository extends BaseRepository
             ->orWhere('email', 'like', "%{$term}%")
             ->get();
     }
+
+    /**
+     * Get query builder instance (public access for complex queries).
+     */
+    public function query()
+    {
+        return $this->model->newQuery();
+    }
 }

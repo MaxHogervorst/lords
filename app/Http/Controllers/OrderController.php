@@ -5,12 +5,19 @@ declare(strict_types=1);
 namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreOrderRequest;
-use App\Models\InvoiceGroup;
-use App\Models\Order;
+use App\Repositories\InvoiceRepository;
+use App\Repositories\OrderRepository;
+use App\Repositories\ProductRepository;
 use Illuminate\Http\JsonResponse;
 
 class OrderController extends Controller
 {
+    public function __construct(
+        private readonly OrderRepository $orderRepository,
+        private readonly InvoiceRepository $invoiceRepository,
+        private readonly ProductRepository $productRepository
+    ) {}
+
     /**
      * Store a newly created resource in storage.
      */
@@ -24,21 +31,26 @@ class OrderController extends Controller
             $type = 'App\Models\Group';
         }
 
-        $order = new Order;
-        $order->invoice_group_id = InvoiceGroup::getCurrentMonth()->id;
-        $order->ownerable_id = $validated['memberId'];
-        $order->ownerable_type = $type;
-        $order->product_id = $validated['product'];
-        $order->amount = $validated['amount'];
-        $order->save();
+        $currentMonth = $this->invoiceRepository->getCurrentMonth();
+
+        $order = $this->orderRepository->create([
+            'invoice_group_id' => $currentMonth->id,
+            'ownerable_id' => $validated['memberId'],
+            'ownerable_type' => $type,
+            'product_id' => $validated['product'],
+            'amount' => $validated['amount'],
+        ]);
 
         if ($order->exists) {
+            // Load the product relationship
+            $product = $this->productRepository->find($order->product_id);
+
             return response()->json([
                 'success' => true,
                 'date' => date('Y-m-d G:i:s'),
-                'product' => $order->product->name,
+                'product' => $product->name,
                 'amount' => $order->amount,
-                'product_id' => $order->product->id,
+                'product_id' => $product->id,
                 'member_id' => $order->ownerable_id,
                 'message' => 'order successfully',
             ]);

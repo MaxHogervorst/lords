@@ -6,6 +6,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreProductRequest;
 use App\Models\Product;
+use App\Repositories\ProductRepository;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
@@ -13,16 +14,20 @@ use Illuminate\View\View;
 
 class ProductController extends Controller
 {
+    public function __construct(
+        private readonly ProductRepository $productRepository
+    ) {}
+
     public function autocomplete(Request $request): JsonResponse
     {
-        $product = Product::where('Name', 'LIKE', '%'.$request->get('term').'%')->get();
+        $product = $this->productRepository->search($request->get('term'));
 
         return response()->json($product->toArray());
     }
 
     public function index(): View
     {
-        $product = Product::all();
+        $product = $this->productRepository->all();
 
         return view('product.index')->withResults($product);
     }
@@ -30,10 +35,11 @@ class ProductController extends Controller
     public function store(StoreProductRequest $request): JsonResponse
     {
         $validated = $request->validated();
-        $product = new Product;
-        $product->name = $validated['name'];
-        $product->price = $validated['productPrice'];
-        $product->save();
+
+        $product = $this->productRepository->create([
+            'name' => $validated['name'],
+            'price' => $validated['productPrice'],
+        ]);
 
         if ($product->exists) {
             $this->updateProductCache();
@@ -46,31 +52,32 @@ class ProductController extends Controller
 
     public function edit(string $id): View
     {
-        return view('product.edit')->with('product', Product::find($id));
+        $product = $this->productRepository->find((int) $id);
+
+        return view('product.edit')->with('product', $product);
     }
 
     public function update(StoreProductRequest $request, Product $product): JsonResponse
     {
         $validated = $request->validated();
-        $product->Name = $validated['productName'];
-        $product->Price = $validated['productPrice'];
 
-        if ($product->save()) {
-            $this->updateProductCache();
+        $product = $this->productRepository->update($product, [
+            'name' => $validated['productName'],
+            'price' => $validated['productPrice'],
+        ]);
 
-            return response()->json(['success' => true, 'message' => $product->name.' Successfully edited']);
-        } else {
-            return response()->json(['errors' => 'Could not be updated']);
-        }
+        $this->updateProductCache();
+
+        return response()->json(['success' => true, 'message' => $product->name.' Successfully edited']);
     }
 
     public function destroy(string $id): JsonResponse
     {
-        $product = Product::find($id);
+        $product = $this->productRepository->find((int) $id);
 
-        $product->delete();
+        $deleted = $this->productRepository->delete($product);
 
-        if (! $product->exists) {
+        if ($deleted) {
             $this->updateProductCache();
 
             return response()->json(['success' => true, 'message' => $product->name.' Successfully deleted']);

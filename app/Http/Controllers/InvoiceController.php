@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
-use App\Models\InvoiceGroup;
-use App\Models\Member;
-use App\Models\Product;
+use App\Repositories\InvoiceRepository;
+use App\Repositories\MemberRepository;
+use App\Repositories\ProductRepository;
 use App\Services\InvoiceCalculationService;
 use App\Services\InvoiceExportService;
 use App\Services\SepaGenerationService;
@@ -21,38 +21,43 @@ class InvoiceController extends Controller
     public function __construct(
         private readonly InvoiceCalculationService $calculationService,
         private readonly SepaGenerationService $sepaService,
-        private readonly InvoiceExportService $exportService
+        private readonly InvoiceExportService $exportService,
+        private readonly InvoiceRepository $invoiceRepository,
+        private readonly MemberRepository $memberRepository,
+        private readonly ProductRepository $productRepository
     ) {}
 
     /**
      * Get member from session by ID.
      */
-    private function getSessionMember(): ?Member
+    private function getSessionMember(): ?object
     {
         $memberId = session('member_id');
 
-        return $memberId ? Member::find($memberId) : null;
+        return $memberId ? $this->memberRepository->find($memberId) : null;
     }
 
     /**
      * Get invoice group from session by ID.
      */
-    private function getSessionInvoiceGroup(): ?InvoiceGroup
+    private function getSessionInvoiceGroup(): ?object
     {
         $invoiceGroupId = session('personal_invoice_group_id');
 
-        return $invoiceGroupId ? InvoiceGroup::find($invoiceGroupId) : null;
+        return $invoiceGroupId ? $this->invoiceRepository->find($invoiceGroupId) : null;
     }
 
     public function getIndex(): View
     {
-        $currentmonth = InvoiceGroup::getCurrentMonth();
-        $products = Product::toArrayIdAsKey();
-        $members = Member::with(['orders'])
-            ->with(['groups.orders.product'])
-            ->with(['invoice_lines.productprice.product'])->get();
+        $currentmonth = $this->invoiceRepository->getCurrentMonth();
+        $products = $this->productRepository->getAllAsArrayIdAsKey();
+        $members = $this->memberRepository->all(
+            ['*'],
+            ['orders', 'groups.orders.product', 'invoice_lines.productprice.product']
+        );
 
-        return view('invoice.index')->with('invoicegroups', InvoiceGroup::orderBy('id', 'desc')->get())
+        return view('invoice.index')
+            ->with('invoicegroups', $this->invoiceRepository->getAllOrdered('desc'))
             ->with('currentmonth', $currentmonth)
             ->with('members', $members)
             ->with('products', $products);
@@ -64,17 +69,19 @@ class InvoiceController extends Controller
         $sessionMember = $this->getSessionMember();
 
         if (! is_null($sessionMember)) {
-            $m = Member::with('orders.product', 'groups.orders.product')
+            // This complex query needs to stay as Model query for now due to whereHas
+            $m = $this->memberRepository->query()
+                ->with('orders.product', 'groups.orders.product')
                 ->whereHas('invoice_lines.productprice.product', function ($q) use ($sessionMember) {
                     $q->where('member_id', $sessionMember->id);
                 })->first();
         }
 
-        $products = Product::toArrayIdAsKey();
-        $currentmonth = $this->getSessionInvoiceGroup() ?? InvoiceGroup::getCurrentMonth();
+        $products = $this->productRepository->getAllAsArrayIdAsKey();
+        $currentmonth = $this->getSessionInvoiceGroup() ?? $this->invoiceRepository->getCurrentMonth();
 
         return view('invoice.person')
-            ->with('invoicegroups', InvoiceGroup::orderBy('id', 'desc')->get())
+            ->with('invoicegroups', $this->invoiceRepository->getAllOrdered('desc'))
             ->with('currentmonth', $currentmonth)
             ->with('m', $m)
             ->with('products', $products);
@@ -82,11 +89,14 @@ class InvoiceController extends Controller
 
     public function getPdf(): View
     {
-        $currentmonth = InvoiceGroup::getCurrentMonth();
+        $currentmonth = $this->invoiceRepository->getCurrentMonth();
 
         return view('invoice.pdf')
             ->with('currentmonth', $currentmonth)
-            ->with('members', Member::with('orders.product', 'groups.orders.product', 'invoice_lines.productprice.product')->get());
+            ->with('members', $this->memberRepository->all(
+                ['*'],
+                ['orders.product', 'groups.orders.product', 'invoice_lines.productprice.product']
+            ));
     }
 
     public function getExcel(): \Symfony\Component\HttpFoundation\BinaryFileResponse
@@ -120,12 +130,7 @@ class InvoiceController extends Controller
             return response()->json(['errors' => $v->errors()]);
         }
 
-        InvoiceGroup::where('status', '=', true)->update(['status' => false]);
-
-        $invoicegroup = new InvoiceGroup;
-        $invoicegroup->name = $request->get('invoiceMonth');
-        $invoicegroup->status = true;
-        $invoicegroup->save();
+        $invoicegroup = $this->invoiceRepository->createAndSetActive($request->get('invoiceMonth'));
 
         if (! $invoicegroup->exists) {
             return response()->json(['errors' => 'Could not be added to the database']);
@@ -143,7 +148,7 @@ class InvoiceController extends Controller
         if (! $v->passes()) {
             return response()->json(['errors' => $v->errors()]);
         } else {
-            $invoicegroup = InvoiceGroup::find($request->get('invoiceGroup'));
+            $invoicegroup = $this->invoiceRepository->find((int) $request->get('invoiceGroup'));
 
             if (! is_null($invoicegroup)) {
                 session(['personal_invoice_group_id' => $invoicegroup->id]);
@@ -162,7 +167,10 @@ class InvoiceController extends Controller
         if (! $v->passes()) {
             return response()->json(['errors' => $v->errors()]);
         } else {
-            $member = Member::where(['lastname' => $request->get('name'), 'iban' => $request->get('iban')])->first();
+            $member = $this->memberRepository->findByLastnameAndIban(
+                $request->get('name'),
+                $request->get('iban')
+            );
             if (! is_null($member)) {
                 session(['member_id' => $member->id]);
 
@@ -181,13 +189,12 @@ class InvoiceController extends Controller
             return response()->json(['errors' => $v->errors()]);
         }
 
-        InvoiceGroup::where('status', '=', true)->update(['status' => false]);
+        $invoicegroup = $this->invoiceRepository->find((int) $request->get('invoiceGroup'));
+        $this->invoiceRepository->setAsActive($invoicegroup);
 
-        $invoicegroup = InvoiceGroup::find($request->get('invoiceGroup'));
-        $invoicegroup->status = true;
-        $invoicegroup->save();
-
-        if (InvoiceGroup::where('status', '=', true)->count() === 0) {
+        // Verify the operation was successful
+        $currentMonth = $this->invoiceRepository->getCurrentMonth();
+        if (is_null($currentMonth)) {
             return response()->json(['errors' => 'Could not be added to the database']);
         }
 

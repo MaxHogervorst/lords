@@ -13,6 +13,14 @@ class Order extends Model
 
     protected $table = 'orders';
 
+    protected $fillable = [
+        'product_id',
+        'invoice_group_id',
+        'ownerable_type',
+        'ownerable_id',
+        'amount',
+    ];
+
     public function product(): BelongsTo
     {
         return $this->belongsTo(Product::class);

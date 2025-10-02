@@ -5,20 +5,26 @@ declare(strict_types=1);
 namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreMemberRequest;
-use App\Models\InvoiceGroup;
-use App\Models\Member;
-use App\Models\Product;
+use App\Repositories\InvoiceRepository;
+use App\Repositories\MemberRepository;
+use App\Repositories\ProductRepository;
 use Illuminate\Http\JsonResponse;
 use Illuminate\View\View;
 
 class MemberController extends Controller
 {
+    public function __construct(
+        private readonly MemberRepository $memberRepository,
+        private readonly ProductRepository $productRepository,
+        private readonly InvoiceRepository $invoiceRepository
+    ) {}
+
     /**
      * Display a listing of the resource.
      */
     public function index(): View
     {
-        $members = Member::all();
+        $members = $this->memberRepository->all();
 
         return view('member.index')->with('members', $members);
     }
@@ -29,21 +35,29 @@ class MemberController extends Controller
     public function store(StoreMemberRequest $request): JsonResponse
     {
         $validated = $request->validated();
-        $member = new Member;
-        $member->firstname = $validated['name'];
-        $member->lastname = $validated['lastname'];
+        $member = $this->memberRepository->create([
+            'firstname' => $validated['name'],
+            'lastname' => $validated['lastname'],
+        ]);
 
-        $member->save();
-        if ($member->exists) {
-            return response()->json(['success' => true, 'id' => $member->id, 'firstname' => $member->firstname, 'lastname' => $member->lastname]);
-        } else {
-            return response()->json(['errors' => 'Could not be added to the database']);
-        }
+        return response()->json([
+            'success' => true,
+            'id' => $member->id,
+            'firstname' => $member->firstname,
+            'lastname' => $member->lastname
+        ]);
     }
 
     public function show(string $id): View
     {
-        return view('member.order')->with('member', Member::find($id))->with('products', Product::all())->with('currentmonth', InvoiceGroup::getCurrentMonth());
+        $member = $this->memberRepository->find((int) $id);
+        $products = $this->productRepository->all();
+        $currentmonth = $this->invoiceRepository->getCurrentMonth();
+
+        return view('member.order')
+            ->with('member', $member)
+            ->with('products', $products)
+            ->with('currentmonth', $currentmonth);
     }
 
     /**
@@ -51,7 +65,9 @@ class MemberController extends Controller
      */
     public function edit(string $id): View
     {
-        return view('member.edit')->with('member', Member::find($id));
+        $member = $this->memberRepository->find((int) $id);
+
+        return view('member.edit')->with('member', $member);
     }
 
     /**
@@ -60,19 +76,20 @@ class MemberController extends Controller
     public function update(StoreMemberRequest $request, string $id): JsonResponse
     {
         $validated = $request->validated();
-        $member = Member::find($id);
-        $member->firstname = $validated['name'];
-        $member->lastname = $validated['lastname'];
-        $member->bic = $validated['bic'] ?? null;
-        $member->iban = $validated['iban'] ?? null;
-        $member->had_collection = $request->has('had_collection');
+        $member = $this->memberRepository->find((int) $id);
 
-        $member->save();
-        if ($member->exists) {
-            return response()->json(['success' => true, 'message' => 'Succesfully edited'.$member->getFullName()]);
-        } else {
-            return response()->json(['errors' => 'Could not be updated']);
-        }
+        $member = $this->memberRepository->update($member, [
+            'firstname' => $validated['name'],
+            'lastname' => $validated['lastname'],
+            'bic' => $validated['bic'] ?? null,
+            'iban' => $validated['iban'] ?? null,
+            'had_collection' => $request->has('had_collection'),
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Succesfully edited' . $member->getFullName()
+        ]);
     }
 
     /**
@@ -80,12 +97,13 @@ class MemberController extends Controller
      */
     public function destroy(string $id): JsonResponse
     {
-        $member = Member::find($id);
-        $member->delete();
-        if ($member->exists) {
-            return response()->json(['errors' => $member->firsname." Couldn't be deleted"]);
-        } else {
-            return response()->json(['success' => true, 'message' => 'Succesfully deleted'.$member->getFullName()]);
-        }
+        $member = $this->memberRepository->find((int) $id);
+        $fullName = $member->getFullName();
+        $this->memberRepository->delete($member);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Succesfully deleted' . $fullName
+        ]);
     }
 }

@@ -16,6 +16,11 @@ class Group extends Model
 
     protected $table = 'groups';
 
+    protected $fillable = [
+        'name',
+        'invoice_group_id',
+    ];
+
     public function members(): BelongsToMany
     {
         return $this->belongsToMany(Member::class)->withPivot('id', 'id');

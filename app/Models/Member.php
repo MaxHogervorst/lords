@@ -17,6 +17,15 @@ class Member extends Model
 
     protected $table = 'members';
 
+    protected $fillable = [
+        'firstname',
+        'lastname',
+        'bic',
+        'iban',
+        'had_collection',
+        'email',
+    ];
+
     public function groups(): BelongsToMany
     {
         return $this->belongsToMany(Group::class);
