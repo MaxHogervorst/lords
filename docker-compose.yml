@@ -7,6 +7,8 @@ services:
     container_name: lords-app
     restart: unless-stopped
     working_dir: /var/www
+    environment:
+      PLAYWRIGHT_BROWSERS_PATH: /root/.cache/ms-playwright
     volumes:
       - ./:/var/www
       - ./storage:/var/www/storage

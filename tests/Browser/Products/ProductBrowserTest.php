@@ -22,7 +22,7 @@ test('can view product list page', function () {
 
     visit('/product')
         ->assertSee('Products')
-        ->screenshot('product-list');
+        ->screenshot(filename: 'product-list');
 });
 
 test('can create new product via UI', function () {
@@ -32,7 +32,7 @@ test('can create new product via UI', function () {
         ->type('price', '19.99')
         ->submit()
         ->assertSee('Product created')
-        ->screenshot('product-created');
+        ->screenshot(filename: 'product-created');
 
     expect(Product::where('name', 'Test Product')->exists())->toBeTrue();
 });
@@ -46,7 +46,7 @@ test('can edit existing product', function () {
         ->type('name', 'Updated Product')
         ->submit()
         ->assertSee('Product updated')
-        ->screenshot('product-updated');
+        ->screenshot(filename: 'product-updated');
 
     expect(Product::find($product->id)->name)->toBe('Updated Product');
 });
@@ -58,7 +58,7 @@ test('can view product details', function () {
 
     visit("/product/{$product->id}")
         ->assertSee('Sample Product')
-        ->screenshot('product-details');
+        ->screenshot(filename: 'product-details');
 });
 
 test('can delete product', function () {
@@ -67,7 +67,7 @@ test('can delete product', function () {
     visit('/product')
         ->click('Delete')
         ->assertSee('Product deleted')
-        ->screenshot('product-deleted');
+        ->screenshot(filename: 'product-deleted');
 
     expect(Product::find($product->id))->toBeNull();
 });
@@ -77,5 +77,5 @@ test('requires authentication to access products', function () {
 
     visit('/product')
         ->assertUrlIs(url('/auth/login'))
-        ->screenshot('product-requires-auth');
+        ->screenshot(filename: 'product-requires-auth');
 });

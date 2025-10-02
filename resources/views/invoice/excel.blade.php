@@ -18,7 +18,7 @@
                 @if(is_string($m))
                     {{ $m }}
                 @else
-                    {{ money_format('%.2n', $m) }}
+                    {{ number_format($m, 2, ".", ",") }}
                 @endif
                 </td>
             @endforeach

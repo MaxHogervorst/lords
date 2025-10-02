@@ -28,7 +28,7 @@
                     {{--<td>{{ $m->price }}</td>--}}
 
                     <td>
-                        <button data-id="{{ $m->id }}" data-toggle="modal" data-target="#product-edit"><i class="fa fa-edit fa-fw">  </i></button>
+                        <a href="{{ url('fiscus/edit') }}" class="btn btn-sm btn-primary"><i class="fa fa-edit fa-fw">  </i></a>
                     </td>
 
                 </tr>

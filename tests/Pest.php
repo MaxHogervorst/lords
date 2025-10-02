@@ -13,3 +13,8 @@
 
 pest()->extend(Tests\TestCase::class)
     ->in('Feature', 'Unit', 'Http', 'Browser');
+
+// Browser testing configuration
+pest()->browser()
+    ->inChrome()
+    ->timeout(30000);

@@ -23,7 +23,7 @@ class StoreGroupRequest extends FormRequest
     {
         return [
             'name' => 'required|string|max:255',
-            'groupDate' => 'sometimes|date',
+            'groupdate' => 'sometimes|date',
         ];
     }
 

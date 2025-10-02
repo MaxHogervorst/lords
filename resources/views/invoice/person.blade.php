@@ -95,7 +95,7 @@
                         <td> {{ $products[$o->product_id]['name'] }}</td>
                         <td> {{ $products[$o->product_id]['name'] }}</td>
                         <td> {{ $o->amount }}</td>
-                        <td>&euro;{{ money_format('%.2n', $price)  }}</td>
+                        <td>&euro;{{ number_format($price, 2, ".", ",")  }}</td>
                     </tr>
                 @endforeach
 
@@ -112,7 +112,7 @@
                         <td>{{ $g->name }}</td>
                         <td>Groupmembers: {{ $totalmebers }} Total price: &euro;{{ $totalprice }}</td>
                         <td>1</td>
-                        <td>&euro;{{ money_format('%.2n', $price)  }}</td>
+                        <td>&euro;{{ number_format($price, 2, ".", ",")  }}</td>
                     </tr>
 
 
@@ -125,7 +125,7 @@
                             <td>{{ $il->productprice->product->name }}</td>
                             <td>{{ $il->productprice->description }}</td>
                             <td>1</td>
-                            <td>&euro;{{ money_format('%.2n', $price)  }}</td>
+                            <td>&euro;{{ number_format($price, 2, ".", ",")  }}</td>
                         </tr>
                     @endif
                 @endforeach
@@ -134,7 +134,7 @@
             <tfoot>
                 <tr class="info">
                     <td colspan="3" align="right"><b>Total:</b></td>
-                    <td align="left"><b>&euro;{{ money_format('%.2n', $total)}}</b></td>
+                    <td align="left"><b>&euro;{{ number_format($total, 2, ".", ",")}}</b></td>
                 </tr>
             </tfoot>
 

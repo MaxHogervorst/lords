@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use anlutro\LaravelSettings\Facade as Settings;
+use App\Exports\InvoicesExport;
 use App\Models\InvoiceGroup;
 use App\Models\InvoiceProduct;
 use App\Models\Member;
@@ -75,7 +76,7 @@ class InvoiceController extends Controller
             ->with('members', Member::with('orders.product', 'groups.orders.product', 'invoice_lines.productprice.product')->get());
     }
 
-    public function getExcel(): View
+    public function getExcel(): \Symfony\Component\HttpFoundation\BinaryFileResponse
     {
         $currentmonth = InvoiceGroup::getCurrentMonth();
         $result = [];
@@ -115,17 +116,12 @@ class InvoiceController extends Controller
         }
         $this->exceldata = $result;
 
-        Excel::create($currentmonth->name, function ($excel) {
-            $excel->sheet('First sheet', function ($sheet) {
-                $sheet->loadView('invoice.excel')->with('result', $this->exceldata)
-                    ->with('products', InvoiceProduct::where('invoice_group_id', '=', InvoiceGroup::getCurrentMonth()->id)->get())
-                    ->with('total', $this->total);
-            });
-        })->download('xls');
+        $products = InvoiceProduct::where('invoice_group_id', '=', $currentmonth->id)->get();
 
-        return view('invoice.excel')
-            ->with('result', $result)
-            ->with('products', InvoiceProduct::where('invoice_group_id', '=', $currentmonth->id)->get());
+        return Excel::download(
+            new InvoicesExport($result, $products, $this->total, $currentmonth),
+            $currentmonth->name . '.xlsx'
+        );
     }
 
     private function newMemberInfo($m): ?array

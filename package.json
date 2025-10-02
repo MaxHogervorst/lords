@@ -1,9 +1,9 @@
 {
   "private": true,
   "scripts": {
-    "playwright:install": "playwright install --with-deps"
+    "playwright:install": "playwright install chromium"
   },
   "devDependencies": {
-    "playwright": "^1.55"
+    "playwright": "1.54.1"
   }
 }

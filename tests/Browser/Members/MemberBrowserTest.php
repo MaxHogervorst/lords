@@ -22,7 +22,7 @@ test('can view member list page', function () {
 
     visit('/member')
         ->assertSee('Members')
-        ->screenshot('member-list');
+        ->screenshot(filename: 'member-list');
 });
 
 test('can create new member via UI', function () {
@@ -32,7 +32,7 @@ test('can create new member via UI', function () {
         ->type('lastname', 'Doe')
         ->submit()
         ->assertSee('Member created')
-        ->screenshot('member-created');
+        ->screenshot(filename: 'member-created');
 
     expect(Member::where('firstname', 'John')->where('lastname', 'Doe')->exists())->toBeTrue();
 });
@@ -47,7 +47,7 @@ test('can edit existing member', function () {
         ->type('name', 'Janet')
         ->submit()
         ->assertSee('Member updated')
-        ->screenshot('member-updated');
+        ->screenshot(filename: 'member-updated');
 
     expect(Member::find($member->id)->firstname)->toBe('Janet');
 });
@@ -61,7 +61,7 @@ test('can view member details', function () {
     visit("/member/{$member->id}")
         ->assertSee('Bob')
         ->assertSee('Johnson')
-        ->screenshot('member-details');
+        ->screenshot(filename: 'member-details');
 });
 
 test('can delete member', function () {
@@ -70,7 +70,7 @@ test('can delete member', function () {
     visit('/member')
         ->click('Delete')
         ->assertSee('Member deleted')
-        ->screenshot('member-deleted');
+        ->screenshot(filename: 'member-deleted');
 
     expect(Member::find($member->id))->toBeNull();
 });

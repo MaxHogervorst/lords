@@ -25,7 +25,7 @@ class GroupController extends Controller
     public function store(StoreGroupRequest $request): JsonResponse
     {
         $validated = $request->validated();
-        $myDateTime = new \DateTime($validated['groupDate']);
+        $myDateTime = new \DateTime($validated['groupdate']);
         $date = $myDateTime->format('d-m-Y');
         $name = $validated['name'].' '.$date;
         $group = new Group;

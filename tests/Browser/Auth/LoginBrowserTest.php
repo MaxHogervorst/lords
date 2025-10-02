@@ -12,7 +12,7 @@ beforeEach(function () {
 test('can view login page', function () {
     visit('/auth/login')
         ->assertSee('Login')
-        ->screenshot('login-page');
+        ->screenshot(filename: 'login-page');
 });
 
 test('can login with valid credentials', function () {
@@ -27,7 +27,7 @@ test('can login with valid credentials', function () {
         ->type('password', 'password123')
         ->click('Login')
         ->assertUrlIs(url('/'))
-        ->screenshot('logged-in-home');
+        ->screenshot(filename: 'logged-in-home');
 });
 
 test('shows error with invalid credentials', function () {
@@ -36,7 +36,7 @@ test('shows error with invalid credentials', function () {
         ->type('password', 'wrongpassword')
         ->click('Login')
         ->assertSee('Wrond Credentials')
-        ->screenshot('login-error');
+        ->screenshot(filename: 'login-error');
 });
 
 test('can logout', function () {
@@ -49,5 +49,5 @@ test('can logout', function () {
 
     visit('/auth/logout')
         ->assertUrlIs(url('/auth/login'))
-        ->screenshot('logged-out');
+        ->screenshot(filename: 'logged-out');
 });

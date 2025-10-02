@@ -112,9 +112,9 @@
         $('#rootwizard .finish').click(function() {
 
             $.ajax({
-                url: '{{ url('fiscus/update') }}/'+ $('#invoiceproduct').val(),
-                method: 'PUT=',
-                data: $('#membersform, #finalproductform').serialize(),
+                url: '{{ url('fiscus') }}/'+ $('#invoiceproduct').val(),
+                method: 'PUT',
+                data: $('#membersform').serialize() + '&' + $('#finalproductform').serialize(),
                 success: function(data){
                     if(data.success)
                     {

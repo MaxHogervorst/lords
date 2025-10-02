@@ -26,7 +26,7 @@ class StoreMemberRequest extends FormRequest
             'lastname' => 'required|string|max:255',
             'iban' => 'sometimes|string|max:255',
             'bic' => 'sometimes|string|max:255',
-            'had_collection' => 'sometimes|boolean',
+            'had_collection' => 'sometimes',
         ];
     }
 
