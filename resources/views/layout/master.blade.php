@@ -12,27 +12,27 @@
     <title>GSRC Lords Bonnensysteem</title>
 
     <!-- Bootstrap Core CSS -->
-    {!! Html::style('css/bootstrap.min.css') !!}
+    <link href="{{ asset('css/bootstrap.min.css') }}" rel="stylesheet">
 
     <!-- MetisMenu CSS -->
-    {!! Html::style('css/plugins/metisMenu/metisMenu.min.css') !!}
+    <link href="{{ asset('css/plugins/metisMenu/metisMenu.min.css') }}" rel="stylesheet">
 
     <!-- Custom CSS -->
-    {!! Html::style('css/sb-admin-2.css') !!}
+    <link href="{{ asset('css/sb-admin-2.css') }}" rel="stylesheet">
 
 
     <!-- Custom Fonts -->
-    {!! Html::style('css/font-awesome.min.css') !!}
+    <link href="{{ asset('css/font-awesome.min.css') }}" rel="stylesheet">
 
-    {!! Html::style('css/site.css') !!}
+    <link href="{{ asset('css/site.css') }}" rel="stylesheet">
 
-    {!! Html::style('css/selectize.bootstrap3.css') !!}
+    <link href="{{ asset('css/selectize.bootstrap3.css') }}" rel="stylesheet">
 
 
-    {!! Html::style('css/datepicker.css') !!}
-    {!! Html::style('css/pnotify.custom.min.css') !!}
+    <link href="{{ asset('css/datepicker.css') }}" rel="stylesheet">
+    <link href="{{ asset('css/pnotify.custom.min.css') }}" rel="stylesheet">
 
-    {!! Html::style('css/bootstrap-wizzard.css') !!}
+    <link href="{{ asset('css/bootstrap-wizzard.css') }}" rel="stylesheet">
 
     <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
     <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
@@ -136,28 +136,28 @@
     <!-- /#wrapper -->
 
     <!-- jQuery Version 1.11.0 -->
-    {!! Html::script('JS/jquery-2.0.3.min.js') !!}
-    {!! Html::script('JS/jquery-ui-1.9.2.custom.min.js')!!}
+    <script src="{{ asset('JS/jquery-2.0.3.min.js') }}"></script>
+    <script src="{{ asset('JS/jquery-ui-1.9.2.custom.min.js') }}"></script>
 
     <!-- Bootstrap Core JavaScript -->
-    {!! Html::script('JS/bootstrap.min.js') !!}
+    <script src="{{ asset('JS/bootstrap.min.js') }}"></script>
 
     <!-- Metis Menu Plugin JavaScript -->
-    {!! Html::script('JS/metisMenu.min.js') !!}
+    <script src="{{ asset('JS/metisMenu.min.js') }}"></script>
 
     <!-- Custom Theme JavaScript -->
-    {!! Html::script('JS/sb-admin-2.js') !!}
+    <script src="{{ asset('JS/sb-admin-2.js') }}"></script>
 
-    {!! Html::script('JS/selectize.min.js') !!}
+    <script src="{{ asset('JS/selectize.min.js') }}"></script>
 
-    {!! Html::script('JS/bootstrap-datepicker.js') !!}
+    <script src="{{ asset('JS/bootstrap-datepicker.js') }}"></script>
 
 
-    {!! Html::script('JS/jquery.form.min.js') !!}
-    {!! Html::script('JS/pnotify.custom.min.js') !!}
-    {!! Html::script('JS/jquery.bootstrap.wizard.min.js') !!}
+    <script src="{{ asset('JS/jquery.form.min.js') }}"></script>
+    <script src="{{ asset('JS/pnotify.custom.min.js') }}"></script>
+    <script src="{{ asset('JS/jquery.bootstrap.wizard.min.js') }}"></script>
 
-    {!! Html::script('JS/functions.js') !!}
+    <script src="{{ asset('JS/functions.js') }}"></script>
 
     <script>
          $(document).ready(function(){

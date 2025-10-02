@@ -67,10 +67,10 @@
 
 <!-- Custom Theme JavaScript -->
 <script src="../JS/sb-admin-2.js"></script>
-{{ Html::script('JS/jquery.form.min.js') }}
+<script src="{{ asset('JS/jquery.form.min.js') }}"></script>
 
-{{ Html::script('JS/pnotify.custom.min.js') }}
-{{ Html ::script('JS/functions.js') }}
+<script src="{{ asset('JS/pnotify.custom.min.js') }}"></script>
+<script src="{{ asset('JS/functions.js') }}"></script>
 
 <script>
     $(document).ready(function(){
