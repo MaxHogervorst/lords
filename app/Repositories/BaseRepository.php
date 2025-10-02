@@ -93,21 +93,29 @@ abstract class BaseRepository implements RepositoryInterface
     /**
      * Find records by a specific column value.
      */
-    public function findBy(string $column, mixed $value, array $columns = ['*']): Collection
+    public function findBy(string $column, mixed $value, array $relations = [], array $columns = ['*']): Collection
     {
-        return $this->model->select($columns)
-            ->where($column, $value)
-            ->get();
+        $query = $this->model->newQuery()->select($columns)->where($column, $value);
+
+        if (!empty($relations)) {
+            $query->with($relations);
+        }
+
+        return $query->get();
     }
 
     /**
      * Find first record by a specific column value.
      */
-    public function findOneBy(string $column, mixed $value, array $columns = ['*']): ?Model
+    public function findOneBy(string $column, mixed $value, array $relations = [], array $columns = ['*']): ?Model
     {
-        return $this->model->select($columns)
-            ->where($column, $value)
-            ->first();
+        $query = $this->model->newQuery()->select($columns)->where($column, $value);
+
+        if (!empty($relations)) {
+            $query->with($relations);
+        }
+
+        return $query->first();
     }
 
     /**

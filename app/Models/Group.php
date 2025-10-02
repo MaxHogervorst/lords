@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -34,5 +35,13 @@ class Group extends Model
     public function invoice_group(): BelongsTo
     {
         return $this->belongsTo(InvoiceGroup::class);
+    }
+
+    /**
+     * Scope to filter groups by invoice group.
+     */
+    public function scopeForInvoiceGroup(Builder $query, int $invoiceGroupId): Builder
+    {
+        return $query->where('invoice_group_id', $invoiceGroupId);
     }
 }

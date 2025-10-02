@@ -51,6 +51,22 @@ class Member extends Model
         return $query->where('had_collection', '=', true);
     }
 
+    /**
+     * Scope to filter members with bank information.
+     */
+    public function scopeWithBankInfo(Builder $query): Builder
+    {
+        return $query->whereNotNull('bic')->whereNotNull('iban');
+    }
+
+    /**
+     * Scope to filter members without bank information.
+     */
+    public function scopeWithoutBankInfo(Builder $query): Builder
+    {
+        return $query->whereNull('bic')->whereNull('iban');
+    }
+
     public function getFullName(): string
     {
         return $this->firstname.' '.$this->lastname;

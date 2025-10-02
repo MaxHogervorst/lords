@@ -20,7 +20,7 @@ class HomeController extends Controller
         $currentMonth = $this->invoiceRepository->getCurrentMonth();
         $id = $currentMonth ? $currentMonth->id : 0;
 
-        $orders = $this->orderRepository->findBy('invoice_group_id', $id);
+        $orders = $this->orderRepository->findBy('invoice_group_id', $id, ['product', 'ownerable']);
         // Sort by ID descending
         $orders = $orders->sortByDesc('id');
 
