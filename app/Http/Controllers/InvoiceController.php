@@ -69,12 +69,7 @@ class InvoiceController extends Controller
         $sessionMember = $this->getSessionMember();
 
         if (! is_null($sessionMember)) {
-            // This complex query needs to stay as Model query for now due to whereHas
-            $m = $this->memberRepository->query()
-                ->with('orders.product', 'groups.orders.product')
-                ->whereHas('invoice_lines.productprice.product', function ($q) use ($sessionMember) {
-                    $q->where('member_id', $sessionMember->id);
-                })->first();
+            $m = $this->memberRepository->findWithInvoiceLinesByMemberId($sessionMember->id);
         }
 
         $products = $this->productRepository->getAllAsArrayIdAsKey();
