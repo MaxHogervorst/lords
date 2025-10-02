@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreGroupRequest;
@@ -39,12 +41,12 @@ class GroupController extends Controller
         }
     }
 
-    public function show($id): View
+    public function show(string $id): View
     {
         return view('group.order')->with('group', Group::find($id))->with('products', Product::all())->with('members', Member::all())->with('currentmonth', InvoiceGroup::getCurrentMonth());
     }
 
-    public function edit($id): View
+    public function edit(string $id): View
     {
         return view('group.edit')->with('group', Group::find($id));
     }
@@ -65,7 +67,7 @@ class GroupController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy($id): JsonResponse
+    public function destroy(string $id): JsonResponse
     {
         $member = Group::find($id);
         $member->delete();

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreMemberRequest;
@@ -39,7 +41,7 @@ class MemberController extends Controller
         }
     }
 
-    public function show($id): View
+    public function show(string $id): View
     {
         return view('member.order')->with('member', Member::find($id))->with('products', Product::all())->with('currentmonth', InvoiceGroup::getCurrentMonth());
     }
@@ -47,7 +49,7 @@ class MemberController extends Controller
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit($id): View
+    public function edit(string $id): View
     {
         return view('member.edit')->with('member', Member::find($id));
     }
@@ -55,7 +57,7 @@ class MemberController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(StoreMemberRequest $request, $id): JsonResponse
+    public function update(StoreMemberRequest $request, string $id): JsonResponse
     {
         $validated = $request->validated();
         $member = Member::find($id);
@@ -76,7 +78,7 @@ class MemberController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy($id): JsonResponse
+    public function destroy(string $id): JsonResponse
     {
         $member = Member::find($id);
         $member->delete();

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreProductRequest;
@@ -42,7 +44,7 @@ class ProductController extends Controller
         }
     }
 
-    public function edit($id): View
+    public function edit(string $id): View
     {
         return view('product.edit')->with('product', Product::find($id));
     }
@@ -62,7 +64,7 @@ class ProductController extends Controller
         }
     }
 
-    public function destroy($id): JsonResponse
+    public function destroy(string $id): JsonResponse
     {
         $product = Product::find($id);
 

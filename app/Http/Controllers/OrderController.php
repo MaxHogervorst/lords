@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreOrderRequest;
@@ -12,7 +14,7 @@ class OrderController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function postStore(StoreOrderRequest $request, $type): JsonResponse
+    public function postStore(StoreOrderRequest $request, string $type): JsonResponse
     {
         $validated = $request->validated();
 

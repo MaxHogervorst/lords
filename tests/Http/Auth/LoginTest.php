@@ -1,7 +1,5 @@
 <?php
 
-use App\Models\User;
-
 test('login page loads', function () {
     $response = $this->get('/auth/login');
 

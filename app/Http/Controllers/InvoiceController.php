@@ -1,13 +1,16 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers;
 
-use anlutro\LaravelSettings\Facade as Settings;
+use App\Enums\SepaSequenceType;
 use App\Exports\InvoicesExport;
 use App\Models\InvoiceGroup;
 use App\Models\InvoiceProduct;
 use App\Models\Member;
 use App\Models\Product;
+use DateTime;
 use Digitick\Sepa\TransferFile\Factory\TransferFileFacadeFactory;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -18,16 +21,11 @@ use Maatwebsite\Excel\Facades\Excel;
 
 class InvoiceController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     *
-     * @return Response
-     */
-    private $exceldata;
+    private array $exceldata = [];
 
-    private $currentpaymentinfo;
+    private string $currentpaymentinfo = '';
 
-    private $total;
+    private float $total = 0.0;
 
     public function getIndex(): View
     {
@@ -120,17 +118,19 @@ class InvoiceController extends Controller
 
         return Excel::download(
             new InvoicesExport($result, $products, $this->total, $currentmonth),
-            $currentmonth->name . '.xlsx'
+            $currentmonth->name.'.xlsx'
         );
     }
 
-    private function newMemberInfo($m): ?array
+    private function newMemberInfo(Member $m): ?array
     {
+        $mandatePadding = config('sepa.mandate.id_padding');
+
         $memberinfo = [];
         $memberinfo['name'] = $m->firstname.' '.$m->lastname;
         $memberinfo['iban'] = $m->iban;
         $memberinfo['bic'] = $m->bic;
-        $memberinfo['mandate'] = str_pad($m->id, 10, '0', STR_PAD_LEFT);
+        $memberinfo['mandate'] = str_pad((string) $m->id, $mandatePadding, '0', STR_PAD_LEFT);
         $memberinfo['m'] = $m;
 
         $manor = 0;
@@ -150,18 +150,29 @@ class InvoiceController extends Controller
         }
     }
 
-    private function newBatch($seqType): mixed
+    private function newBatch(SepaSequenceType $seqType): mixed
     {
-        $this->currentpaymentinfo = 'GSRC'.date('Y-m-d H:i:s');
-        $currentbatch = TransferFileFacadeFactory::createDirectDebit('GSRC'.date('Y-m-d H:i:s'), 'me', Settings::get('creditorPain'));
+        $prefix = config('sepa.file.prefix');
+        $timestamp = date('Y-m-d H:i:s');
+        $this->currentpaymentinfo = $prefix.$timestamp;
+
+        $currentbatch = TransferFileFacadeFactory::createDirectDebit(
+            $prefix.$timestamp,
+            'me',
+            config('sepa.creditor.pain')
+        );
+
+        $daysOffset = config('sepa.collection.due_date_weekdays');
+        $dueDate = new DateTime(date('Y-m-d', strtotime("now +{$daysOffset} weekdays")));
+
         $currentbatch->addPaymentInfo($this->currentpaymentinfo, [
-            'id' => 'GSRC'.date('Y-m-d H:i:s'),
-            'creditorName' => Settings::get('creditorName'),
-            'creditorAccountIBAN' => Settings::get('creditorAccountIBAN'),
-            'creditorAgentBIC' => Settings::get('creditorAgentBIC'),
-            'seqType' => $seqType,
-            'creditorId' => Settings::get('creditorId'),
-            'dueDate' => new \DateTime(date('Y-m-d', strtotime('now +'.Settings::get('ReqdColltnDt').' weekdays'))),
+            'id' => $prefix.$timestamp,
+            'creditorName' => config('sepa.creditor.name'),
+            'creditorAccountIBAN' => config('sepa.creditor.account_iban'),
+            'creditorAgentBIC' => config('sepa.creditor.agent_bic'),
+            'seqType' => $seqType->value,
+            'creditorId' => config('sepa.creditor.id'),
+            'dueDate' => $dueDate,
         ]);
 
         return $currentbatch;
@@ -196,20 +207,27 @@ class InvoiceController extends Controller
 
         $batchfailedmembers = [];
 
+        $maxMoneyPerBatch = config('sepa.batch.max_money_per_batch');
+        $maxTransactionsPerBatch = config('sepa.batch.max_transactions_per_batch');
+        $maxMoneyPerTransaction = config('sepa.batch.max_money_per_transaction');
+        $mandateSignDate = config('sepa.mandate.sign_date');
+        $remittancePrefix = config('sepa.remittance.prefix');
+        $filePrefix = config('sepa.file.prefix');
+        $storagePath = config('sepa.file.storage_path');
+
         $transactions = 0;
         $batchtotalmoney = 0;
         if (! empty($members['RCUR'])) {
-            $currentbatch = $this->newBatch('RCUR');
+            $currentbatch = $this->newBatch(SepaSequenceType::RECURRING);
 
             foreach ($members['RCUR'] as $m) {
-                if ($batchtotalmoney + $m['amount'] > Settings::get('creditorMaxMoneyPerBatch') || $transactions == Settings::get('creditorMaxTransactionsPerBatch')) {
+                if ($batchtotalmoney + $m['amount'] > $maxMoneyPerBatch || $transactions == $maxTransactionsPerBatch) {
                     $batches['RCUR'][] = $currentbatch;
-                    $this->currentpaymentinfo = 'GSRC'.date('Y-m-d H:i:s');
-                    $currentbatch = $this->newBatch('RCUR');
+                    $currentbatch = $this->newBatch(SepaSequenceType::RECURRING);
                     $transactions = 0;
                     $batchtotalmoney = 0;
                 }
-                if ($m['amount'] > Settings::get('creditorMaxMoneyPerTransaction')) {
+                if ($m['amount'] > $maxMoneyPerTransaction) {
                     $batchfailedmembers[] = $m;
                 } else {
                     $currentbatch->addTransfer($this->currentpaymentinfo, [
@@ -218,8 +236,8 @@ class InvoiceController extends Controller
                         'debtorBic' => $m['bic'],
                         'debtorName' => $m['name'],
                         'debtorMandate' => $m['mandate'],
-                        'debtorMandateSignDate' => '13.10.2012',
-                        'remittanceInformation' => 'GSRC Incasso '.date('Y-m'),
+                        'debtorMandateSignDate' => $mandateSignDate,
+                        'remittanceInformation' => $remittancePrefix.' '.date('Y-m'),
                     ]);
                     $batchtotalmoney += $m['amount'];
                     $transactions++;
@@ -230,16 +248,15 @@ class InvoiceController extends Controller
         $transactions = 0;
         $batchtotalmoney = 0;
         if (! empty($members['FRST'])) {
-            $currentbatch = $this->newBatch('FRST');
+            $currentbatch = $this->newBatch(SepaSequenceType::FIRST);
             foreach ($members['FRST'] as $m) {
-                if ($batchtotalmoney + $m['amount'] > Settings::get('creditorMaxMoneyPerBatch') || $transactions == Settings::get('creditorMaxTransactionsPerBatch')) {
+                if ($batchtotalmoney + $m['amount'] > $maxMoneyPerBatch || $transactions == $maxTransactionsPerBatch) {
                     $batches['FRST'][] = $currentbatch;
-                    $this->currentpaymentinfo = 'GSRC'.date('Y-m-d H:i:s');
-                    $currentbatch = $this->newBatch('FRST');
+                    $currentbatch = $this->newBatch(SepaSequenceType::FIRST);
                     $transactions = 0;
                     $batchtotalmoney = 0;
                 }
-                if ($m['amount'] > Settings::get('creditorMaxMoneyPerTransaction')) {
+                if ($m['amount'] > $maxMoneyPerTransaction) {
                     $batchfailedmembers[] = $m;
                 } else {
                     $currentbatch->addTransfer($this->currentpaymentinfo, [
@@ -248,8 +265,8 @@ class InvoiceController extends Controller
                         'debtorBic' => $m['bic'],
                         'debtorName' => $m['name'],
                         'debtorMandate' => $m['mandate'],
-                        'debtorMandateSignDate' => '13.10.2012',
-                        'remittanceInformation' => 'GSRC Incasso '.date('Y-m'),
+                        'debtorMandateSignDate' => $mandateSignDate,
+                        'remittanceInformation' => $remittancePrefix.' '.date('Y-m'),
                     ]);
                     $batchtotalmoney += $m['amount'];
                     $transactions++;
@@ -262,8 +279,8 @@ class InvoiceController extends Controller
         $batchlink = [];
         foreach ($batches['RCUR'] as $b) {
             $i++;
-            $filename = 'GSRC RCUR '.$i.' '.date('Y-m-d').'.xml';
-            $filepath = storage_path('SEPA/'.$filename);
+            $filename = "{$filePrefix} RCUR {$i} ".date('Y-m-d').'.xml';
+            $filepath = storage_path("{$storagePath}/{$filename}");
             $file = fopen($filepath, 'w');
             fwrite($file, $b->asXML());
             fclose($file);
@@ -273,8 +290,8 @@ class InvoiceController extends Controller
         $i = 0;
         foreach ($batches['FRST'] as $b) {
             $i++;
-            $filename = 'GSRC FRST '.$i.' '.date('Y-m-d').'.xml';
-            $filepath = storage_path('SEPA/'.$filename);
+            $filename = "{$filePrefix} FRST {$i} ".date('Y-m-d').'.xml';
+            $filepath = storage_path("{$storagePath}/{$filename}");
             $file = fopen($filepath, 'w');
             fwrite($file, $b->asXML());
             fclose($file);
@@ -380,7 +397,7 @@ class InvoiceController extends Controller
         }
     }
 
-    private function CalculateMemberOrders($member): float|int
+    private function CalculateMemberOrders(Member $member): float|int
     {
         $price = 0;
 
@@ -392,7 +409,7 @@ class InvoiceController extends Controller
         return $price;
     }
 
-    private function CalculateGroupOrders($member): float|int
+    private function CalculateGroupOrders(Member $member): float|int
     {
         $price = 0;
         $products = Product::toArrayIdAsKey();

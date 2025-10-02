@@ -3,7 +3,6 @@
 use App\Models\Group;
 use App\Models\InvoiceGroup;
 use App\Models\Member;
-use App\Models\Order;
 use App\Models\Product;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
