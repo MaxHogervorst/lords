@@ -1,4 +1,4 @@
-FROM php:8.2-fpm
+FROM php:8.4-fpm
 
 # Install system dependencies
 RUN apt-get update && apt-get install -y \
@@ -18,8 +18,8 @@ RUN apt-get clean && rm -rf /var/lib/apt/lists/*
 # Install PHP extensions
 RUN docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd zip
 
-# Install Xdebug for code coverage (3.2+ for PHP 8.2)
-RUN pecl install xdebug-3.2.2 && docker-php-ext-enable xdebug
+# Install Xdebug for code coverage (3.4+ for PHP 8.4)
+RUN pecl install xdebug-3.4.0 && docker-php-ext-enable xdebug
 
 # Configure PHP to suppress deprecation warnings
 RUN echo "error_reporting = E_ALL & ~E_DEPRECATED & ~E_STRICT" > /usr/local/etc/php/conf.d/custom.ini \
