@@ -6,10 +6,10 @@
     "type": "project",
     "require": {
         "php": "^8.4",
-        "laravel/framework": "^11.0",
-        "laravel/tinker": "^2.9",
+        "laravel/framework": "^12.0",
+        "laravel/tinker": "^2.10",
         "guzzlehttp/guzzle": "^7.0.1",
-        "cartalyst/sentinel": "*",
+        "cartalyst/sentinel": "^9.0",
         "barryvdh/laravel-debugbar": "^3.1",
         "anlutro/l4-settings": "^1.4"
     },
