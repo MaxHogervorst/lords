@@ -36,7 +36,7 @@ class InvoiceController extends Controller
             ->with(['groups.orders.product'])
             ->with(['invoice_lines.productprice.product'])->get();
 
-        return view('invoice.index')->with('invoicegroups', InvoiceGroup::orderBy('id', SORT_DESC)->get())
+        return view('invoice.index')->with('invoicegroups', InvoiceGroup::orderBy('id', 'desc')->get())
             ->with('currentmonth', $currentmonth)
             ->with('members', $members)
             ->with('products', $products);
@@ -60,7 +60,7 @@ class InvoiceController extends Controller
         }
 
         return view('invoice.person')
-            ->with('invoicegroups', InvoiceGroup::orderBy('id', SORT_DESC)->get())
+            ->with('invoicegroups', InvoiceGroup::orderBy('id', 'desc')->get())
             ->with('currentmonth', $currentmonth)
             ->with('m', $m)
             ->with('products', $products);

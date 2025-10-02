@@ -62,3 +62,8 @@ lib/
 log/
 
 .php_cs.cache
+
+# Pest Browser Testing
+tests/Browser/Screenshots/
+tests/Browser/Videos/
+.phpunit.cache

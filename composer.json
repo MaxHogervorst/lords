@@ -18,7 +18,7 @@
         "nunomaduro/collision": "^8.0",
         "fakerphp/faker": "^1.23",
         "mockery/mockery": "^1.4.4",
-        "phpunit/phpunit": "^11.0",
+        "phpunit/phpunit": "^12.3",
         "symfony/css-selector": "^7.0",
         "symfony/dom-crawler": "^7.0",
         "itsgoingd/clockwork": "^5.1",
@@ -26,7 +26,9 @@
         "maatwebsite/excel": "^3.1",
         "phpstan/phpstan": "^2.0",
         "laravel/pint": "^1.0",
-        "pestphp/pest": "^3.8"
+        "pestphp/pest": "^4.0",
+        "pestphp/pest-plugin-laravel": "^4.0",
+        "pestphp/pest-plugin-browser": "^4.1"
     },
     "autoload": {
         "classmap": [
