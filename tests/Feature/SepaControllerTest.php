@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Feature;
 
+use App\Models\InvoiceGroup;
+use App\Models\Product;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Sentinel;
 use Tests\TestCase;
@@ -18,12 +20,32 @@ class SepaControllerTest extends TestCase
     {
         parent::setUp();
 
+        // Clear cache and logout any existing session
+        \Cache::flush();
+        if (Sentinel::check()) {
+            Sentinel::logout();
+        }
+
+        // Create required data for tests
+        Product::factory()->create();
+        InvoiceGroup::factory()->create(['status' => true]);
+
         // Create admin role for tests
         $this->adminRole = Sentinel::getRoleRepository()->createModel()->firstOrCreate([
             'slug' => 'admin',
         ], [
             'name' => 'Admin',
         ]);
+    }
+
+    protected function tearDown(): void
+    {
+        // Logout after each test
+        if (Sentinel::check()) {
+            Sentinel::logout();
+        }
+
+        parent::tearDown();
     }
 
     /**
@@ -39,10 +61,10 @@ class SepaControllerTest extends TestCase
         Sentinel::login($sentinelUser);
         $user = \App\Models\User::find($sentinelUser->id);
 
-        $this->actingAs($user)
-            ->get('/sepa')
-            ->assertStatus(200)
-            ->assertDontSee('Unauthorized');
+        $response = $this->actingAs($user)->get('/sepa');
+
+        $response->assertOk();
+        $response->assertSee('Creditor Name');
     }
 
     /**

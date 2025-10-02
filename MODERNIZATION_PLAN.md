@@ -152,11 +152,6 @@ Apply consistent patterns:
 - [ ] Add database indexes for frequently queried columns
 - [ ] Use `select()` to limit retrieved columns
 
-### 5.3 Add Model Events & Observers
-- [ ] Create observers for: Member, Order, Invoice
-- [ ] Dispatch events for important state changes
-- [ ] Implement event listeners
-
 ---
 
 ## Phase 6: Route Optimization (Priority: Medium)
@@ -168,18 +163,11 @@ Apply consistent patterns:
 - [ ] Use route model binding
 - [ ] Group routes more logically
 - [ ] Add route names to all routes
-- [ ] Consider splitting into multiple route files
 
 ### 6.2 Implement Route Model Binding
 - [ ] Use implicit binding where possible
 - [ ] Create custom route bindings for complex lookups
 - [ ] Update controller methods to accept model parameters
-
-### 6.3 Add API Routes
-- [ ] Create `routes/api.php` if needed
-- [ ] Implement RESTful API endpoints
-- [ ] Add API versioning
-- [ ] Add API authentication
 
 ---
 

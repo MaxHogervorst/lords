@@ -67,3 +67,5 @@ log/
 tests/Browser/Screenshots/
 tests/Browser/Videos/
 .phpunit.cache
+
+storage/

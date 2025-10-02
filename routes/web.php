@@ -39,8 +39,6 @@ Route::group(['middleware' => ['auth', 'admin']], function () {
     Route::get('fiscus/specificinvoicelines/{invoiceProductPrice}', [FiscusController::class, 'getSpecificinvoicelines']);
     Route::get('fiscus/edit', [FiscusController::class, 'getEdit']);
     Route::resource('fiscus', FiscusController::class, ['except' => ['edit']]);
-    Route::put('fiscus/{invoiceProduct}', [FiscusController::class, 'update'])->name('fiscus.update');
-    Route::delete('fiscus/{invoiceProduct}', [FiscusController::class, 'destroy'])->name('fiscus.destroy');
     Route::get('invoice', [InvoiceController::class, 'getIndex']);
     Route::get('invoice/pdf', [InvoiceController::class, 'getPdf']);
     Route::get('invoice/excel', [InvoiceController::class, 'getExcel']);
