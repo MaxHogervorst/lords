@@ -157,11 +157,17 @@ Apply consistent patterns:
 **Note:** Model factories already exist for all models
 
 ### 5.2 Optimize Queries
-- [ ] Review N+1 query problems
-- [ ] Add eager loading where needed
-- [ ] Implement query scopes for common filters
-- [ ] Add database indexes for frequently queried columns
-- [ ] Use `select()` to limit retrieved columns
+- [x] Review N+1 query problems
+- [x] Add eager loading where needed
+- [x] Implement query scopes for common filters
+- [x] Add database indexes for frequently queried columns
+- [ ] Use `select()` to limit retrieved columns (optional - only when memory is a concern)
+
+**Completed optimizations:**
+- Fixed N+1 issues in HomeController and InvoiceController
+- Added eager loading support to BaseRepository findBy methods
+- Implemented scopes: Order (forInvoiceGroup, forProduct), Product (active, inactive), Group (forInvoiceGroup), Member (withBankInfo, withoutBankInfo)
+- Created comprehensive database indexes for all foreign keys and frequently filtered columns
 
 ---
 
