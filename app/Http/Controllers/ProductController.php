@@ -3,76 +3,77 @@
 namespace App\Http\Controllers;
 
 use App\Models\Product;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Facades\Input;
-use Illuminate\Support\Facades\Response;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\View\View;
 
 class ProductController extends Controller
 {
-    public function autocomplete()
+    public function autocomplete(Request $request): JsonResponse
     {
-        $product = Product::where('Name', 'LIKE', '%'.Input::get('term').'%')->get();
+        $product = Product::where('Name', 'LIKE', '%'.$request->get('term').'%')->get();
 
-        return Response::json($product->toArray());
+        return response()->json($product->toArray());
     }
 
-    public function index()
+    public function index(): View
     {
         $product = Product::all();
 
         return view('product.index')->withResults($product);
     }
 
-    public function store()
+    public function store(Request $request): JsonResponse
     {
-        $v = Validator::make(Input::all(), ['name' => 'required', 'productPrice' => 'required|numeric']);
+        $v = Validator::make($request->all(), ['name' => 'required', 'productPrice' => 'required|numeric']);
 
         if (! $v->passes()) {
-            return Response::json(['errors' => $v->errors()]);
+            return response()->json(['errors' => $v->errors()]);
         } else {
             $product = new Product;
-            $product->name = Input::get('name');
-            $product->price = Input::get('productPrice');
+            $product->name = $request->get('name');
+            $product->price = $request->get('productPrice');
             $product->save();
 
             if ($product->exists) {
                 $this->updateProductCache();
 
-                return Response::json(['success' => true, 'id' => $product->id, 'name' => $product->name, 'price' => $product->price]);
+                return response()->json(['success' => true, 'id' => $product->id, 'name' => $product->name, 'price' => $product->price]);
             } else {
-                return Response::json(['errors' => 'Could not be added to the database']);
+                return response()->json(['errors' => 'Could not be added to the database']);
             }
         }
     }
 
-    public function edit($id)
+    public function edit($id): View
     {
         return view('product.edit')->with('product', Product::find($id));
     }
 
-    public function update($id)
+    public function update(Request $request, $id): JsonResponse
     {
-        $v = Validator::make(Input::all(), ['productName' => 'required', 'productPrice' => 'required|numeric']);
+        $v = Validator::make($request->all(), ['productName' => 'required', 'productPrice' => 'required|numeric']);
 
         if (! $v->passes()) {
-            return Response::json(['errors' => $v->errors()]);
+            return response()->json(['errors' => $v->errors()]);
         } else {
             $product = Product::find($id);
-            $product->Name = Input::get('productName');
-            $product->Price = Input::get('productPrice');
+            $product->Name = $request->get('productName');
+            $product->Price = $request->get('productPrice');
 
             if ($product->save()) {
                 $this->updateProductCache();
 
-                return Response::json(['success' => true, 'message' => $product->name.' Successfully edited']);
+                return response()->json(['success' => true, 'message' => $product->name.' Successfully edited']);
             } else {
-                return Response::json(['errors' => 'Could not be updated']);
+                return response()->json(['errors' => 'Could not be updated']);
             }
         }
     }
 
-    public function destroy($id)
+    public function destroy($id): JsonResponse
     {
         $product = Product::find($id);
 
@@ -81,13 +82,13 @@ class ProductController extends Controller
         if (! $product->exists) {
             $this->updateProductCache();
 
-            return Response::json(['success' => true, 'message' => $product->name.' Successfully deleted']);
+            return response()->json(['success' => true, 'message' => $product->name.' Successfully deleted']);
         } else {
-            return Response::json(['errors' => 'Could not be deleted']);
+            return response()->json(['errors' => 'Could not be deleted']);
         }
     }
 
-    private function updateProductCache()
+    private function updateProductCache(): void
     {
         if (Cache::has('products')) {
             Cache::forget('products');

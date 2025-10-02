@@ -4,21 +4,19 @@ namespace App\Http\Controllers;
 
 use App\Models\InvoiceGroup;
 use App\Models\Order;
-use Illuminate\Support\Facades\Input;
-use Illuminate\Support\Facades\Response;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 
 class OrderController extends Controller
 {
     /**
      * Store a newly created resource in storage.
-     *
-     * @return Response
      */
-    public function postStore($type)
+    public function postStore(Request $request, $type): JsonResponse
     {
         $v = Validator::make(
-            Input::all(),
+            $request->all(),
             [
                 'memberId' => 'required|numeric',
                 'product' => 'required',
@@ -26,7 +24,7 @@ class OrderController extends Controller
             ]);
 
         if (! $v->passes()) {
-            return Response::json(['errors' => $v->errors()]);
+            return response()->json(['errors' => $v->errors()]);
         } else {
             if ($type == 'Member') {
                 $type = 'App\Models\Member';
@@ -36,14 +34,14 @@ class OrderController extends Controller
 
             $order = new Order;
             $order->invoice_group_id = InvoiceGroup::getCurrentMonth()->id;
-            $order->ownerable_id = Input::get('memberId');
+            $order->ownerable_id = $request->get('memberId');
             $order->ownerable_type = $type;
-            $order->product_id = Input::get('product');
-            $order->amount = Input::get('amount');
+            $order->product_id = $request->get('product');
+            $order->amount = $request->get('amount');
             $order->save();
 
             if ($order->exists) {
-                return Response::json([
+                return response()->json([
                     'success' => true,
                     'date' => date('Y-m-d G:i:s'),
                     'product' => $order->product->name,
@@ -53,7 +51,7 @@ class OrderController extends Controller
                     'message' => 'order successfully',
                 ]);
             } else {
-                return Response::json(['errors' => 'Could not be added to the database']);
+                return response()->json(['errors' => 'Could not be added to the database']);
             }
         }
     }

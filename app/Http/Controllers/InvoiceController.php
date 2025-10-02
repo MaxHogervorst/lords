@@ -8,10 +8,11 @@ use App\Models\InvoiceProduct;
 use App\Models\Member;
 use App\Models\Product;
 use Digitick\Sepa\TransferFile\Factory\TransferFileFacadeFactory;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Facades\Input;
-use Illuminate\Support\Facades\Response;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\View\View;
 use Maatwebsite\Excel\Facades\Excel;
 
 class InvoiceController extends Controller
@@ -27,7 +28,7 @@ class InvoiceController extends Controller
 
     private $total;
 
-    public function getIndex()
+    public function getIndex(): View
     {
         $currentmonth = InvoiceGroup::getCurrentMonth();
         $products = Product::toArrayIdAsKey();
@@ -41,7 +42,7 @@ class InvoiceController extends Controller
             ->with('products', $products);
     }
 
-    public function getPerPerson()
+    public function getPerPerson(): View
     {
         $m = null;
         if (! is_null(session('member'))) {
@@ -65,7 +66,7 @@ class InvoiceController extends Controller
             ->with('products', $products);
     }
 
-    public function getPdf()
+    public function getPdf(): View
     {
         $currentmonth = InvoiceGroup::getCurrentMonth();
 
@@ -74,7 +75,7 @@ class InvoiceController extends Controller
             ->with('members', Member::with('orders.product', 'groups.orders.product', 'invoice_lines.productprice.product')->get());
     }
 
-    public function getExcel()
+    public function getExcel(): View
     {
         $currentmonth = InvoiceGroup::getCurrentMonth();
         $result = [];
@@ -127,7 +128,7 @@ class InvoiceController extends Controller
             ->with('products', InvoiceProduct::where('invoice_group_id', '=', $currentmonth->id)->get());
     }
 
-    private function newMemberInfo($m)
+    private function newMemberInfo($m): ?array
     {
         $memberinfo = [];
         $memberinfo['name'] = $m->firstname.' '.$m->lastname;
@@ -153,7 +154,7 @@ class InvoiceController extends Controller
         }
     }
 
-    private function newBatch($seqType)
+    private function newBatch($seqType): mixed
     {
         $this->currentpaymentinfo = 'GSRC'.date('Y-m-d H:i:s');
         $currentbatch = TransferFileFacadeFactory::createDirectDebit('GSRC'.date('Y-m-d H:i:s'), 'me', Settings::get('creditorPain'));
@@ -170,7 +171,7 @@ class InvoiceController extends Controller
         return $currentbatch;
     }
 
-    public function getSepa()
+    public function getSepa(): View
     {
         $memberswithoutbankinfo = Member::whereNull('bic')->whereNull('iban')->get();
 
@@ -294,82 +295,80 @@ class InvoiceController extends Controller
 
     /**
      * Store a newly created resource in storage.
-     *
-     * @return Response
      */
-    public function postStoreinvoicegroup()
+    public function postStoreinvoicegroup(Request $request): JsonResponse
     {
-        $v = Validator::make(Input::all(), ['invoiceMonth' => 'required']);
+        $v = Validator::make($request->all(), ['invoiceMonth' => 'required']);
 
         if (! $v->passes()) {
-            return Response::json(['errors' => $v->errors()]);
+            return response()->json(['errors' => $v->errors()]);
         } else {
             $invoicegroups = InvoiceGroup::where('status', '=', true);
             $invoicegroups->update(['status' => false]);
 
             $invoicegroup = new InvoiceGroup;
-            $invoicegroup->name = Input::get('invoiceMonth');
+            $invoicegroup->name = $request->get('invoiceMonth');
             $invoicegroup->status = true;
             $invoicegroup->save();
 
             if ($invoicegroup->exists) {
                 Cache::forget('invoice_group');
 
-                return Response::json(['success' => true, 'id' => $invoicegroup->id, 'name' => $invoicegroup->name]);
+                return response()->json(['success' => true, 'id' => $invoicegroup->id, 'name' => $invoicegroup->name]);
             } else {
-                return Response::json(['errors' => 'Could not be added to the database']);
+                return response()->json(['errors' => 'Could not be added to the database']);
             }
         }
     }
 
-    public function postSetPersonalInvoiceGroup()
+    public function postSetPersonalInvoiceGroup(Request $request): JsonResponse
     {
-        $v = Validator::make(Input::all(), ['invoiceGroup' => 'required']);
+        $v = Validator::make($request->all(), ['invoiceGroup' => 'required']);
 
         if (! $v->passes()) {
-            return Response::json(['errors' => $v->errors()]);
+            return response()->json(['errors' => $v->errors()]);
         } else {
-            $invoicegroup = InvoiceGroup::find(Input::get('invoiceGroup'));
+            $invoicegroup = InvoiceGroup::find($request->get('invoiceGroup'));
 
             if (! is_null($invoicegroup)) {
                 session(['personal_invoice_group' => $invoicegroup]);
 
-                return Response::json(['success' => true]);
+                return response()->json(['success' => true]);
             } else {
-                return Response::json(['errors' => 'Could not find month']);
+                return response()->json(['errors' => 'Could not find month']);
             }
         }
     }
 
-    public function postSetPerson()
+    public function postSetPerson(Request $request): JsonResponse
     {
-        $v = Validator::make(Input::all(), ['name' => 'required', 'iban' => 'required']);
+        $v = Validator::make($request->all(), ['name' => 'required', 'iban' => 'required']);
 
         if (! $v->passes()) {
-            return Response::json(['errors' => $v->errors()]);
+            return response()->json(['errors' => $v->errors()]);
         } else {
-            $member = Member::where(['lastname' => Input::get('name'), 'iban' => Input::get('iban')])->first();
+            $member = Member::where(['lastname' => $request->get('name'), 'iban' => $request->get('iban')])->first();
             if (! is_null($member)) {
                 session(['member' => $member]);
 
-                return Response::json(['success' => true]);
+                return response()->json(['success' => true]);
             } else {
-                return Response::json(['errors' => 'Could not find member']);
+                return response()->json(['errors' => 'Could not find member']);
             }
         }
     }
 
-    public function postSelectinvoicegroup()
+    public function postSelectinvoicegroup(Request $request): JsonResponse
     {
-        $v = Validator::make(Input::all(), ['invoiceGroup' => 'required']);
+        $v = Validator::make($request->all(), ['invoiceGroup' => 'required']);
 
         if (! $v->passes()) {
-            return Response::json(['errors' => $v->errors()]);
+            return response()->json(['errors' => $v->errors()]);
         } else {
             $invoicegroups = InvoiceGroup::where('status', '=', true);
             $invoicegroups->update(['status' => false]);
 
-            $invoicegroup = InvoiceGroup::find(Input::get('invoiceGroup'));
+            $invoicegroup = InvoiceGroup::find($request->get('invoiceGroup'));
             $invoicegroup->status = true;
             $invoicegroup->save();
 
@@ -378,14 +377,14 @@ class InvoiceController extends Controller
             if ($invoicegroups->count() > 0) {
                 Cache::forget('invoice_group');
 
-                return Response::json(['success' => true]);
+                return response()->json(['success' => true]);
             } else {
-                return Response::json(['errors' => 'Could not be added to the database']);
+                return response()->json(['errors' => 'Could not be added to the database']);
             }
         }
     }
 
-    private function CalculateMemberOrders($member)
+    private function CalculateMemberOrders($member): float|int
     {
         $price = 0;
 
@@ -397,7 +396,7 @@ class InvoiceController extends Controller
         return $price;
     }
 
-    private function CalculateGroupOrders($member)
+    private function CalculateGroupOrders($member): float|int
     {
         $price = 0;
         $products = Product::toArrayIdAsKey();

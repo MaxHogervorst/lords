@@ -4,6 +4,9 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
 
 class Group extends Model
 {
@@ -11,18 +14,18 @@ class Group extends Model
 
     protected $table = 'groups';
 
-    public function members()
+    public function members(): BelongsToMany
     {
-        return $this->belongsToMany('App\Models\Member')->withPivot('id', 'id');
+        return $this->belongsToMany(Member::class)->withPivot('id', 'id');
     }
 
-    public function orders()
+    public function orders(): MorphMany
     {
-        return $this->morphMany('App\Models\Order', 'orderable', 'ownerable_type', 'ownerable_id');
+        return $this->morphMany(Order::class, 'orderable', 'ownerable_type', 'ownerable_id');
     }
 
-    public function invoice_group()
+    public function invoice_group(): BelongsTo
     {
-        return $this->belongsTo('App\Models\InvoiceGroup');
+        return $this->belongsTo(InvoiceGroup::class);
     }
 }

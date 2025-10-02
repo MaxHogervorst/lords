@@ -7,91 +7,89 @@ use App\Models\GroupMember;
 use App\Models\InvoiceGroup;
 use App\Models\Member;
 use App\Models\Product;
-use Illuminate\Support\Facades\Input;
-use Illuminate\Support\Facades\Response;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\View\View;
 
 class GroupController extends Controller
 {
-    public function index()
+    public function index(): View
     {
         $Group = Group::where('invoice_group_id', '=', InvoiceGroup::getCurrentMonth()->id)->get();
 
         return view('group.index')->withResults([$Group, date('d-m-Y')]);
     }
 
-    public function store()
+    public function store(Request $request): JsonResponse
     {
-        $v = Validator::make(Input::all(), ['name' => 'required']);
+        $v = Validator::make($request->all(), ['name' => 'required']);
 
         if (! $v->passes()) {
-            return Response::json(['errors' => $v->errors()]);
+            return response()->json(['errors' => $v->errors()]);
         } else {
-            $myDateTime = new \DateTime(Input::get('groupDate'));
+            $myDateTime = new \DateTime($request->get('groupDate'));
             $date = $myDateTime->format('d-m-Y');
-            $name = Input::get('name').' '.$date;
+            $name = $request->get('name').' '.$date;
             $group = new Group;
             $group->name = $name;
             $group->invoice_group_id = InvoiceGroup::getCurrentMonth()->id;
             $group->save();
             if ($group->exists) {
-                return Response::json(['success' => true, 'id' => $group->id, 'name' => $group->name]);
+                return response()->json(['success' => true, 'id' => $group->id, 'name' => $group->name]);
             } else {
-                return Response::json(['errors' => 'Could not be added to the database']);
+                return response()->json(['errors' => 'Could not be added to the database']);
             }
         }
     }
 
-    public function show($id)
+    public function show($id): View
     {
         return view('group.order')->with('group', Group::find($id))->with('products', Product::all())->with('members', Member::all())->with('currentmonth', InvoiceGroup::getCurrentMonth());
     }
 
-    public function edit($id)
+    public function edit($id): View
     {
         return view('group.edit')->with('group', Group::find($id));
     }
 
-    public function update($id)
+    public function update(Request $request, $id): JsonResponse
     {
-        $v = Validator::make(Input::all(), ['name' => 'required']);
+        $v = Validator::make($request->all(), ['name' => 'required']);
 
         if (! $v->passes()) {
-            return Response::json(['errors' => $v->errors()]);
+            return response()->json(['errors' => $v->errors()]);
         } else {
             $member = Group::find($id);
-            $member->name = Input::get('name');
+            $member->name = $request->get('name');
 
             $member->save();
             if ($member->exists) {
-                return Response::json(['success' => true, 'message' => $member->name.' Successfully edited']);
+                return response()->json(['success' => true, 'message' => $member->name.' Successfully edited']);
             } else {
-                return Response::json(['errors' => $v->errors()]);
+                return response()->json(['errors' => $v->errors()]);
             }
         }
     }
 
     /**
      * Remove the specified resource from storage.
-     *
-     * @param  int  $id
-     * @return Response
      */
-    public function destroy($id)
+    public function destroy($id): JsonResponse
     {
         $member = Group::find($id);
         $member->delete();
         if ($member->exists) {
-            return Response::json(['errors' => $member->name." Couldn't be deleted"]);
+            return response()->json(['errors' => $member->name." Couldn't be deleted"]);
         } else {
-            return Response::json(['success' => true, 'message' => $member->name.' Successfully deleted']);
+            return response()->json(['success' => true, 'message' => $member->name.' Successfully deleted']);
         }
     }
 
-    public function postAddmember()
+    public function postAddmember(Request $request): JsonResponse
     {
         $v = Validator::make(
-            Input::all(),
+            $request->all(),
             [
                 'groupid' => 'required|numeric',
                 'member' => 'required|numeric',
@@ -99,27 +97,27 @@ class GroupController extends Controller
         );
 
         if (! $v->passes()) {
-            return Response::json(['errors' => $v->errors()]);
+            return response()->json(['errors' => $v->errors()]);
         } else {
             $groupmember = new GroupMember;
-            $groupmember->group_id = Input::get('groupid');
-            $groupmember->member_id = Input::get('member');
+            $groupmember->group_id = $request->get('groupid');
+            $groupmember->member_id = $request->get('member');
             $groupmember->save();
-            $member = Member::find(Input::get('member'));
+            $member = Member::find($request->get('member'));
 
-            return Response::json(['success' => true, 'membername' => $member->firstname.' '.$member->lastname, 'memberid' => $member->member_id, 'id' => $groupmember->id]);
+            return response()->json(['success' => true, 'membername' => $member->firstname.' '.$member->lastname, 'memberid' => $member->member_id, 'id' => $groupmember->id]);
         }
     }
 
-    public function getDeletegroupmember($id)
+    public function getDeletegroupmember($id): JsonResponse
     {
         $groupmember = GroupMember::find($id);
         $groupmember->delete();
 
         if ($groupmember->exists) {
-            return Response::json(['errors' => "Couldn't be deleted"]);
+            return response()->json(['errors' => "Couldn't be deleted"]);
         } else {
-            return Response::json(['success' => true, 'id' => $id]);
+            return response()->json(['success' => true, 'id' => $id]);
         }
     }
 }

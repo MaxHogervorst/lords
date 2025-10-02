@@ -27,6 +27,6 @@ class CreateInvoiceProductPricesTable extends Migration
      */
     public function down()
     {
-        Schema::drop('invoice_product_prices');
+        Schema::dropIfExists('invoice_product_prices');
     }
 }

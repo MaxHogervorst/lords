@@ -2,9 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Response;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\View\View;
 
 class AuthController extends Controller
 {
@@ -13,17 +15,17 @@ class AuthController extends Controller
         $this->middleware('guest', ['except' => 'getLogout']);
     }
 
-    public function getLogin()
+    public function getLogin(): View
     {
         return view('user.login');
     }
 
-    public function postAuthenticate(Request $request)
+    public function postAuthenticate(Request $request): JsonResponse|RedirectResponse
     {
         $v = Validator::make($request->all(), ['username' => 'required', 'password' => 'required']);
 
         if (! $v->passes()) {
-            return Response::json(['errors' => $v->errors()]);
+            return response()->json(['errors' => $v->errors()]);
         } else {
             $credentials = [
                 'email' => $request->get('username'),
@@ -31,14 +33,14 @@ class AuthController extends Controller
             ];
 
             if (\Sentinel::forceAuthenticateAndRemember($credentials)) {
-                return redirect()->action('HomeController@getIndex');
+                return redirect()->route('home');
             } else {
-                return Response::json(['errors' => 'Wrond Credentials']);
+                return response()->json(['errors' => 'Wrond Credentials']);
             }
         }
     }
 
-    public function getLogout()
+    public function getLogout(): RedirectResponse
     {
         \Sentinel::logout(null, true);
 

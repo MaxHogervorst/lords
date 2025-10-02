@@ -12,7 +12,7 @@ class InvoiceGroup extends Model
 
     protected $table = 'invoice_groups';
 
-    public static function getCurrentMonth()
+    public static function getCurrentMonth(): self|false
     {
         if (! Cache::has('invoice_group')) {
             $invoicegroup = self::where('status', '=', true)->first();

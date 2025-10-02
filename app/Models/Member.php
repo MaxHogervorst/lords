@@ -2,8 +2,12 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
 
 class Member extends Model
 {
@@ -11,32 +15,32 @@ class Member extends Model
 
     protected $table = 'members';
 
-    public function groups()
+    public function groups(): BelongsToMany
     {
-        return $this->belongsToMany('App\Models\Group');
+        return $this->belongsToMany(Group::class);
     }
 
-    public function orders()
+    public function orders(): MorphMany
     {
-        return $this->morphMany('App\Models\Order', 'orderable', 'ownerable_type', 'ownerable_id');
+        return $this->morphMany(Order::class, 'orderable', 'ownerable_type', 'ownerable_id');
     }
 
-    public function invoice_lines()
+    public function invoice_lines(): HasMany
     {
-        return $this->hasMany('App\Models\InvoiceLine');
+        return $this->hasMany(InvoiceLine::class);
     }
 
-    public function scopeFrst($query)
+    public function scopeFrst(Builder $query): Builder
     {
         return $query->where('had_collection', '=', false);
     }
 
-    public function scopeRcur($query)
+    public function scopeRcur(Builder $query): Builder
     {
         return $query->where('had_collection', '=', true);
     }
 
-    public function getFullName()
+    public function getFullName(): string
     {
         return $this->firstname.' '.$this->lastname;
     }

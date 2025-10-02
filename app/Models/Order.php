@@ -4,6 +4,8 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\MorphTo;
 
 class Order extends Model
 {
@@ -11,18 +13,18 @@ class Order extends Model
 
     protected $table = 'orders';
 
-    public function product()
+    public function product(): BelongsTo
     {
-        return $this->belongsTo('App\Models\Product');
+        return $this->belongsTo(Product::class);
     }
 
-    public function ownerable()
+    public function ownerable(): MorphTo
     {
         return $this->morphTo();
     }
 
-    public function invoice_group()
+    public function invoice_group(): BelongsTo
     {
-        return $this->belongsTo('App\Models\InvoiceGroup');
+        return $this->belongsTo(InvoiceGroup::class);
     }
 }

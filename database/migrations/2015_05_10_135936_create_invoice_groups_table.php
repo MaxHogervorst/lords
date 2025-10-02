@@ -27,6 +27,6 @@ class CreateInvoiceGroupsTable extends Migration
      */
     public function down()
     {
-        Schema::drop('invoice_groups');
+        Schema::dropIfExists('invoice_groups');
     }
 }

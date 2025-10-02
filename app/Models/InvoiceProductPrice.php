@@ -4,6 +4,8 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class InvoiceProductPrice extends Model
 {
@@ -11,19 +13,19 @@ class InvoiceProductPrice extends Model
 
     protected $table = 'invoice_product_prices';
 
-    public function product()
+    public function product(): BelongsTo
     {
-        return $this->belongsTo('App\Models\InvoiceProduct', 'invoice_product_id', 'id');
+        return $this->belongsTo(InvoiceProduct::class, 'invoice_product_id', 'id');
     }
 
     // Alias for better readability
-    public function invoice_product()
+    public function invoice_product(): BelongsTo
     {
         return $this->product();
     }
 
-    public function invoiceline()
+    public function invoiceline(): HasMany
     {
-        return $this->hasMany('App\Models\InvoiceLine');
+        return $this->hasMany(InvoiceLine::class);
     }
 }

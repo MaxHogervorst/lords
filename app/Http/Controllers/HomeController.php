@@ -4,10 +4,11 @@ namespace App\Http\Controllers;
 
 use App\Models\InvoiceGroup;
 use App\Models\Order;
+use Illuminate\View\View;
 
 class HomeController extends Controller
 {
-    public function getIndex()
+    public function getIndex(): View
     {
         $id = 0;
         if (InvoiceGroup::getCurrentMonth()) {

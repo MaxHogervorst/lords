@@ -12,7 +12,7 @@ class Product extends Model
 
     protected $table = 'products';
 
-    public static function toArrayIdAsKey()
+    public static function toArrayIdAsKey(): array
     {
         if (! Cache::has('products')) {
             $products = self::all();
