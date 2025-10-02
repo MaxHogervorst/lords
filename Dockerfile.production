@@ -40,9 +40,10 @@ COPY . .
 # Generate optimized autoload files
 RUN composer dump-autoload --optimize --no-dev
 
-# Create cache directory and set permissions
+# Create cache and log directories and set permissions
 RUN mkdir -p /var/www/storage/framework/{sessions,views,cache} \
     && mkdir -p /var/www/bootstrap/cache \
+    && mkdir -p /var/log/supervisor \
     && chown -R www-data:www-data /var/www \
     && chmod -R 755 /var/www/storage \
     && chmod -R 755 /var/www/bootstrap/cache

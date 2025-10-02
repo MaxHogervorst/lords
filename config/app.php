@@ -165,7 +165,7 @@ return [
         // Package auto-discovery enabled for Laravel 5.5+
         // Collective\Html\HtmlServiceProvider::class, - auto-discovered
         Illuminate\Broadcasting\BroadcastServiceProvider::class,
-        Clockwork\Support\Laravel\ClockworkServiceProvider::class,
+        // Clockwork\Support\Laravel\ClockworkServiceProvider::class, - dev only
         // Maatwebsite\Excel\ExcelServiceProvider::class, - auto-discovered
         // Barryvdh\Debugbar\ServiceProvider::class, - auto-discovered
         anlutro\LaravelSettings\ServiceProvider::class,
