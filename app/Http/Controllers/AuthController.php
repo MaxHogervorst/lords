@@ -2,10 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\AuthenticateRequest;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Validator;
 use Illuminate\View\View;
 
 class AuthController extends Controller
@@ -20,23 +19,17 @@ class AuthController extends Controller
         return view('user.login');
     }
 
-    public function postAuthenticate(Request $request): JsonResponse|RedirectResponse
+    public function postAuthenticate(AuthenticateRequest $request): JsonResponse|RedirectResponse
     {
-        $v = Validator::make($request->all(), ['username' => 'required', 'password' => 'required']);
+        $credentials = [
+            'email' => $request->get('username'),
+            'password' => $request->get('password'),
+        ];
 
-        if (! $v->passes()) {
-            return response()->json(['errors' => $v->errors()]);
+        if (\Sentinel::forceAuthenticateAndRemember($credentials)) {
+            return redirect()->route('home');
         } else {
-            $credentials = [
-                'email' => $request->get('username'),
-                'password' => $request->get('password'),
-            ];
-
-            if (\Sentinel::forceAuthenticateAndRemember($credentials)) {
-                return redirect()->route('home');
-            } else {
-                return response()->json(['errors' => 'Wrond Credentials']);
-            }
+            return response()->json(['errors' => 'Wrond Credentials']);
         }
     }
 

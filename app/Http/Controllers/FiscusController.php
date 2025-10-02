@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\StoreFiscusRequest;
+use App\Http\Requests\UpdateFiscusRequest;
 use App\Models\InvoiceGroup;
 use App\Models\InvoiceLine;
 use App\Models\InvoiceProduct;
@@ -9,7 +11,6 @@ use App\Models\InvoiceProductPrice;
 use App\Models\Member;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Validator;
 use Illuminate\View\View;
 
 class FiscusController extends Controller
@@ -37,48 +38,34 @@ class FiscusController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request): JsonResponse
+    public function store(StoreFiscusRequest $request): JsonResponse
     {
-        $v = Validator::make($request->all(),
-            [
-                'finalproductname' => 'required',
-                'finalproductdescription' => 'required',
-                'finalpriceperperson' => 'required',
-                'finalselectedmembers' => 'min:1',
+        $currentmonth = InvoiceGroup::getCurrentMonth()->id;
+        $invoiceproduct = new InvoiceProduct;
+        $invoiceproduct->name = $request->get('finalproductname');
+        $invoiceproduct->invoice_group_id = $currentmonth;
+        $invoiceproduct->save();
 
-            ]
-        );
+        $invoiceproductprice = new InvoiceProductPrice;
+        $invoiceproductprice->invoice_product_id = $invoiceproduct->id;
+        $invoiceproductprice->price = $request->get('finalpriceperperson');
+        $invoiceproductprice->description = $request->get('finalproductdescription');
+        $invoiceproductprice->save();
 
-        if (! $v->passes()) {
-            return response()->json(['errors' => $v->errors()]);
-        } else {
-            $currentmonth = InvoiceGroup::getCurrentMonth()->id;
-            $invoiceproduct = new InvoiceProduct;
-            $invoiceproduct->name = $request->get('finalproductname');
-            $invoiceproduct->invoice_group_id = $currentmonth;
-            $invoiceproduct->save();
-
-            $invoiceproductprice = new InvoiceProductPrice;
-            $invoiceproductprice->invoice_product_id = $invoiceproduct->id;
-            $invoiceproductprice->price = $request->get('finalpriceperperson');
-            $invoiceproductprice->description = $request->get('finalproductdescription');
-            $invoiceproductprice->save();
-
-            $i = 0;
-            foreach ($request->get('member') as $m) {
-                $invoiceline = new InvoiceLine;
-                $invoiceline->invoice_product_price_id = $invoiceproductprice->id;
-                $invoiceline->member_id = $m;
-                $invoiceline->save();
-                if ($invoiceline->exists) {
-                    $i++;
-                }
+        $i = 0;
+        foreach ($request->get('member') as $m) {
+            $invoiceline = new InvoiceLine;
+            $invoiceline->invoice_product_price_id = $invoiceproductprice->id;
+            $invoiceline->member_id = $m;
+            $invoiceline->save();
+            if ($invoiceline->exists) {
+                $i++;
             }
-
-            return response()->json(['success' => true, 'message' => $invoiceproduct->name.' Successfully added, '
-                                                                        .$invoiceproductprice->price.' per person.'
-                                                                        .$i.' Total persons']);
         }
+
+        return response()->json(['success' => true, 'message' => $invoiceproduct->name.' Successfully added, '
+                                                                    .$invoiceproductprice->price.' per person.'
+                                                                    .$i.' Total persons']);
     }
 
     /**
@@ -93,15 +80,13 @@ class FiscusController extends Controller
             ->with('products', $invoiceproducts);
     }
 
-    public function getInvoiceprices($id): JsonResponse
+    public function getInvoiceprices(InvoiceProduct $invoiceProduct): JsonResponse
     {
-        return response()->json(InvoiceProductPrice::where('invoice_product_id', '=', $id)->get());
+        return response()->json($invoiceProduct->productprice);
     }
 
-    public function getAllinvoicelines($id): JsonResponse
+    public function getAllinvoicelines(InvoiceProduct $invoiceProduct): JsonResponse
     {
-        $invoiceProduct = InvoiceProduct::find($id);
-
         $lines = InvoiceLine::whereHas('productprice', function ($query) use ($invoiceProduct) {
             $query->where('invoice_product_id', $invoiceProduct->id);
         })->get();
@@ -109,68 +94,55 @@ class FiscusController extends Controller
         return response()->json($lines);
     }
 
-    public function getSpecificinvoicelines($id): JsonResponse
+    public function getSpecificinvoicelines(InvoiceProductPrice $invoiceProductPrice): JsonResponse
     {
-        return response()->json(InvoiceLine::where('invoice_product_price_id', '=', $id)->get());
+        return response()->json($invoiceProductPrice->invoiceline);
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, $id): JsonResponse
+    public function update(UpdateFiscusRequest $request, $id): JsonResponse
     {
         $update = 'added new price';
-        $v = Validator::make($request->all(),
-            [
-                'finalproductdescription' => 'required',
-                'finalpriceperperson' => 'required',
-                'member' => 'min:1',
+        $invoiceproduct = InvoiceProduct::find($id);
 
-            ]
-        );
-
-        if (! $v->passes()) {
-            return response()->json(['errors' => $v->errors()]);
-        } else {
-            $invoiceproduct = InvoiceProduct::find($id);
-
-            if ($request->has('isupdate')) {
-                $update = 'updated';
-                $invoiceproductprice = InvoiceProductPrice::find($request->get('isupdate'));
-                if ($invoiceproductprice->exists) {
-                    $invoiceproductprice->price = $request->get('finalpriceperperson');
-                    $invoiceproductprice->description = $request->get('finalproductdescription');
-                    $invoiceproductprice->save();
-
-                    DB::table('invoice_lines')->where('invoice_product_price_id', '=', $invoiceproductprice->id)->delete();
-                } else {
-                    return response()->json(['errors' => 'Could not find Product price']);
-                }
-            } else {
-                $invoiceproductprice = new InvoiceProductPrice;
-                $invoiceproductprice->invoice_product_id = $invoiceproduct->id;
+        if ($request->has('isupdate')) {
+            $update = 'updated';
+            $invoiceproductprice = InvoiceProductPrice::find($request->get('isupdate'));
+            if ($invoiceproductprice->exists) {
                 $invoiceproductprice->price = $request->get('finalpriceperperson');
                 $invoiceproductprice->description = $request->get('finalproductdescription');
                 $invoiceproductprice->save();
-            }
 
-            if ($request->has('member')) {
-                $i = 0;
-                foreach ($request->get('member') as $m) {
-                    $invoiceline = new InvoiceLine;
-                    $invoiceline->invoice_product_price_id = $invoiceproductprice->id;
-                    $invoiceline->member_id = $m;
-                    $invoiceline->save();
-                    if ($invoiceline->exists) {
-                        $i++;
-                    }
+                InvoiceLine::where('invoice_product_price_id', '=', $invoiceproductprice->id)->delete();
+            } else {
+                return response()->json(['errors' => 'Could not find Product price']);
+            }
+        } else {
+            $invoiceproductprice = new InvoiceProductPrice;
+            $invoiceproductprice->invoice_product_id = $invoiceproduct->id;
+            $invoiceproductprice->price = $request->get('finalpriceperperson');
+            $invoiceproductprice->description = $request->get('finalproductdescription');
+            $invoiceproductprice->save();
+        }
+
+        if ($request->has('member')) {
+            $i = 0;
+            foreach ($request->get('member') as $m) {
+                $invoiceline = new InvoiceLine;
+                $invoiceline->invoice_product_price_id = $invoiceproductprice->id;
+                $invoiceline->member_id = $m;
+                $invoiceline->save();
+                if ($invoiceline->exists) {
+                    $i++;
                 }
             }
-
-            return response()->json(['success' => true, 'message' => $invoiceproduct->name.' Successfully '.$update.', '
-                                                                        .$invoiceproductprice->price.' per person.'
-                                                                        .$i.' Total persons']);
         }
+
+        return response()->json(['success' => true, 'message' => $invoiceproduct->name.' Successfully '.$update.', '
+                                                                    .$invoiceproductprice->price.' per person.'
+                                                                    .$i.' Total persons']);
     }
 
     /**

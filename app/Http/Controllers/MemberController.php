@@ -2,12 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\StoreMemberRequest;
 use App\Models\InvoiceGroup;
 use App\Models\Member;
 use App\Models\Product;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Validator;
 use Illuminate\View\View;
 
 class MemberController extends Controller
@@ -25,24 +24,17 @@ class MemberController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request): JsonResponse
+    public function store(StoreMemberRequest $request): JsonResponse
     {
-        $v = Validator::make($request->all(), ['name' => 'required', 'lastname' => 'required']);
+        $member = new Member;
+        $member->firstname = $request->get('name');
+        $member->lastname = $request->get('lastname');
 
-        if (! $v->passes()) {
-            // return Redirect::back()->with('errors', $v->errors());
-            return response()->json(['errors' => $v->errors()]);
+        $member->save();
+        if ($member->exists) {
+            return response()->json(['success' => true, 'id' => $member->id, 'firstname' => $member->firstname, 'lastname' => $member->lastname]);
         } else {
-            $member = new Member;
-            $member->firstname = $request->get('name');
-            $member->lastname = $request->get('lastname');
-
-            $member->save();
-            if ($member->exists) {
-                return response()->json(['success' => true, 'id' => $member->id, 'firstname' => $member->firstname, 'lastname' => $member->lastname]);
-            } else {
-                return response()->json(['errors' => $v->errors()]);
-            }
+            return response()->json(['errors' => 'Could not be added to the database']);
         }
     }
 
@@ -62,37 +54,24 @@ class MemberController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, $id): JsonResponse
+    public function update(StoreMemberRequest $request, $id): JsonResponse
     {
-        $v = Validator::make($request->all(),
-            [
-                'name' => 'required',
-                'lastname' => 'required',
-                'bic' => 'required',
-                'iban' => 'required',
-            ]
-        );
-
-        if (! $v->passes()) {
-            return response()->json(['errors' => $v->errors()]);
+        $member = Member::find($id);
+        $member->firstname = $request->get('name');
+        $member->lastname = $request->get('lastname');
+        $member->bic = $request->get('bic');
+        $member->iban = $request->get('iban');
+        if ($request->has('had_collection')) {
+            $member->had_collection = true;
         } else {
-            $member = Member::find($id);
-            $member->firstname = $request->get('name');
-            $member->lastname = $request->get('lastname');
-            $member->bic = $request->get('bic');
-            $member->iban = $request->get('iban');
-            if ($request->has('had_collection')) {
-                $member->had_collection = true;
-            } else {
-                $member->had_collection = false;
-            }
+            $member->had_collection = false;
+        }
 
-            $member->save();
-            if ($member->exists) {
-                return response()->json(['success' => true, 'message' => 'Succesfully edited'.$member->getFullName()]);
-            } else {
-                return response()->json(['errors' => $v->errors()]);
-            }
+        $member->save();
+        if ($member->exists) {
+            return response()->json(['success' => true, 'message' => 'Succesfully edited'.$member->getFullName()]);
+        } else {
+            return response()->json(['errors' => 'Could not be updated']);
         }
     }
 

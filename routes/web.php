@@ -44,9 +44,9 @@ Route::group(['middleware' => ['auth', 'admin']], function () {
     });
 
     Route::resource('sepa', SepaController::class, ['only' => ['index', 'store']]);
-    Route::get('fiscus/invoiceprices/{id}', [FiscusController::class, 'getInvoiceprices']);
-    Route::get('fiscus/allinvoicelines/{id}', [FiscusController::class, 'getAllinvoicelines']);
-    Route::get('fiscus/specificinvoicelines/{id}', [FiscusController::class, 'getSpecificinvoicelines']);
+    Route::get('fiscus/invoiceprices/{invoiceProduct}', [FiscusController::class, 'getInvoiceprices']);
+    Route::get('fiscus/allinvoicelines/{invoiceProduct}', [FiscusController::class, 'getAllinvoicelines']);
+    Route::get('fiscus/specificinvoicelines/{invoiceProductPrice}', [FiscusController::class, 'getSpecificinvoicelines']);
     Route::get('fiscus/edit', [FiscusController::class, 'getEdit']);
     Route::resource('fiscus', FiscusController::class, ['except' => ['edit']]);
     Route::get('invoice', [InvoiceController::class, 'getIndex']);
@@ -59,7 +59,7 @@ Route::group(['middleware' => ['auth', 'admin']], function () {
 Route::group(['middleware' => 'auth'], function () {
     Route::post('order/store/{type}', [OrderController::class, 'postStore']);
     Route::post('group/addmember', [GroupController::class, 'postAddMember']);
-    Route::get('group/deletegroupmember/{id}', [GroupController::class, 'getDeletegroupmember']);
+    Route::get('group/deletegroupmember/{groupMember}', [GroupController::class, 'getDeletegroupmember']);
     Route::resource('group', GroupController::class);
     Route::resource('product', ProductController::class);
     Route::resource('member', MemberController::class);

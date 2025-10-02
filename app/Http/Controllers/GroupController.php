@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\StoreGroupRequest;
 use App\Models\Group;
 use App\Models\GroupMember;
 use App\Models\InvoiceGroup;
@@ -21,25 +22,19 @@ class GroupController extends Controller
         return view('group.index')->withResults([$Group, date('d-m-Y')]);
     }
 
-    public function store(Request $request): JsonResponse
+    public function store(StoreGroupRequest $request): JsonResponse
     {
-        $v = Validator::make($request->all(), ['name' => 'required']);
-
-        if (! $v->passes()) {
-            return response()->json(['errors' => $v->errors()]);
+        $myDateTime = new \DateTime($request->get('groupDate'));
+        $date = $myDateTime->format('d-m-Y');
+        $name = $request->get('name').' '.$date;
+        $group = new Group;
+        $group->name = $name;
+        $group->invoice_group_id = InvoiceGroup::getCurrentMonth()->id;
+        $group->save();
+        if ($group->exists) {
+            return response()->json(['success' => true, 'id' => $group->id, 'name' => $group->name]);
         } else {
-            $myDateTime = new \DateTime($request->get('groupDate'));
-            $date = $myDateTime->format('d-m-Y');
-            $name = $request->get('name').' '.$date;
-            $group = new Group;
-            $group->name = $name;
-            $group->invoice_group_id = InvoiceGroup::getCurrentMonth()->id;
-            $group->save();
-            if ($group->exists) {
-                return response()->json(['success' => true, 'id' => $group->id, 'name' => $group->name]);
-            } else {
-                return response()->json(['errors' => 'Could not be added to the database']);
-            }
+            return response()->json(['errors' => 'Could not be added to the database']);
         }
     }
 
@@ -53,22 +48,16 @@ class GroupController extends Controller
         return view('group.edit')->with('group', Group::find($id));
     }
 
-    public function update(Request $request, $id): JsonResponse
+    public function update(StoreGroupRequest $request, $id): JsonResponse
     {
-        $v = Validator::make($request->all(), ['name' => 'required']);
+        $member = Group::find($id);
+        $member->name = $request->get('name');
 
-        if (! $v->passes()) {
-            return response()->json(['errors' => $v->errors()]);
+        $member->save();
+        if ($member->exists) {
+            return response()->json(['success' => true, 'message' => $member->name.' Successfully edited']);
         } else {
-            $member = Group::find($id);
-            $member->name = $request->get('name');
-
-            $member->save();
-            if ($member->exists) {
-                return response()->json(['success' => true, 'message' => $member->name.' Successfully edited']);
-            } else {
-                return response()->json(['errors' => $v->errors()]);
-            }
+            return response()->json(['errors' => 'Could not be updated']);
         }
     }
 
@@ -109,15 +98,14 @@ class GroupController extends Controller
         }
     }
 
-    public function getDeletegroupmember($id): JsonResponse
+    public function getDeletegroupmember(GroupMember $groupMember): JsonResponse
     {
-        $groupmember = GroupMember::find($id);
-        $groupmember->delete();
+        $groupMember->delete();
 
-        if ($groupmember->exists) {
+        if ($groupMember->exists) {
             return response()->json(['errors' => "Couldn't be deleted"]);
         } else {
-            return response()->json(['success' => true, 'id' => $id]);
+            return response()->json(['success' => true, 'id' => $groupMember->id]);
         }
     }
 }
