@@ -36,21 +36,27 @@ This document outlines the remaining tasks to modernize the Laravel application 
 
 ## Phase 2: Authentication Modernization (Priority: High)
 
-### 2.1 Migrate from Cartalyst Sentinel to Laravel Sanctum/Fortify
-- [ ] Install Laravel Fortify
-- [ ] Create migration script for user data
-- [ ] Map Sentinel roles/permissions to Laravel Gates/Policies
-- [ ] Update authentication middleware
-- [ ] Update all `Sentinel::` calls to `Auth::`
-- [ ] Test authentication flows thoroughly
-- [ ] Remove Sentinel package
+**Note:** This application has simple auth needs (login/logout/admin check only). Laravel's built-in Auth is sufficient - Fortify/Sanctum not needed.
 
-### 2.2 Update Middleware
-**Location:** `app/Http/Middleware/`
-- [ ] Replace custom `Authenticate` middleware with Laravel's default
-- [ ] Refactor `RedirectIfNotAAdmin` to use policies
+### 2.1 Migrate from Cartalyst Sentinel to Laravel Auth
+**Current usage:** 5 Sentinel calls in app, 171 in tests
+- [ ] Add `isAdmin()` method to User model
+- [ ] Update `AuthController` to use `Auth::attempt()` and `Auth::logout()`
+- [ ] Replace `Sentinel::check()` with `Auth::check()` in middleware
+- [ ] Replace `Sentinel::inRole('admin')` with admin check (Gate or model method)
+- [ ] Update all test files (171 uses of `Sentinel::login()` → `actingAs()`)
+- [ ] Test authentication flows thoroughly
+- [ ] Remove Sentinel package and config
+
+### 2.2 Implement Admin Authorization
+**Location:** `app/Http/Middleware/` and controllers
+- [ ] Add `is_admin` boolean column to users table (or use Gate)
+- [ ] Create `isAdmin()` method on User model
+- [ ] Replace `RedirectIfNotAAdmin` middleware with Gate check
+- [ ] Use Laravel's default `Authenticate` middleware
 - [ ] Update middleware registration in `bootstrap/app.php`
-- [ ] Remove unused middleware aliases
+- [ ] Remove custom `Authenticate` middleware
+- [ ] Consider creating `AdminPolicy` for more complex admin checks
 
 ---
 
@@ -282,8 +288,8 @@ Apply consistent patterns:
 5. **Rollback Plan**: Ensure ability to roll back any phase
 
 ### Revised Timeline
-- **Phase 1 (Security)**: 3-4 days
-- **Phase 2 (Auth)**: 2 weeks
+- **Phase 1 (Security)**: 3-4 days (✓ 1.1 & 1.2 completed)
+- **Phase 2 (Auth)**: 4-5 days (simplified - no Fortify needed, only 5 Sentinel calls)
 - **Phase 3 (Architecture)**: 3 weeks
 - **Phase 4 (Controllers)**: 3 weeks
 - **Phase 5 (Models)**: 1-2 weeks
@@ -294,7 +300,7 @@ Apply consistent patterns:
 - **Phase 10 (Documentation)**: 1 week
 - **Phase 11 (Config)**: 3-4 days
 
-**Total Remaining Time**: ~13-15 weeks
+**Total Remaining Time**: ~11-13 weeks (reduced from 15 weeks due to simpler auth migration)
 
 ### Success Metrics
 - [ ] All PHPStan level 8 checks pass
