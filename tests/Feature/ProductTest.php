@@ -2,10 +2,9 @@
 
 namespace Tests\Feature;
 
-use Tests\TestCase;
-
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Sentinel;
+use Tests\TestCase;
 
 class ProductTest extends TestCase
 {
@@ -16,9 +15,9 @@ class ProductTest extends TestCase
      *
      * @return void
      */
-    public function testCreateProduct()
+    public function test_create_product()
     {
-        $this->json('POST', '/product', [ 'name' => 'Sally'])
+        $this->json('POST', '/product', ['name' => 'Sally'])
             ->assertDontSee('Whoops')
             ->assertSee('Unauthorized.');
 
@@ -31,14 +30,14 @@ class ProductTest extends TestCase
 
         $this->actingAs($user)
             ->withSession([])
-            ->json('POST', '/product', [ 'name' => 'Sally'])
+            ->json('POST', '/product', ['name' => 'Sally'])
             ->assertDontSee('Whoops')
             ->assertJsonMissing(['success' => true])
             ->assertJsonStructure(['errors']);
 
         $this->actingAs($user)
             ->withSession([])
-            ->json('POST', '/product', [ 'name' => 'Sally', 'productPrice' => '3.56'])
+            ->json('POST', '/product', ['name' => 'Sally', 'productPrice' => '3.56'])
             ->assertDontSee('Whoops')
             ->assertJson([
                 'success' => true,
@@ -46,17 +45,17 @@ class ProductTest extends TestCase
                 'price' => '3.56',
             ]);
 
-        $this->assertDatabaseHas('products', [ 'name' => 'Sally', 'price' => '3.56']);
+        $this->assertDatabaseHas('products', ['name' => 'Sally', 'price' => '3.56']);
     }
 
-    public function testEditProduct()
+    public function test_edit_product()
     {
         $product = factory(\App\Models\Product::class)->create([
-            'name' =>  'Sally',
+            'name' => 'Sally',
             'price' => 3.56,
         ]);
 
-        $this->json('PUT', '/product/' . $product->id, [ 'name' => 'Max'])
+        $this->json('PUT', '/product/'.$product->id, ['name' => 'Max'])
             ->assertDontSee('Whoops')
             ->assertSee('Unauthorized.');
 
@@ -69,30 +68,30 @@ class ProductTest extends TestCase
 
         $this->actingAs($user)
             ->withSession([])
-            ->json('PUT', '/product/' . $product->id, [ 'productName' => 'Max', 'productPrice' => null])
+            ->json('PUT', '/product/'.$product->id, ['productName' => 'Max', 'productPrice' => null])
             ->assertDontSee('Whoops')
             ->assertJsonMissing(['success' => true])
             ->assertJsonStructure(['errors']);
 
         $this->actingAs($user)
             ->withSession([])
-            ->json('PUT', '/product/' . $product->id, [ 'productName' => 'Max', 'productPrice' => 3.56])
+            ->json('PUT', '/product/'.$product->id, ['productName' => 'Max', 'productPrice' => 3.56])
             ->assertDontSee('Whoops')
             ->assertJson([
                 'success' => true,
             ]);
 
-        $this->assertDatabaseHas('products', [ 'id' => $product->id, 'name' => 'Max', 'price' => 3.56]);
+        $this->assertDatabaseHas('products', ['id' => $product->id, 'name' => 'Max', 'price' => 3.56]);
     }
 
-    public function testDeleteProduct()
+    public function test_delete_product()
     {
         $product = factory(\App\Models\Product::class)->create([
-            'name' =>  'Sally',
+            'name' => 'Sally',
             'price' => 3.56,
         ]);
 
-        $this->json('DELETE', '/product/' . $product->id)
+        $this->json('DELETE', '/product/'.$product->id)
             ->assertDontSee('Whoops')
             ->assertSee('Unauthorized.');
 
@@ -106,12 +105,12 @@ class ProductTest extends TestCase
 
         $this->actingAs($user)
             ->withSession([])
-            ->json('DELETE', '/product/' . $product->id)
+            ->json('DELETE', '/product/'.$product->id)
             ->assertDontSee('Whoops')
             ->assertJson([
                 'success' => true,
             ]);
 
-        $this->assertDatabaseMissing('products', [ 'id' => $product->id]);
+        $this->assertDatabaseMissing('products', ['id' => $product->id]);
     }
 }

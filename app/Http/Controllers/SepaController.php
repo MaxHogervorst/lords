@@ -1,13 +1,14 @@
-<?php namespace App\Http\Controllers;
+<?php
 
+namespace App\Http\Controllers;
+
+use anlutro\LaravelSettings\Facade as Settings;
 use Illuminate\Support\Facades\Input;
 use Illuminate\Support\Facades\Response;
 use Illuminate\Support\Facades\Validator;
-use anlutro\LaravelSettings\Facade as Settings;
 
 class SepaController extends Controller
 {
-
     /**
      * Display a listing of the resource.
      *
@@ -36,10 +37,10 @@ class SepaController extends Controller
                 'creditorMaxMoneyPerBatch' => 'required',
                 'creditorMaxMoneyPerTransaction' => 'required',
                 'ReqdColltnDt' => 'required',
-                'creditorMaxTransactionsPerBatch' => 'required'
+                'creditorMaxTransactionsPerBatch' => 'required',
             ]);
 
-        if (!$v->passes()) {
+        if (! $v->passes()) {
             return Response::json(['errors' => $v->errors()]);
         } else {
             Settings::set('creditorName', Input::get('creditorName'));

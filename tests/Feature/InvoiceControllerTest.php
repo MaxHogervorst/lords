@@ -2,18 +2,17 @@
 
 namespace Tests\Feature;
 
-use Tests\TestCase;
-
-use Illuminate\Foundation\Testing\DatabaseTransactions;
-use Sentinel;
-use App\Models\Member;
 use App\Models\Group;
-use App\Models\Product;
-use App\Models\Order;
 use App\Models\InvoiceGroup;
 use App\Models\InvoiceLine;
 use App\Models\InvoiceProduct;
 use App\Models\InvoiceProductPrice;
+use App\Models\Member;
+use App\Models\Order;
+use App\Models\Product;
+use Illuminate\Foundation\Testing\DatabaseTransactions;
+use Sentinel;
+use Tests\TestCase;
 
 class InvoiceControllerTest extends TestCase
 {
@@ -21,7 +20,7 @@ class InvoiceControllerTest extends TestCase
 
     private $adminRole;
 
-    public function setUp(): void
+    protected function setUp(): void
     {
         parent::setUp();
         // Clear cache before each test to avoid stale product cache
@@ -46,7 +45,7 @@ class InvoiceControllerTest extends TestCase
     /**
      * Test invoice index page is accessible by admin
      */
-    public function testInvoiceIndexIsAccessibleByAdmin()
+    public function test_invoice_index_is_accessible_by_admin()
     {
         $sentinelUser = Sentinel::registerAndActivate([
             'email' => 'invoiceadmin@example.com',
@@ -66,7 +65,7 @@ class InvoiceControllerTest extends TestCase
     /**
      * Test invoice index page is not accessible by non-admin
      */
-    public function testInvoiceIndexIsNotAccessibleByNonAdmin()
+    public function test_invoice_index_is_not_accessible_by_non_admin()
     {
         // Create a regular user without admin role
         $sentinelUser = Sentinel::registerAndActivate([
@@ -83,7 +82,7 @@ class InvoiceControllerTest extends TestCase
     /**
      * Test invoice page shows invoice groups
      */
-    public function testInvoicePageShowsInvoiceGroups()
+    public function test_invoice_page_shows_invoice_groups()
     {
         $sentinelUser = Sentinel::registerAndActivate([
             'email' => 'invoicegroup@example.com',
@@ -107,7 +106,7 @@ class InvoiceControllerTest extends TestCase
     /**
      * Test creating invoice group
      */
-    public function testCreateInvoiceGroup()
+    public function test_create_invoice_group()
     {
         $sentinelUser = Sentinel::registerAndActivate([
             'email' => 'invoicecreate@example.com',
@@ -130,7 +129,7 @@ class InvoiceControllerTest extends TestCase
     /**
      * Test invoice PDF generation page is accessible
      */
-    public function testInvoicePdfPageIsAccessible()
+    public function test_invoice_pdf_page_is_accessible()
     {
         $sentinelUser = Sentinel::registerAndActivate([
             'email' => 'invoicepdf@example.com',
@@ -158,7 +157,7 @@ class InvoiceControllerTest extends TestCase
     /**
      * Test SEPA generation page is accessible
      */
-    public function testSepaGenerationPageIsAccessible()
+    public function test_sepa_generation_page_is_accessible()
     {
         $sentinelUser = Sentinel::registerAndActivate([
             'email' => 'invoicesepa@example.com',
@@ -185,7 +184,7 @@ class InvoiceControllerTest extends TestCase
     /**
      * Test invoice page shows members with orders
      */
-    public function testInvoicePageShowsMembersWithOrders()
+    public function test_invoice_page_shows_members_with_orders()
     {
         $sentinelUser = Sentinel::registerAndActivate([
             'email' => 'invoicemember@example.com',
@@ -221,7 +220,7 @@ class InvoiceControllerTest extends TestCase
     /**
      * Test invoice page shows group orders
      */
-    public function testInvoicePageShowsGroupOrders()
+    public function test_invoice_page_shows_group_orders()
     {
         $sentinelUser = Sentinel::registerAndActivate([
             'email' => 'invoicegroups@example.com',
@@ -253,7 +252,7 @@ class InvoiceControllerTest extends TestCase
     /**
      * Test invoice with invoice lines
      */
-    public function testInvoiceWithInvoiceLines()
+    public function test_invoice_with_invoice_lines()
     {
         $sentinelUser = Sentinel::registerAndActivate([
             'email' => 'invoicelines@example.com',
@@ -290,7 +289,7 @@ class InvoiceControllerTest extends TestCase
     /**
      * Test SEPA file generation with actual data
      */
-    public function testSepaFileGeneration()
+    public function test_sepa_file_generation()
     {
         // Create admin user
         $sentinelUser = Sentinel::registerAndActivate([
@@ -351,7 +350,7 @@ class InvoiceControllerTest extends TestCase
 
         // Ensure SEPA directory exists
         $sepaDir = storage_path('SEPA');
-        if (!file_exists($sepaDir)) {
+        if (! file_exists($sepaDir)) {
             mkdir($sepaDir, 0755, true);
         }
 
@@ -363,7 +362,7 @@ class InvoiceControllerTest extends TestCase
         $this->assertEquals(200, $response->getStatusCode());
 
         // Check that SEPA XML file was created
-        $files = glob($sepaDir . '/GSRC RCUR *.xml');
+        $files = glob($sepaDir.'/GSRC RCUR *.xml');
         $this->assertNotEmpty($files, 'SEPA XML file should be generated');
 
         // Read and verify the XML content

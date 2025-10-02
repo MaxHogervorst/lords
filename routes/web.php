@@ -10,8 +10,8 @@
 | to using a Closure or controller method. Build something great!
 |
 */
-//echo 'Here i am';
-//exit;
+// echo 'Here i am';
+// exit;
 Route::post('invoice/setperson', 'InvoiceController@postSetPerson');
 Route::post('invoice/setpersonalinvoicegroup', 'InvoiceController@postSetPersonalInvoiceGroup');
 Route::get('check-bill', 'InvoiceController@getPerPerson');
@@ -19,14 +19,13 @@ Route::get('auth/login', 'AuthController@getLogin');
 Route::get('auth/logout', 'AuthController@getLogout');
 Route::post('auth/authenticate', 'AuthController@postAuthenticate');
 Route::group(['middleware' => ['auth', 'admin']], function () {
-    Route::
-    get('downloadSEPA/{filename}', function ($filename) {
+    Route::get('downloadSEPA/{filename}', function ($filename) {
         // Check if file exists in app/storage/file folder
-        $file_path = storage_path() . '/SEPA/' . $filename;
+        $file_path = storage_path().'/SEPA/'.$filename;
         if (file_exists($file_path)) {
             // Send Download
             return Response::download($file_path, $filename, [
-                'Content-Length: ' . filesize($file_path)
+                'Content-Length: '.filesize($file_path),
             ]);
         } else {
             // Error
@@ -57,8 +56,8 @@ Route::group(['middleware' => 'auth'], function () {
     Route::get('/', 'HomeController@getIndex');
 });
 
-//Route::get('createuser', function()
-//{
+// Route::get('createuser', function()
+// {
 //
 //	$role = Sentinel::getRoleRepository()->createModel()->create([
 //		'name' => 'Lord',
@@ -95,4 +94,4 @@ Route::group(['middleware' => 'auth'], function () {
 //	$user = Sentinel::create($credentials);
 //
 //	$role->users()->attach($user);
-//});
+// });

@@ -2,16 +2,15 @@
 
 namespace Tests\Feature;
 
-use Tests\TestCase;
-
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Sentinel;
+use Tests\TestCase;
 
 class OrderTest extends TestCase
 {
     use DatabaseTransactions;
 
-    public function setUp(): void
+    protected function setUp(): void
     {
         parent::setUp();
         // Clear cache before each test
@@ -29,22 +28,22 @@ class OrderTest extends TestCase
      *
      * @return void
      */
-    public function testCreateOrder()
+    public function test_create_order()
     {
         $invoiceGroup = \App\Models\InvoiceGroup::where('status', true)->first();
         $product = \App\Models\Product::first();
-        $name = 'Sally ' . date('d-m-Y');
+        $name = 'Sally '.date('d-m-Y');
         $group = factory(\App\Models\Group::class)->create([
-            'name' =>  $name,
+            'name' => $name,
             'invoice_group_id' => $invoiceGroup->id,
         ]);
 
         $member = factory(\App\Models\Member::class)->create([
-            'firstname' =>  'Sally',
+            'firstname' => 'Sally',
             'lastname' => 'Test',
         ]);
 
-        $this->json('POST', '/order/store/member', [ 'name' => 'Sally'])
+        $this->json('POST', '/order/store/member', ['name' => 'Sally'])
             ->assertDontSee('Whoops')
             ->assertSee('Unauthorized.');
 
@@ -59,7 +58,7 @@ class OrderTest extends TestCase
             ->withSession([])
             ->json('POST', '/order/store/member', [
                 'memberId' => $group->id,
-                'product' => $product->id
+                'product' => $product->id,
             ])
             ->assertDontSee('Whoops')
             ->assertJsonMissing(['success' => true])
@@ -70,16 +69,16 @@ class OrderTest extends TestCase
             ->json('POST', '/order/store/member', [
                 'memberId' => $group->id,
                 'product' => $product->id,
-                'amount' => 2436
+                'amount' => 2436,
             ])
             ->assertDontSee('Whoops')
             ->assertJson([
                 'success' => true,
                 'member_id' => $group->id,
                 'product_id' => $product->id,
-                'amount' => 2436
+                'amount' => 2436,
             ]);
 
-        $this->assertDatabaseHas('orders', [ 'product_id' => $product->id, 'amount' => 2436, 'ownerable_id' => $group->id]);
+        $this->assertDatabaseHas('orders', ['product_id' => $product->id, 'amount' => 2436, 'ownerable_id' => $group->id]);
     }
 }

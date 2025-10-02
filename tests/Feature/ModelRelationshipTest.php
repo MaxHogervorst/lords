@@ -2,17 +2,16 @@
 
 namespace Tests\Feature;
 
-use Tests\TestCase;
-
-use Illuminate\Foundation\Testing\DatabaseTransactions;
-use App\Models\Member;
 use App\Models\Group;
-use App\Models\Product;
-use App\Models\Order;
 use App\Models\InvoiceGroup;
 use App\Models\InvoiceLine;
 use App\Models\InvoiceProduct;
 use App\Models\InvoiceProductPrice;
+use App\Models\Member;
+use App\Models\Order;
+use App\Models\Product;
+use Illuminate\Foundation\Testing\DatabaseTransactions;
+use Tests\TestCase;
 
 class ModelRelationshipTest extends TestCase
 {
@@ -21,7 +20,7 @@ class ModelRelationshipTest extends TestCase
     /**
      * Test Member has many Groups relationship
      */
-    public function testMemberBelongsToManyGroups()
+    public function test_member_belongs_to_many_groups()
     {
         $member = factory(Member::class)->create();
         $group = factory(Group::class)->create();
@@ -35,7 +34,7 @@ class ModelRelationshipTest extends TestCase
     /**
      * Test Member has many Orders relationship
      */
-    public function testMemberHasManyOrders()
+    public function test_member_has_many_orders()
     {
         $member = factory(Member::class)->create();
         $product = factory(Product::class)->create();
@@ -55,7 +54,7 @@ class ModelRelationshipTest extends TestCase
     /**
      * Test Member has many InvoiceLines relationship
      */
-    public function testMemberHasManyInvoiceLines()
+    public function test_member_has_many_invoice_lines()
     {
         $member = factory(Member::class)->create();
         $invoiceLine = factory(InvoiceLine::class)->create([
@@ -69,7 +68,7 @@ class ModelRelationshipTest extends TestCase
     /**
      * Test Group belongs to many Members relationship
      */
-    public function testGroupBelongsToManyMembers()
+    public function test_group_belongs_to_many_members()
     {
         $group = factory(Group::class)->create();
         $member = factory(Member::class)->create();
@@ -83,7 +82,7 @@ class ModelRelationshipTest extends TestCase
     /**
      * Test Group has many Orders relationship
      */
-    public function testGroupHasManyOrders()
+    public function test_group_has_many_orders()
     {
         $group = factory(Group::class)->create();
         $product = factory(Product::class)->create();
@@ -103,7 +102,7 @@ class ModelRelationshipTest extends TestCase
     /**
      * Test Order belongs to Product relationship
      */
-    public function testOrderBelongsToProduct()
+    public function test_order_belongs_to_product()
     {
         $product = factory(Product::class)->create(['name' => 'Test Beer']);
         $order = factory(Order::class)->create(['product_id' => $product->id]);
@@ -115,7 +114,7 @@ class ModelRelationshipTest extends TestCase
     /**
      * Test Order polymorphic ownerable relationship (Member)
      */
-    public function testOrderPolymorphicOwnerableMember()
+    public function test_order_polymorphic_ownerable_member()
     {
         $member = factory(Member::class)->create();
         $product = factory(Product::class)->create();
@@ -135,7 +134,7 @@ class ModelRelationshipTest extends TestCase
     /**
      * Test Order polymorphic ownerable relationship (Group)
      */
-    public function testOrderPolymorphicOwnerableGroup()
+    public function test_order_polymorphic_ownerable_group()
     {
         $group = factory(Group::class)->create();
         $product = factory(Product::class)->create();
@@ -155,7 +154,7 @@ class ModelRelationshipTest extends TestCase
     /**
      * Test Order belongs to InvoiceGroup relationship
      */
-    public function testOrderBelongsToInvoiceGroup()
+    public function test_order_belongs_to_invoice_group()
     {
         $invoiceGroup = factory(InvoiceGroup::class)->create(['name' => 'January 2025']);
         $order = factory(Order::class)->create(['invoice_group_id' => $invoiceGroup->id]);
@@ -167,7 +166,7 @@ class ModelRelationshipTest extends TestCase
     /**
      * Test InvoiceProduct belongs to InvoiceGroup
      */
-    public function testInvoiceProductBelongsToInvoiceGroup()
+    public function test_invoice_product_belongs_to_invoice_group()
     {
         $invoiceGroup = factory(InvoiceGroup::class)->create();
         $invoiceProduct = factory(InvoiceProduct::class)->create([
@@ -181,7 +180,7 @@ class ModelRelationshipTest extends TestCase
     /**
      * Test InvoiceProductPrice belongs to InvoiceProduct
      */
-    public function testInvoiceProductPriceBelongsToInvoiceProduct()
+    public function test_invoice_product_price_belongs_to_invoice_product()
     {
         $invoiceProduct = factory(InvoiceProduct::class)->create();
         $invoiceProductPrice = factory(InvoiceProductPrice::class)->create([
@@ -195,7 +194,7 @@ class ModelRelationshipTest extends TestCase
     /**
      * Test InvoiceLine belongs to Member
      */
-    public function testInvoiceLineBelongsToMember()
+    public function test_invoice_line_belongs_to_member()
     {
         $member = factory(Member::class)->create();
         $invoiceLine = factory(InvoiceLine::class)->create([
@@ -209,7 +208,7 @@ class ModelRelationshipTest extends TestCase
     /**
      * Test InvoiceLine belongs to InvoiceProductPrice
      */
-    public function testInvoiceLineBelongsToInvoiceProductPrice()
+    public function test_invoice_line_belongs_to_invoice_product_price()
     {
         $invoiceProductPrice = factory(InvoiceProductPrice::class)->create();
         $invoiceLine = factory(InvoiceLine::class)->create([
@@ -223,7 +222,7 @@ class ModelRelationshipTest extends TestCase
     /**
      * Test Member Frst scope (first collection)
      */
-    public function testMemberFrstScope()
+    public function test_member_frst_scope()
     {
         $memberFirst = factory(Member::class)->create(['had_collection' => false]);
         $memberRecurring = factory(Member::class)->create(['had_collection' => true]);
@@ -237,7 +236,7 @@ class ModelRelationshipTest extends TestCase
     /**
      * Test Member Rcur scope (recurring collection)
      */
-    public function testMemberRcurScope()
+    public function test_member_rcur_scope()
     {
         $memberFirst = factory(Member::class)->create(['had_collection' => false]);
         $memberRecurring = factory(Member::class)->create(['had_collection' => true]);
@@ -251,9 +250,9 @@ class ModelRelationshipTest extends TestCase
     /**
      * Test Member getFullName method
      */
-    public function testMemberGetFullName()
+    public function test_member_get_full_name()
     {
-        $member = new Member();
+        $member = new Member;
         $member->firstname = 'John';
         $member->lastname = 'Doe';
 

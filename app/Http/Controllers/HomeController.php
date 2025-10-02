@@ -1,4 +1,6 @@
-<?php namespace App\Http\Controllers;
+<?php
+
+namespace App\Http\Controllers;
 
 use App\Models\InvoiceGroup;
 use App\Models\Order;
@@ -13,6 +15,7 @@ class HomeController extends Controller
         }
 
         $orders = Order::where('invoice_group_id', '=', $id)->orderBy('id', 'DESC')->get();
+
         return view('home.index')->with('orders', $orders);
     }
 }

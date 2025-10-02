@@ -1,4 +1,6 @@
-<?php namespace App\Http\Controllers;
+<?php
+
+namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Response;
@@ -20,11 +22,11 @@ class AuthController extends Controller
     {
         $v = Validator::make($request->all(), ['username' => 'required', 'password' => 'required']);
 
-        if (!$v->passes()) {
+        if (! $v->passes()) {
             return Response::json(['errors' => $v->errors()]);
         } else {
             $credentials = [
-                'email'    => $request->get('username'),
+                'email' => $request->get('username'),
                 'password' => $request->get('password'),
             ];
 
@@ -39,6 +41,7 @@ class AuthController extends Controller
     public function getLogout()
     {
         \Sentinel::logout(null, true);
+
         return redirect('auth/login');
     }
 }

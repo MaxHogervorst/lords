@@ -20,6 +20,7 @@ class RedirectIfNotAAdmin
                 return redirect()->guest('/');
             }
         }
+
         return $next($request);
     }
 }

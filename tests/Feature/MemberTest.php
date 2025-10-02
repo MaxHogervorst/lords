@@ -2,10 +2,9 @@
 
 namespace Tests\Feature;
 
-use Tests\TestCase;
-
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Sentinel;
+use Tests\TestCase;
 
 class MemberTest extends TestCase
 {
@@ -16,9 +15,9 @@ class MemberTest extends TestCase
      *
      * @return void
      */
-    public function testCreateMember()
+    public function test_create_member()
     {
-        $this->json('POST', '/member', [ 'name' => 'Sally'])
+        $this->json('POST', '/member', ['name' => 'Sally'])
             ->assertDontSee('Whoops')
             ->assertSee('Unauthorized.');
 
@@ -31,14 +30,14 @@ class MemberTest extends TestCase
 
         $this->actingAs($user)
             ->withSession([])
-            ->json('POST', '/member', [ 'name' => 'Sally'])
+            ->json('POST', '/member', ['name' => 'Sally'])
             ->assertDontSee('Whoops')
             ->assertJsonMissing(['success' => true])
             ->assertJsonStructure(['errors']);
 
         $this->actingAs($user)
             ->withSession([])
-            ->json('POST', '/member', [ 'name' => 'Sally', 'lastname' => 'Test'])
+            ->json('POST', '/member', ['name' => 'Sally', 'lastname' => 'Test'])
             ->assertDontSee('Whoops')
             ->assertJson([
                 'success' => true,
@@ -46,17 +45,17 @@ class MemberTest extends TestCase
                 'lastname' => 'Test',
             ]);
 
-        $this->assertDatabaseHas('members', [ 'firstname' => 'Sally', 'lastname' => 'Test']);
+        $this->assertDatabaseHas('members', ['firstname' => 'Sally', 'lastname' => 'Test']);
     }
 
-    public function testEditMember()
+    public function test_edit_member()
     {
         $member = factory(\App\Models\Member::class)->create([
-            'firstname' =>  'Sally',
+            'firstname' => 'Sally',
             'lastname' => 'Test',
         ]);
 
-        $this->json('PUT', '/member/' . $member->id, [ 'firstname' => 'Max'])
+        $this->json('PUT', '/member/'.$member->id, ['firstname' => 'Max'])
             ->assertDontSee('Whoops')
             ->assertSee('Unauthorized.');
 
@@ -69,30 +68,30 @@ class MemberTest extends TestCase
 
         $this->actingAs($user)
             ->withSession([])
-            ->json('PUT', '/member/' . $member->id, [ 'firstname' => 'Max', 'lastname' => null])
+            ->json('PUT', '/member/'.$member->id, ['firstname' => 'Max', 'lastname' => null])
             ->assertDontSee('Whoops')
             ->assertJsonMissing(['success' => true])
             ->assertJsonStructure(['errors']);
 
         $this->actingAs($user)
             ->withSession([])
-            ->json('PUT', '/member/' . $member->id, [ 'name' => 'Max', 'lastname' => 'Hogervorst', 'bic' => 'bic', 'iban' => 'iban'])
+            ->json('PUT', '/member/'.$member->id, ['name' => 'Max', 'lastname' => 'Hogervorst', 'bic' => 'bic', 'iban' => 'iban'])
             ->assertDontSee('Whoops')
             ->assertJson([
                 'success' => true,
             ]);
 
-        $this->assertDatabaseHas('members', [ 'id' => $member->id, 'firstname' => 'Max', 'lastname' => 'Hogervorst', 'bic' => 'bic', 'iban' => 'iban']);
+        $this->assertDatabaseHas('members', ['id' => $member->id, 'firstname' => 'Max', 'lastname' => 'Hogervorst', 'bic' => 'bic', 'iban' => 'iban']);
     }
 
-    public function testDeleteMember()
+    public function test_delete_member()
     {
         $member = factory(\App\Models\Member::class)->create([
-            'firstname' =>  'Sally',
+            'firstname' => 'Sally',
             'lastname' => 'Test',
         ]);
 
-        $this->json('DELETE', '/member/' . $member->id)
+        $this->json('DELETE', '/member/'.$member->id)
             ->assertDontSee('Whoops')
             ->assertSee('Unauthorized.');
 
@@ -106,12 +105,12 @@ class MemberTest extends TestCase
 
         $this->actingAs($user)
             ->withSession([])
-            ->json('DELETE', '/member/' . $member->id)
+            ->json('DELETE', '/member/'.$member->id)
             ->assertDontSee('Whoops')
             ->assertJson([
                 'success' => true,
             ]);
 
-        $this->assertDatabaseMissing('members', [ 'id' => $member->id]);
+        $this->assertDatabaseMissing('members', ['id' => $member->id]);
     }
 }

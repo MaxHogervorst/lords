@@ -2,19 +2,21 @@
 
 namespace Tests\Feature;
 
-use Tests\TestCase;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Sentinel;
+use Tests\TestCase;
 
 class LinkCheckTest extends TestCase
 {
     use DatabaseTransactions;
 
     private $adminUser;
+
     private $regularUser;
+
     private $adminRole;
 
-    public function setUp(): void
+    protected function setUp(): void
     {
         parent::setUp();
 
@@ -39,7 +41,7 @@ class LinkCheckTest extends TestCase
         ]);
     }
 
-    public function testHome()
+    public function test_home()
     {
         $response = $this->get('/');
         $this->assertEquals(302, $response->getStatusCode());
@@ -54,7 +56,7 @@ class LinkCheckTest extends TestCase
             ->assertDontSee('Whoops');
     }
 
-    public function testMembers()
+    public function test_members()
     {
         $response = $this->get('/member');
         $this->assertEquals(302, $response->getStatusCode());
@@ -69,7 +71,7 @@ class LinkCheckTest extends TestCase
             ->assertDontSee('Whoops');
     }
 
-    public function testGroups()
+    public function test_groups()
     {
         $response = $this->get('/group');
         $this->assertEquals(302, $response->getStatusCode());
@@ -84,7 +86,7 @@ class LinkCheckTest extends TestCase
             ->assertDontSee('Whoops');
     }
 
-    public function testProducts()
+    public function test_products()
     {
         $response = $this->get('/product');
         $this->assertEquals(302, $response->getStatusCode());
@@ -99,7 +101,7 @@ class LinkCheckTest extends TestCase
             ->assertDontSee('Whoops');
     }
 
-    public function testFiscus()
+    public function test_fiscus()
     {
         $response = $this->get('/fiscus');
         $this->assertEquals(302, $response->getStatusCode());
@@ -124,7 +126,7 @@ class LinkCheckTest extends TestCase
         $this->assertEquals(302, $response->getStatusCode());
     }
 
-    public function testInvoice()
+    public function test_invoice()
     {
         $response = $this->get('/invoice');
         $this->assertEquals(302, $response->getStatusCode());
@@ -149,7 +151,7 @@ class LinkCheckTest extends TestCase
         $this->assertEquals(302, $response->getStatusCode());
     }
 
-    public function testSepa()
+    public function test_sepa()
     {
         $response = $this->get('/sepa');
         $this->assertEquals(302, $response->getStatusCode());

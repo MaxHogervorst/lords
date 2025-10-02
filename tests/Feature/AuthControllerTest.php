@@ -2,9 +2,9 @@
 
 namespace Tests\Feature;
 
-use Tests\TestCase;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Sentinel;
+use Tests\TestCase;
 
 class AuthControllerTest extends TestCase
 {
@@ -13,7 +13,7 @@ class AuthControllerTest extends TestCase
     /**
      * Test that login page is accessible
      */
-    public function testLoginPageIsAccessible()
+    public function test_login_page_is_accessible()
     {
         $this->get('/auth/login')
             ->assertStatus(200)
@@ -24,7 +24,7 @@ class AuthControllerTest extends TestCase
     /**
      * Test successful authentication
      */
-    public function testSuccessfulAuthentication()
+    public function test_successful_authentication()
     {
         // Create a test user
         $user = Sentinel::registerAndActivate([
@@ -47,7 +47,7 @@ class AuthControllerTest extends TestCase
     /**
      * Test failed authentication with wrong password
      */
-    public function testFailedAuthenticationWrongPassword()
+    public function test_failed_authentication_wrong_password()
     {
         // Create a test user
         $user = Sentinel::registerAndActivate([
@@ -70,7 +70,7 @@ class AuthControllerTest extends TestCase
     /**
      * Test failed authentication with non-existent user
      */
-    public function testFailedAuthenticationNonExistentUser()
+    public function test_failed_authentication_non_existent_user()
     {
         $response = $this->call('POST', '/auth/authenticate', [
             'email' => 'nonexistent@example.com',
@@ -84,7 +84,7 @@ class AuthControllerTest extends TestCase
     /**
      * Test logout functionality
      */
-    public function testLogout()
+    public function test_logout()
     {
         // Login first
         $user = Sentinel::registerAndActivate([
@@ -109,7 +109,7 @@ class AuthControllerTest extends TestCase
     /**
      * Test that authenticated users can access home
      */
-    public function testAuthenticatedUserCanAccessHome()
+    public function test_authenticated_user_can_access_home()
     {
         // Create a test user with admin role
         $sentinelUser = Sentinel::registerAndActivate([
@@ -132,7 +132,7 @@ class AuthControllerTest extends TestCase
     /**
      * Test that unauthenticated users cannot access protected routes
      */
-    public function testUnauthenticatedUserCannotAccessHome()
+    public function test_unauthenticated_user_cannot_access_home()
     {
         $response = $this->call('GET', '/');
 
