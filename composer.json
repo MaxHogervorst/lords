@@ -5,9 +5,9 @@
     "license": "MIT",
     "type": "project",
     "require": {
-        "php": ">=7.3.0",
-        "laravel/framework": "^8.0",
-        "laravel/tinker": "^2.5",
+        "php": "^8.0.0",
+        "laravel/framework": "^9.0",
+        "laravel/tinker": "^2.7",
         "guzzlehttp/guzzle": "^7.0.1",
         "cartalyst/sentinel": "*",
         "laravelcollective/html": "^6.0",
@@ -15,16 +15,16 @@
         "anlutro/l4-settings": "^1.4"
     },
     "require-dev": {
-        "facade/ignition": "^2.5",
-        "nunomaduro/collision": "^5.0",
+        "spatie/laravel-ignition": "^1.0",
+        "nunomaduro/collision": "^6.1",
         "fzaninotto/faker": "~1.4",
-        "mockery/mockery": "0.9.*",
-        "phpunit/phpunit": "^9.3",
-        "symfony/css-selector": "3.1.*",
-        "symfony/dom-crawler": "3.1.*",
-        "itsgoingd/clockwork": "~1.7",
+        "mockery/mockery": "^1.4.4",
+        "phpunit/phpunit": "^9.5.10",
+        "symfony/css-selector": "^6.0",
+        "symfony/dom-crawler": "^6.0",
+        "itsgoingd/clockwork": "^5.1",
         "digitick/sepa-xml" : "~1.4",
-        "maatwebsite/excel": "*",
+        "maatwebsite/excel": "^3.1",
         "phpstan/phpstan": "^1.0"
     },
     "autoload": {
