@@ -89,7 +89,7 @@ services:
         type: SECRET
 
     health_check:
-      http_path: /
+      http_path: /health
       initial_delay_seconds: 60
       period_seconds: 30
       timeout_seconds: 10

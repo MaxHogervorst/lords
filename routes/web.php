@@ -12,6 +12,11 @@ use App\Http\Controllers\OrderController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\SepaController;
 
+// Health check endpoint for Digital Ocean
+Route::get('/health', function () {
+    return response()->json(['status' => 'ok'], 200);
+});
+
 // Guest routes
 Route::get('auth/login', [AuthController::class, 'getLogin'])->name('auth.login')->can('guest');
 Route::post('auth/authenticate', [AuthController::class, 'postAuthenticate'])->name('auth.authenticate')->can('guest');
