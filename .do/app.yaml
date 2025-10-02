@@ -1,0 +1,122 @@
+name: lords
+region: ams3  # Amsterdam region (change to your preferred region: nyc1, sfo3, etc)
+
+services:
+  - name: web
+    github:
+      branch: upgrade  # or main
+      deploy_on_push: true
+      repo: maxhogervorst/lords  # Update with your GitHub repo
+
+    dockerfile_path: Dockerfile.production
+
+    http_port: 8080
+
+    instance_count: 1
+    instance_size_slug: basic-xxs  # $5/month (upgrade to basic-xs for $12/month if needed)
+
+    routes:
+      - path: /
+
+    envs:
+      - key: APP_ENV
+        value: "production"
+
+      - key: APP_DEBUG
+        value: "false"
+
+      - key: APP_KEY
+        scope: RUN_AND_BUILD_TIME
+        type: SECRET
+        # Generate with: php artisan key:generate --show
+
+      - key: APP_URL
+        value: "${APP_URL}"  # Will be set automatically by DO
+
+      - key: DB_CONNECTION
+        value: "mysql"
+
+      - key: DB_HOST
+        value: "${db.HOSTNAME}"
+
+      - key: DB_PORT
+        value: "${db.PORT}"
+
+      - key: DB_DATABASE
+        value: "${db.DATABASE}"
+
+      - key: DB_USERNAME
+        value: "${db.USERNAME}"
+
+      - key: DB_PASSWORD
+        value: "${db.PASSWORD}"
+        type: SECRET
+
+      - key: CACHE_DRIVER
+        value: "redis"
+
+      - key: SESSION_DRIVER
+        value: "redis"
+
+      - key: QUEUE_CONNECTION
+        value: "redis"
+
+      - key: REDIS_HOST
+        value: "${redis.HOSTNAME}"
+
+      - key: REDIS_PASSWORD
+        value: "${redis.PASSWORD}"
+        type: SECRET
+
+      - key: REDIS_PORT
+        value: "${redis.PORT}"
+
+      # Add your SEPA settings here
+      - key: SEPA_CREDITOR_NAME
+        value: "Your Organization"
+        type: SECRET
+
+      - key: SEPA_CREDITOR_IBAN
+        value: ""
+        type: SECRET
+
+      - key: SEPA_CREDITOR_BIC
+        value: ""
+        type: SECRET
+
+      - key: SEPA_CREDITOR_ID
+        value: ""
+        type: SECRET
+
+    health_check:
+      http_path: /
+      initial_delay_seconds: 60
+      period_seconds: 30
+      timeout_seconds: 10
+      success_threshold: 1
+      failure_threshold: 3
+
+databases:
+  - name: db
+    engine: MYSQL
+    version: "8"
+    production: false  # Set to true for production (starts at $15/month)
+    cluster_name: lords-db
+    db_name: lords
+    db_user: lords_user
+
+  - name: redis
+    engine: REDIS
+    production: false  # Set to true for production (starts at $15/month)
+
+# Optional: Add a worker for queued jobs
+# workers:
+#   - name: queue-worker
+#     github:
+#       branch: master
+#       deploy_on_push: true
+#       repo: YOUR_GITHUB_USERNAME/lords
+#     dockerfile_path: Dockerfile.production
+#     run_command: "php artisan queue:work --tries=3 --timeout=90"
+#     instance_count: 1
+#     instance_size_slug: basic-xxs
