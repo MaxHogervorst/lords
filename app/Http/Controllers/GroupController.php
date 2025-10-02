@@ -24,9 +24,10 @@ class GroupController extends Controller
 
     public function store(StoreGroupRequest $request): JsonResponse
     {
-        $myDateTime = new \DateTime($request->get('groupDate'));
+        $validated = $request->validated();
+        $myDateTime = new \DateTime($validated['groupDate']);
         $date = $myDateTime->format('d-m-Y');
-        $name = $request->get('name').' '.$date;
+        $name = $validated['name'].' '.$date;
         $group = new Group;
         $group->name = $name;
         $group->invoice_group_id = InvoiceGroup::getCurrentMonth()->id;
@@ -48,14 +49,14 @@ class GroupController extends Controller
         return view('group.edit')->with('group', Group::find($id));
     }
 
-    public function update(StoreGroupRequest $request, $id): JsonResponse
+    public function update(StoreGroupRequest $request, Group $group): JsonResponse
     {
-        $member = Group::find($id);
-        $member->name = $request->get('name');
+        $validated = $request->validated();
+        $group->name = $validated['name'];
 
-        $member->save();
-        if ($member->exists) {
-            return response()->json(['success' => true, 'message' => $member->name.' Successfully edited']);
+        $group->save();
+        if ($group->exists) {
+            return response()->json(['success' => true, 'message' => $group->name.' Successfully edited']);
         } else {
             return response()->json(['errors' => 'Could not be updated']);
         }

@@ -26,9 +26,10 @@ class MemberController extends Controller
      */
     public function store(StoreMemberRequest $request): JsonResponse
     {
+        $validated = $request->validated();
         $member = new Member;
-        $member->firstname = $request->get('name');
-        $member->lastname = $request->get('lastname');
+        $member->firstname = $validated['name'];
+        $member->lastname = $validated['lastname'];
 
         $member->save();
         if ($member->exists) {
@@ -56,16 +57,13 @@ class MemberController extends Controller
      */
     public function update(StoreMemberRequest $request, $id): JsonResponse
     {
+        $validated = $request->validated();
         $member = Member::find($id);
-        $member->firstname = $request->get('name');
-        $member->lastname = $request->get('lastname');
-        $member->bic = $request->get('bic');
-        $member->iban = $request->get('iban');
-        if ($request->has('had_collection')) {
-            $member->had_collection = true;
-        } else {
-            $member->had_collection = false;
-        }
+        $member->firstname = $validated['name'];
+        $member->lastname = $validated['lastname'];
+        $member->bic = $validated['bic'] ?? null;
+        $member->iban = $validated['iban'] ?? null;
+        $member->had_collection = $request->has('had_collection');
 
         $member->save();
         if ($member->exists) {

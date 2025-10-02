@@ -9,12 +9,14 @@ use App\Models\InvoiceLine;
 use App\Models\InvoiceProduct;
 use App\Models\InvoiceProductPrice;
 use App\Models\Member;
+use App\Services\FiscusService;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
 use Illuminate\View\View;
 
 class FiscusController extends Controller
 {
+    public function __construct(protected FiscusService $fiscusService) {}
+
     /**
      * Display a listing of the resource.
      */
@@ -40,32 +42,17 @@ class FiscusController extends Controller
      */
     public function store(StoreFiscusRequest $request): JsonResponse
     {
+        $validated = $request->validated();
         $currentmonth = InvoiceGroup::getCurrentMonth()->id;
-        $invoiceproduct = new InvoiceProduct;
-        $invoiceproduct->name = $request->get('finalproductname');
-        $invoiceproduct->invoice_group_id = $currentmonth;
-        $invoiceproduct->save();
 
-        $invoiceproductprice = new InvoiceProductPrice;
-        $invoiceproductprice->invoice_product_id = $invoiceproduct->id;
-        $invoiceproductprice->price = $request->get('finalpriceperperson');
-        $invoiceproductprice->description = $request->get('finalproductdescription');
-        $invoiceproductprice->save();
+        $result = $this->fiscusService->createInvoiceProduct($validated, $currentmonth);
 
-        $i = 0;
-        foreach ($request->get('member') as $m) {
-            $invoiceline = new InvoiceLine;
-            $invoiceline->invoice_product_price_id = $invoiceproductprice->id;
-            $invoiceline->member_id = $m;
-            $invoiceline->save();
-            if ($invoiceline->exists) {
-                $i++;
-            }
-        }
-
-        return response()->json(['success' => true, 'message' => $invoiceproduct->name.' Successfully added, '
-                                                                    .$invoiceproductprice->price.' per person.'
-                                                                    .$i.' Total persons']);
+        return response()->json([
+            'success' => true,
+            'message' => $result['product_name'].' Successfully added, '
+                        .$result['price'].' per person.'
+                        .$result['member_count'].' Total persons',
+        ]);
     }
 
     /**
@@ -102,68 +89,28 @@ class FiscusController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(UpdateFiscusRequest $request, $id): JsonResponse
+    public function update(UpdateFiscusRequest $request, InvoiceProduct $invoiceProduct): JsonResponse
     {
-        $update = 'added new price';
-        $invoiceproduct = InvoiceProduct::find($id);
+        $validated = $request->validated();
+        $updatePriceId = $request->has('isupdate') ? $request->get('isupdate') : null;
 
-        if ($request->has('isupdate')) {
-            $update = 'updated';
-            $invoiceproductprice = InvoiceProductPrice::find($request->get('isupdate'));
-            if ($invoiceproductprice->exists) {
-                $invoiceproductprice->price = $request->get('finalpriceperperson');
-                $invoiceproductprice->description = $request->get('finalproductdescription');
-                $invoiceproductprice->save();
+        $result = $this->fiscusService->updateInvoiceProduct($invoiceProduct, $validated, $updatePriceId);
 
-                InvoiceLine::where('invoice_product_price_id', '=', $invoiceproductprice->id)->delete();
-            } else {
-                return response()->json(['errors' => 'Could not find Product price']);
-            }
-        } else {
-            $invoiceproductprice = new InvoiceProductPrice;
-            $invoiceproductprice->invoice_product_id = $invoiceproduct->id;
-            $invoiceproductprice->price = $request->get('finalpriceperperson');
-            $invoiceproductprice->description = $request->get('finalproductdescription');
-            $invoiceproductprice->save();
-        }
-
-        if ($request->has('member')) {
-            $i = 0;
-            foreach ($request->get('member') as $m) {
-                $invoiceline = new InvoiceLine;
-                $invoiceline->invoice_product_price_id = $invoiceproductprice->id;
-                $invoiceline->member_id = $m;
-                $invoiceline->save();
-                if ($invoiceline->exists) {
-                    $i++;
-                }
-            }
-        }
-
-        return response()->json(['success' => true, 'message' => $invoiceproduct->name.' Successfully '.$update.', '
-                                                                    .$invoiceproductprice->price.' per person.'
-                                                                    .$i.' Total persons']);
+        return response()->json([
+            'success' => true,
+            'message' => $result['product_name'].' Successfully '.$result['update_type'].', '
+                        .$result['price'].' per person.'
+                        .$result['member_count'].' Total persons',
+        ]);
     }
 
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(Request $request, $id): JsonResponse
+    public function destroy(InvoiceProduct $invoiceProduct): JsonResponse
     {
-        $product = InvoiceProduct::find($request->get('product_id'));
-        if ($product != null) {
-            $name = $product->name;
-            foreach ($product->productprice as $price) {
-                foreach ($price->invoiceline as $line) {
-                    $line->delete();
-                }
-                $price->delete();
-            }
-            $product->delete();
+        $name = $this->fiscusService->deleteInvoiceProduct($invoiceProduct);
 
-            return response()->json(['success' => true, 'message' => $name.' Successfully deleted']);
-        } else {
-            return response()->json(['success' => false, 'message' => 'Could not find product']);
-        }
+        return response()->json(['success' => true, 'message' => $name.' Successfully deleted']);
     }
 }

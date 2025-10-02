@@ -49,6 +49,8 @@ Route::group(['middleware' => ['auth', 'admin']], function () {
     Route::get('fiscus/specificinvoicelines/{invoiceProductPrice}', [FiscusController::class, 'getSpecificinvoicelines']);
     Route::get('fiscus/edit', [FiscusController::class, 'getEdit']);
     Route::resource('fiscus', FiscusController::class, ['except' => ['edit']]);
+    Route::put('fiscus/{invoiceProduct}', [FiscusController::class, 'update'])->name('fiscus.update');
+    Route::delete('fiscus/{invoiceProduct}', [FiscusController::class, 'destroy'])->name('fiscus.destroy');
     Route::get('invoice', [InvoiceController::class, 'getIndex']);
     Route::get('invoice/pdf', [InvoiceController::class, 'getPdf']);
     Route::get('invoice/excel', [InvoiceController::class, 'getExcel']);
@@ -65,43 +67,3 @@ Route::group(['middleware' => 'auth'], function () {
     Route::resource('member', MemberController::class);
     Route::get('/', [HomeController::class, 'getIndex'])->name('home');
 });
-
-// Route::get('createuser', function()
-// {
-//
-//	$role = Sentinel::getRoleRepository()->createModel()->create([
-//		'name' => 'Lord',
-//		'slug' => 'lord',
-//	]);
-//
-//	$credentials = [
-//		'email'    => 'lord',
-//		'password' => 'lordsgeil',
-//	];
-//
-//	$user = Sentinel::create($credentials);
-//
-//	$role->users()->attach($user);
-//
-//	$role = Sentinel::getRoleRepository()->createModel()->create([
-//		'name' => 'Admin',
-//		'slug' => 'admin',
-//	]);
-//
-//	$credentials = [
-//		'email'    => 'fiscus',
-//		'password' => 'geldgeld',
-//	];
-//
-//	$user = Sentinel::create($credentials);
-//
-//	$role->users()->attach($user);
-//	$credentials = [
-//		'email'    => 'lotm',
-//		'password' => 'zuipenmooi',
-//	];
-//
-//	$user = Sentinel::create($credentials);
-//
-//	$role->users()->attach($user);
-// });

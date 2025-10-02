@@ -27,9 +27,10 @@ class ProductController extends Controller
 
     public function store(StoreProductRequest $request): JsonResponse
     {
+        $validated = $request->validated();
         $product = new Product;
-        $product->name = $request->get('name');
-        $product->price = $request->get('productPrice');
+        $product->name = $validated['name'];
+        $product->price = $validated['productPrice'];
         $product->save();
 
         if ($product->exists) {
@@ -46,11 +47,11 @@ class ProductController extends Controller
         return view('product.edit')->with('product', Product::find($id));
     }
 
-    public function update(StoreProductRequest $request, $id): JsonResponse
+    public function update(StoreProductRequest $request, Product $product): JsonResponse
     {
-        $product = Product::find($id);
-        $product->Name = $request->get('productName');
-        $product->Price = $request->get('productPrice');
+        $validated = $request->validated();
+        $product->Name = $validated['productName'];
+        $product->Price = $validated['productPrice'];
 
         if ($product->save()) {
             $this->updateProductCache();

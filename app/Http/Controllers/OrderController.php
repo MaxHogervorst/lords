@@ -14,6 +14,8 @@ class OrderController extends Controller
      */
     public function postStore(StoreOrderRequest $request, $type): JsonResponse
     {
+        $validated = $request->validated();
+
         if ($type == 'Member') {
             $type = 'App\Models\Member';
         } else {
@@ -22,10 +24,10 @@ class OrderController extends Controller
 
         $order = new Order;
         $order->invoice_group_id = InvoiceGroup::getCurrentMonth()->id;
-        $order->ownerable_id = $request->get('memberId');
+        $order->ownerable_id = $validated['memberId'];
         $order->ownerable_type = $type;
-        $order->product_id = $request->get('product');
-        $order->amount = $request->get('amount');
+        $order->product_id = $validated['product'];
+        $order->amount = $validated['amount'];
         $order->save();
 
         if ($order->exists) {
