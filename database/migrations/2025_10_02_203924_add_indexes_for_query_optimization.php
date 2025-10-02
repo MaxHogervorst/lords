@@ -35,10 +35,7 @@ return new class extends Migration
             $table->index('status', 'invoice_groups_status_index');
         });
 
-        // Products table - frequently filtered by active status
-        Schema::table('products', function (Blueprint $table) {
-            $table->index('active', 'products_active_index');
-        });
+        // Products table - no active column, skipping index
 
         // Invoice products table - frequently joined with invoice_group_id
         Schema::table('invoice_products', function (Blueprint $table) {
@@ -81,9 +78,7 @@ return new class extends Migration
             $table->dropIndex('invoice_groups_status_index');
         });
 
-        Schema::table('products', function (Blueprint $table) {
-            $table->dropIndex('products_active_index');
-        });
+        // Products table - no active column index to drop
 
         Schema::table('invoice_products', function (Blueprint $table) {
             $table->dropIndex('invoice_products_invoice_group_id_index');
