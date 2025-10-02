@@ -20,7 +20,7 @@ class MemberRepository extends BaseRepository
      */
     public function findByLastnameAndIban(string $lastname, string $iban): ?Member
     {
-        return $this->model
+        return $this->model->newQuery()
             ->where('lastname', $lastname)
             ->where('iban', $iban)
             ->first();
@@ -76,7 +76,7 @@ class MemberRepository extends BaseRepository
      */
     public function getMembersWithBankInfo(): Collection
     {
-        return $this->model
+        return $this->model->newQuery()
             ->whereNotNull('bic')
             ->whereNotNull('iban')
             ->get();
@@ -87,7 +87,7 @@ class MemberRepository extends BaseRepository
      */
     public function search(string $term): Collection
     {
-        return $this->model
+        return $this->model->newQuery()
             ->where('firstname', 'like', "%{$term}%")
             ->orWhere('lastname', 'like', "%{$term}%")
             ->orWhere('email', 'like', "%{$term}%")
