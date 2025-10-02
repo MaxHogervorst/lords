@@ -8,7 +8,6 @@ use App\Models\InvoiceGroup;
 use App\Models\Member;
 use App\Models\Order;
 use App\Models\Product;
-use Sentinel;
 use Tests\TestCase;
 
 class HomeControllerTest extends TestCase
@@ -44,12 +43,10 @@ class HomeControllerTest extends TestCase
      */
     public function test_home_page_is_accessible_when_authenticated(): void
     {
-        $sentinelUser = Sentinel::registerAndActivate([
+        $user = \App\Models\User::factory()->create([
             'email' => 'homeuser@example.com',
-            'password' => 'password',
+            'password' => bcrypt('password'),
         ]);
-        Sentinel::login($sentinelUser);
-        $user = \App\Models\User::find($sentinelUser->id);
 
         $this->actingAs($user)
             ->get('/')
@@ -62,12 +59,10 @@ class HomeControllerTest extends TestCase
      */
     public function test_home_page_loads_with_active_invoice_group(): void
     {
-        $sentinelUser = Sentinel::registerAndActivate([
+        $user = \App\Models\User::factory()->create([
             'email' => 'homeinvoice@example.com',
-            'password' => 'password',
+            'password' => bcrypt('password'),
         ]);
-        Sentinel::login($sentinelUser);
-        $user = \App\Models\User::find($sentinelUser->id);
 
         $invoiceGroup = InvoiceGroup::factory()->create([
             'name' => 'January 2025',
@@ -85,12 +80,10 @@ class HomeControllerTest extends TestCase
      */
     public function test_home_page_displays_members(): void
     {
-        $sentinelUser = Sentinel::registerAndActivate([
+        $user = \App\Models\User::factory()->create([
             'email' => 'homemembers@example.com',
-            'password' => 'password',
+            'password' => bcrypt('password'),
         ]);
-        Sentinel::login($sentinelUser);
-        $user = \App\Models\User::find($sentinelUser->id);
 
         $member = Member::factory()->create([
             'firstname' => 'John',
@@ -108,12 +101,10 @@ class HomeControllerTest extends TestCase
      */
     public function test_home_page_displays_products(): void
     {
-        $sentinelUser = Sentinel::registerAndActivate([
+        $user = \App\Models\User::factory()->create([
             'email' => 'homeproducts@example.com',
-            'password' => 'password',
+            'password' => bcrypt('password'),
         ]);
-        Sentinel::login($sentinelUser);
-        $user = \App\Models\User::find($sentinelUser->id);
 
         $product = Product::factory()->create([
             'name' => 'Test Home Beer',
@@ -131,12 +122,10 @@ class HomeControllerTest extends TestCase
      */
     public function test_home_page_handles_missing_invoice_group(): void
     {
-        $sentinelUser = Sentinel::registerAndActivate([
+        $user = \App\Models\User::factory()->create([
             'email' => 'homenoinvoice@example.com',
-            'password' => 'password',
+            'password' => bcrypt('password'),
         ]);
-        Sentinel::login($sentinelUser);
-        $user = \App\Models\User::find($sentinelUser->id);
 
         // Create a fresh invoice group for this test
         // Instead of deleting all groups (which causes lock issues)
@@ -156,12 +145,10 @@ class HomeControllerTest extends TestCase
      */
     public function test_home_page_with_member_orders(): void
     {
-        $sentinelUser = Sentinel::registerAndActivate([
+        $user = \App\Models\User::factory()->create([
             'email' => 'homeorders@example.com',
-            'password' => 'password',
+            'password' => bcrypt('password'),
         ]);
-        Sentinel::login($sentinelUser);
-        $user = \App\Models\User::find($sentinelUser->id);
 
         $member = Member::factory()->create();
         $product = Product::factory()->create();

@@ -7,7 +7,6 @@ use App\Models\GroupMember;
 use App\Models\InvoiceGroup;
 use App\Models\Member;
 use App\Models\Product;
-use Sentinel;
 use Tests\TestCase;
 
 class GroupTest extends TestCase
@@ -17,25 +16,12 @@ class GroupTest extends TestCase
     {
         parent::setUp();
 
-        // Clear cache and logout any existing session
+        // Clear cache
         \Cache::flush();
-        if (Sentinel::check()) {
-            Sentinel::logout();
-        }
 
         // Create required data for tests
         Product::factory()->create();
         InvoiceGroup::factory()->create(['status' => true]);
-    }
-
-    protected function tearDown(): void
-    {
-        // Logout after each test
-        if (Sentinel::check()) {
-            Sentinel::logout();
-        }
-
-        parent::tearDown();
     }
 
     public function test_create_group()
@@ -44,12 +30,10 @@ class GroupTest extends TestCase
             ->assertDontSee('Whoops')
             ->assertSee('Unauthorized.');
 
-        $sentinelUser = Sentinel::registerAndActivate([
+        $user = \App\Models\User::factory()->create([
             'email' => 'grouptest@example.com',
-            'password' => 'password',
+            'password' => bcrypt('password'),
         ]);
-        Sentinel::login($sentinelUser);
-        $user = \App\Models\User::find($sentinelUser->id);
 
         $this->actingAs($user)
             ->withSession([])
@@ -83,12 +67,10 @@ class GroupTest extends TestCase
             ->assertDontSee('Whoops')
             ->assertSee('Unauthorized.');
 
-        $sentinelUser = Sentinel::registerAndActivate([
+        $user = \App\Models\User::factory()->create([
             'email' => 'groupedit@example.com',
-            'password' => 'password',
+            'password' => bcrypt('password'),
         ]);
-        Sentinel::login($sentinelUser);
-        $user = \App\Models\User::find($sentinelUser->id);
 
         $this->actingAs($user)
             ->withSession([])
@@ -119,13 +101,10 @@ class GroupTest extends TestCase
             ->assertDontSee('Whoops')
             ->assertSee('Unauthorized.');
 
-        Sentinel::logout();
-        $sentinelUser = Sentinel::registerAndActivate([
+        $user = \App\Models\User::factory()->create([
             'email' => 'groupdelete@example.com',
-            'password' => 'password',
+            'password' => bcrypt('password'),
         ]);
-        Sentinel::login($sentinelUser);
-        $user = \App\Models\User::find($sentinelUser->id);
 
         $this->actingAs($user)
             ->withSession([])
@@ -154,13 +133,10 @@ class GroupTest extends TestCase
             ->assertDontSee('Whoops')
             ->assertSee('Unauthorized.');
 
-        Sentinel::logout();
-        $sentinelUser = Sentinel::registerAndActivate([
+        $user = \App\Models\User::factory()->create([
             'email' => 'groupmember@example.com',
-            'password' => 'password',
+            'password' => bcrypt('password'),
         ]);
-        Sentinel::login($sentinelUser);
-        $user = \App\Models\User::find($sentinelUser->id);
 
         $this->actingAs($user)
             ->withSession([])
@@ -201,13 +177,10 @@ class GroupTest extends TestCase
             ->assertDontSee('Whoops')
             ->assertSee('Unauthorized.');
 
-        Sentinel::logout();
-        $sentinelUser = Sentinel::registerAndActivate([
+        $user = \App\Models\User::factory()->create([
             'email' => 'groupmemberdelete@example.com',
-            'password' => 'password',
+            'password' => bcrypt('password'),
         ]);
-        Sentinel::login($sentinelUser);
-        $user = \App\Models\User::find($sentinelUser->id);
 
         $this->actingAs($user)
             ->withSession([])

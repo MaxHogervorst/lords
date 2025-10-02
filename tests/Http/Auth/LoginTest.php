@@ -1,5 +1,7 @@
 <?php
 
+use Illuminate\Support\Facades\Auth;
+
 test('login page loads', function () {
     $response = $this->get('/auth/login');
 
@@ -7,9 +9,9 @@ test('login page loads', function () {
 });
 
 test('successful login with valid credentials', function () {
-    $sentinelUser = \Sentinel::registerAndActivate([
+    \App\Models\User::factory()->create([
         'email' => 'logintest@example.com',
-        'password' => 'password123',
+        'password' => bcrypt('password123'),
     ]);
 
     $response = $this->post('/auth/authenticate', [
@@ -18,7 +20,7 @@ test('successful login with valid credentials', function () {
     ]);
 
     $response->assertRedirect('/');
-    expect(\Sentinel::check())->not->toBeNull();
+    expect(Auth::check())->toBeTrue();
 });
 
 test('failed login with invalid credentials', function () {
@@ -28,19 +30,17 @@ test('failed login with invalid credentials', function () {
     ]);
 
     $response->assertStatus(200)
-        ->assertJson(['errors' => 'Wrond Credentials']);
-    expect(\Sentinel::check())->toBeFalse();
+        ->assertJson(['errors' => 'Wrong Credentials']);
+    expect(Auth::check())->toBeFalse();
 });
 
 test('logout functionality works', function () {
-    $sentinelUser = \Sentinel::registerAndActivate([
+    \App\Models\User::factory()->create([
         'email' => 'logouttest@example.com',
-        'password' => 'password123',
+        'password' => bcrypt('password123'),
     ]);
-    \Sentinel::login($sentinelUser);
-
     $response = $this->get('/auth/logout');
 
     $response->assertRedirect('/auth/login');
-    expect(\Sentinel::check())->toBeFalse();
+    expect(Auth::check())->toBeFalse();
 });

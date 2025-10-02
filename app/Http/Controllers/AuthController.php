@@ -7,6 +7,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\AuthenticateRequest;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
 
 class AuthController extends Controller
@@ -28,16 +29,21 @@ class AuthController extends Controller
             'password' => $request->get('password'),
         ];
 
-        if (\Sentinel::forceAuthenticateAndRemember($credentials)) {
+        if (Auth::attempt($credentials, remember: true)) {
+            $request->session()->regenerate();
+
             return redirect()->route('home');
-        } else {
-            return response()->json(['errors' => 'Wrond Credentials']);
         }
+
+        return response()->json(['errors' => 'Wrong Credentials']);
     }
 
     public function getLogout(): RedirectResponse
     {
-        \Sentinel::logout(null, true);
+        Auth::logout();
+
+        request()->session()->invalidate();
+        request()->session()->regenerateToken();
 
         return redirect('auth/login');
     }

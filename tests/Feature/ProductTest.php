@@ -3,24 +3,15 @@
 use App\Models\InvoiceGroup;
 use App\Models\Product;
 use App\Models\User;
+use Illuminate\Support\Facades\Auth;
 
 beforeEach(function () {
-    // Clear cache and logout any existing session
+    // Clear cache
     \Cache::flush();
-    if (\Sentinel::check()) {
-        \Sentinel::logout();
-    }
 
     // Create required data for tests
     Product::factory()->create();
     InvoiceGroup::factory()->create(['status' => true]);
-});
-
-afterEach(function () {
-    // Logout after each test
-    if (\Sentinel::check()) {
-        \Sentinel::logout();
-    }
 });
 
 test('create product requires authentication', function () {
@@ -30,12 +21,10 @@ test('create product requires authentication', function () {
 });
 
 test('create product validates required fields', function () {
-    $sentinelUser = \Sentinel::registerAndActivate([
+    $user = User::factory()->create([
         'email' => 'producttest@example.com',
-        'password' => 'password',
+        'password' => bcrypt('password'),
     ]);
-    \Sentinel::login($sentinelUser);
-    $user = User::find($sentinelUser->id);
 
     $this->actingAs($user)
         ->withSession([])
@@ -46,12 +35,10 @@ test('create product validates required fields', function () {
 });
 
 test('create product successfully', function () {
-    $sentinelUser = \Sentinel::registerAndActivate([
+    $user = User::factory()->create([
         'email' => 'producttest@example.com',
-        'password' => 'password',
+        'password' => bcrypt('password'),
     ]);
-    \Sentinel::login($sentinelUser);
-    $user = User::find($sentinelUser->id);
 
     $this->actingAs($user)
         ->withSession([])
@@ -83,12 +70,10 @@ test('edit product validates required fields', function () {
         'price' => 3.56,
     ]);
 
-    $sentinelUser = \Sentinel::registerAndActivate([
+    $user = User::factory()->create([
         'email' => 'productedit@example.com',
-        'password' => 'password',
+        'password' => bcrypt('password'),
     ]);
-    \Sentinel::login($sentinelUser);
-    $user = User::find($sentinelUser->id);
 
     $this->actingAs($user)
         ->withSession([])
@@ -104,12 +89,10 @@ test('edit product successfully', function () {
         'price' => 3.56,
     ]);
 
-    $sentinelUser = \Sentinel::registerAndActivate([
+    $user = User::factory()->create([
         'email' => 'productedit@example.com',
-        'password' => 'password',
+        'password' => bcrypt('password'),
     ]);
-    \Sentinel::login($sentinelUser);
-    $user = User::find($sentinelUser->id);
 
     $this->actingAs($user)
         ->withSession([])
@@ -139,13 +122,10 @@ test('delete product successfully', function () {
         'price' => 3.56,
     ]);
 
-    \Sentinel::logout();
-    $sentinelUser = \Sentinel::registerAndActivate([
+    $user = User::factory()->create([
         'email' => 'productdelete@example.com',
-        'password' => 'password',
+        'password' => bcrypt('password'),
     ]);
-    \Sentinel::login($sentinelUser);
-    $user = User::find($sentinelUser->id);
 
     $this->actingAs($user)
         ->withSession([])

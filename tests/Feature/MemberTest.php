@@ -3,24 +3,15 @@
 use App\Models\InvoiceGroup;
 use App\Models\Product;
 use App\Models\User;
+use Illuminate\Support\Facades\Auth;
 
 beforeEach(function () {
-    // Clear cache and logout any existing session
+    // Clear cache
     \Cache::flush();
-    if (\Sentinel::check()) {
-        \Sentinel::logout();
-    }
 
     // Create required data for tests
     Product::factory()->create();
     InvoiceGroup::factory()->create(['status' => true]);
-});
-
-afterEach(function () {
-    // Logout after each test
-    if (\Sentinel::check()) {
-        \Sentinel::logout();
-    }
 });
 
 test('create member requires authentication', function () {
@@ -30,12 +21,10 @@ test('create member requires authentication', function () {
 });
 
 test('create member validates required fields', function () {
-    $sentinelUser = \Sentinel::registerAndActivate([
+    $user = User::factory()->create([
         'email' => 'membertest@example.com',
-        'password' => 'password',
+        'password' => bcrypt('password'),
     ]);
-    \Sentinel::login($sentinelUser);
-    $user = User::find($sentinelUser->id);
 
     $this->actingAs($user)
         ->withSession([])
@@ -46,12 +35,10 @@ test('create member validates required fields', function () {
 });
 
 test('create member successfully', function () {
-    $sentinelUser = \Sentinel::registerAndActivate([
+    $user = User::factory()->create([
         'email' => 'membertest@example.com',
-        'password' => 'password',
+        'password' => bcrypt('password'),
     ]);
-    \Sentinel::login($sentinelUser);
-    $user = User::find($sentinelUser->id);
 
     $this->actingAs($user)
         ->withSession([])

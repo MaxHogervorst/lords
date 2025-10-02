@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "43ae4d47ef87b36792ae33be9cbbc75a",
+    "content-hash": "de1a806426d6e3399b209c0fa5e781a5",
     "packages": [
         {
             "name": "anlutro/l4-settings",
@@ -282,148 +282,6 @@
                 }
             ],
             "time": "2024-02-09T16:56:22+00:00"
-        },
-        {
-            "name": "cartalyst/sentinel",
-            "version": "v9.0.0",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/cartalyst/sentinel.git",
-                "reference": "d7e92a43903a6ba5522a6a1dffbdf751015dae7b"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/cartalyst/sentinel/zipball/d7e92a43903a6ba5522a6a1dffbdf751015dae7b",
-                "reference": "d7e92a43903a6ba5522a6a1dffbdf751015dae7b",
-                "shasum": ""
-            },
-            "require": {
-                "cartalyst/support": "^9.0",
-                "illuminate/support": "^12.0",
-                "php": "^8.3"
-            },
-            "require-dev": {
-                "cartalyst/php-cs-fixer-config": "^2.0",
-                "illuminate/cookie": "^12.0",
-                "illuminate/database": "^12.0",
-                "illuminate/events": "^12.0",
-                "illuminate/http": "^12.0",
-                "illuminate/session": "^12.0",
-                "mockery/mockery": "^1.0",
-                "phpunit/phpunit": "^10.0"
-            },
-            "suggest": {
-                "illuminate/database": "By default, Sentinel utilizes the powerful Illuminate database layer.",
-                "illuminate/events": "To hook into various events across Sentinel, we recommend using Illuminate's event dispatcher.",
-                "symfony/http-foundation": "Required for native implementations."
-            },
-            "type": "library",
-            "extra": {
-                "laravel": {
-                    "aliases": {
-                        "Reminder": "Cartalyst\\Sentinel\\Laravel\\Facades\\Reminder",
-                        "Sentinel": "Cartalyst\\Sentinel\\Laravel\\Facades\\Sentinel",
-                        "Activation": "Cartalyst\\Sentinel\\Laravel\\Facades\\Activation"
-                    },
-                    "providers": [
-                        "Cartalyst\\Sentinel\\Laravel\\SentinelServiceProvider"
-                    ]
-                },
-                "component": "package",
-                "branch-alias": {
-                    "dev-master": "8.0.x-dev"
-                }
-            },
-            "autoload": {
-                "psr-4": {
-                    "Cartalyst\\Sentinel\\": "src/"
-                }
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "BSD-3-Clause"
-            ],
-            "authors": [
-                {
-                    "name": "Cartalyst LLC",
-                    "email": "help@cartalyst.com",
-                    "homepage": "https://cartalyst.com"
-                }
-            ],
-            "description": "PHP 8.2+ Fully-featured Authentication & Authorization System",
-            "keywords": [
-                "auth",
-                "cartalyst",
-                "laravel",
-                "php",
-                "security"
-            ],
-            "support": {
-                "issues": "https://github.com/cartalyst/sentinel/issues",
-                "source": "https://github.com/cartalyst/sentinel/tree/v9.0.0"
-            },
-            "time": "2025-02-28T21:29:40+00:00"
-        },
-        {
-            "name": "cartalyst/support",
-            "version": "v9.0.0",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/cartalyst/support.git",
-                "reference": "46e54743e96475d343de8a06e4335f60672c4948"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/cartalyst/support/zipball/46e54743e96475d343de8a06e4335f60672c4948",
-                "reference": "46e54743e96475d343de8a06e4335f60672c4948",
-                "shasum": ""
-            },
-            "require": {
-                "php": "^8.3"
-            },
-            "require-dev": {
-                "cartalyst/php-cs-fixer-config": "^2.0",
-                "illuminate/mail": "^12.0",
-                "illuminate/validation": "^12.0",
-                "mockery/mockery": "^1.0",
-                "phpunit/phpunit": "^10.0",
-                "symfony/translation": "^7.0"
-            },
-            "type": "library",
-            "extra": {
-                "component": "package",
-                "branch-alias": {
-                    "dev-master": "9.0.x-dev"
-                }
-            },
-            "autoload": {
-                "psr-4": {
-                    "Cartalyst\\Support\\": "src/"
-                }
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "BSD-3-Clause"
-            ],
-            "authors": [
-                {
-                    "name": "Cartalyst LLC",
-                    "email": "help@cartalyst.com",
-                    "homepage": "https://cartalyst.com"
-                }
-            ],
-            "description": "Support helpers.",
-            "keywords": [
-                "cartalyst",
-                "helper",
-                "laravel",
-                "support"
-            ],
-            "support": {
-                "issues": "https://github.com/cartalyst/support/issues",
-                "source": "https://github.com/cartalyst/support/tree/v9.0.0"
-            },
-            "time": "2025-02-28T21:25:20+00:00"
         },
         {
             "name": "dflydev/dot-access-data",
@@ -10225,16 +10083,11 @@
         },
         {
             "name": "phpstan/phpstan",
-            "version": "2.1.29",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/phpstan/phpstan-phar-composer-source.git",
-                "reference": "git"
-            },
+            "version": "2.1.30",
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/phpstan/phpstan/zipball/d618573eed4a1b6b75e37b2e0b65ac65c885d88e",
-                "reference": "d618573eed4a1b6b75e37b2e0b65ac65c885d88e",
+                "url": "https://api.github.com/repos/phpstan/phpstan/zipball/a4a7f159927983dd4f7c8020ed227d80b7f39d7d",
+                "reference": "a4a7f159927983dd4f7c8020ed227d80b7f39d7d",
                 "shasum": ""
             },
             "require": {
@@ -10279,7 +10132,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2025-09-25T06:58:18+00:00"
+            "time": "2025-10-02T16:07:52+00:00"
         },
         {
             "name": "phpunit/php-code-coverage",

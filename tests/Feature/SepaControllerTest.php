@@ -6,7 +6,6 @@ namespace Tests\Feature;
 
 use App\Models\InvoiceGroup;
 use App\Models\Product;
-use Sentinel;
 use Tests\TestCase;
 
 class SepaControllerTest extends TestCase
@@ -18,32 +17,12 @@ class SepaControllerTest extends TestCase
     {
         parent::setUp();
 
-        // Clear cache and logout any existing session
+        // Clear cache
         \Cache::flush();
-        if (Sentinel::check()) {
-            Sentinel::logout();
-        }
 
         // Create required data for tests
         Product::factory()->create();
         InvoiceGroup::factory()->create(['status' => true]);
-
-        // Create admin role for tests
-        $this->adminRole = Sentinel::getRoleRepository()->createModel()->firstOrCreate([
-            'slug' => 'admin',
-        ], [
-            'name' => 'Admin',
-        ]);
-    }
-
-    protected function tearDown(): void
-    {
-        // Logout after each test
-        if (Sentinel::check()) {
-            Sentinel::logout();
-        }
-
-        parent::tearDown();
     }
 
     /**
@@ -51,13 +30,11 @@ class SepaControllerTest extends TestCase
      */
     public function test_sepa_settings_page_is_accessible_by_admin(): void
     {
-        $sentinelUser = Sentinel::registerAndActivate([
+        $user = \App\Models\User::factory()->create([
             'email' => 'sepaadmin@example.com',
-            'password' => 'password',
+            'password' => bcrypt('password'),
+            'is_admin' => true,
         ]);
-        $this->adminRole->users()->attach($sentinelUser);
-        Sentinel::login($sentinelUser);
-        $user = \App\Models\User::find($sentinelUser->id);
 
         $response = $this->actingAs($user)->get('/sepa');
 
@@ -70,9 +47,10 @@ class SepaControllerTest extends TestCase
      */
     public function test_sepa_settings_page_is_not_accessible_by_non_admin(): void
     {
-        $sentinelUser = Sentinel::registerAndActivate([
+        \App\Models\User::factory()->create([
             'email' => 'regular@example.com',
-            'password' => 'password',
+            'password' => bcrypt('password'),
+            'is_admin' => false,
         ]);
 
         $response = $this->call('GET', '/sepa');
@@ -86,13 +64,11 @@ class SepaControllerTest extends TestCase
      */
     public function test_store_sepa_settings(): void
     {
-        $sentinelUser = Sentinel::registerAndActivate([
+        $user = \App\Models\User::factory()->create([
             'email' => 'sepastore@example.com',
-            'password' => 'password',
+            'password' => bcrypt('password'),
+            'is_admin' => true,
         ]);
-        $this->adminRole->users()->attach($sentinelUser);
-        Sentinel::login($sentinelUser);
-        $user = \App\Models\User::find($sentinelUser->id);
 
         $sepaData = [
             'creditorName' => 'Test Organization',
@@ -120,13 +96,11 @@ class SepaControllerTest extends TestCase
      */
     public function test_store_sepa_settings_validates_required_fields(): void
     {
-        $sentinelUser = Sentinel::registerAndActivate([
+        $user = \App\Models\User::factory()->create([
             'email' => 'sepavalidation@example.com',
-            'password' => 'password',
+            'password' => bcrypt('password'),
+            'is_admin' => true,
         ]);
-        $this->adminRole->users()->attach($sentinelUser);
-        Sentinel::login($sentinelUser);
-        $user = \App\Models\User::find($sentinelUser->id);
 
         // Missing required fields
         $invalidData = [
@@ -144,13 +118,11 @@ class SepaControllerTest extends TestCase
      */
     public function test_store_sepa_settings_accepts_valid_iban(): void
     {
-        $sentinelUser = Sentinel::registerAndActivate([
+        $user = \App\Models\User::factory()->create([
             'email' => 'sepaiban@example.com',
-            'password' => 'password',
+            'password' => bcrypt('password'),
+            'is_admin' => true,
         ]);
-        $this->adminRole->users()->attach($sentinelUser);
-        Sentinel::login($sentinelUser);
-        $user = \App\Models\User::find($sentinelUser->id);
 
         $sepaData = [
             'creditorName' => 'IBAN Test Org',

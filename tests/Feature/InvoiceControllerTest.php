@@ -10,7 +10,6 @@ use App\Models\InvoiceProductPrice;
 use App\Models\Member;
 use App\Models\Order;
 use App\Models\Product;
-use Sentinel;
 use Tests\TestCase;
 
 class InvoiceControllerTest extends TestCase
@@ -31,13 +30,6 @@ class InvoiceControllerTest extends TestCase
         InvoiceGroup::factory()->create([
             'status' => true,
         ]);
-
-        // Create admin role for tests
-        $this->adminRole = Sentinel::getRoleRepository()->createModel()->firstOrCreate([
-            'slug' => 'admin',
-        ], [
-            'name' => 'Admin',
-        ]);
     }
 
     /**
@@ -45,13 +37,11 @@ class InvoiceControllerTest extends TestCase
      */
     public function test_invoice_index_is_accessible_by_admin()
     {
-        $sentinelUser = Sentinel::registerAndActivate([
+        $user = \App\Models\User::factory()->create([
             'email' => 'invoiceadmin@example.com',
-            'password' => 'password',
+            'password' => bcrypt('password'),
+            'is_admin' => true,
         ]);
-        $this->adminRole->users()->attach($sentinelUser);
-        Sentinel::login($sentinelUser);
-        $user = \App\Models\User::find($sentinelUser->id);
 
         $this->actingAs($user)
             ->get('/invoice')
@@ -66,9 +56,10 @@ class InvoiceControllerTest extends TestCase
     public function test_invoice_index_is_not_accessible_by_non_admin()
     {
         // Create a regular user without admin role
-        $sentinelUser = Sentinel::registerAndActivate([
+        \App\Models\User::factory()->create([
             'email' => 'regular@example.com',
-            'password' => 'password',
+            'password' => bcrypt('password'),
+            'is_admin' => false,
         ]);
 
         $response = $this->call('GET', '/invoice');
@@ -82,13 +73,11 @@ class InvoiceControllerTest extends TestCase
      */
     public function test_invoice_page_shows_invoice_groups()
     {
-        $sentinelUser = Sentinel::registerAndActivate([
+        $user = \App\Models\User::factory()->create([
             'email' => 'invoicegroup@example.com',
-            'password' => 'password',
+            'password' => bcrypt('password'),
+            'is_admin' => true,
         ]);
-        $this->adminRole->users()->attach($sentinelUser);
-        Sentinel::login($sentinelUser);
-        $user = \App\Models\User::find($sentinelUser->id);
 
         $invoiceGroup = InvoiceGroup::factory()->create([
             'name' => 'Test Invoice Group',
@@ -106,13 +95,11 @@ class InvoiceControllerTest extends TestCase
      */
     public function test_create_invoice_group()
     {
-        $sentinelUser = Sentinel::registerAndActivate([
+        $user = \App\Models\User::factory()->create([
             'email' => 'invoicecreate@example.com',
-            'password' => 'password',
+            'password' => bcrypt('password'),
+            'is_admin' => true,
         ]);
-        $this->adminRole->users()->attach($sentinelUser);
-        Sentinel::login($sentinelUser);
-        $user = \App\Models\User::find($sentinelUser->id);
 
         $this->actingAs($user)
             ->withSession([])
@@ -129,13 +116,11 @@ class InvoiceControllerTest extends TestCase
      */
     public function test_invoice_pdf_page_is_accessible()
     {
-        $sentinelUser = Sentinel::registerAndActivate([
+        $user = \App\Models\User::factory()->create([
             'email' => 'invoicepdf@example.com',
-            'password' => 'password',
+            'password' => bcrypt('password'),
+            'is_admin' => true,
         ]);
-        $this->adminRole->users()->attach($sentinelUser);
-        Sentinel::login($sentinelUser);
-        $user = \App\Models\User::find($sentinelUser->id);
 
         $invoiceGroup = InvoiceGroup::factory()->create([
             'name' => 'Test Month',
@@ -157,13 +142,11 @@ class InvoiceControllerTest extends TestCase
      */
     public function test_sepa_generation_page_is_accessible()
     {
-        $sentinelUser = Sentinel::registerAndActivate([
+        $user = \App\Models\User::factory()->create([
             'email' => 'invoicesepa@example.com',
-            'password' => 'password',
+            'password' => bcrypt('password'),
+            'is_admin' => true,
         ]);
-        $this->adminRole->users()->attach($sentinelUser);
-        Sentinel::login($sentinelUser);
-        $user = \App\Models\User::find($sentinelUser->id);
 
         $invoiceGroup = InvoiceGroup::factory()->create([
             'name' => 'SEPA Test Month',
@@ -184,13 +167,11 @@ class InvoiceControllerTest extends TestCase
      */
     public function test_invoice_page_shows_members_with_orders()
     {
-        $sentinelUser = Sentinel::registerAndActivate([
+        $user = \App\Models\User::factory()->create([
             'email' => 'invoicemember@example.com',
-            'password' => 'password',
+            'password' => bcrypt('password'),
+            'is_admin' => true,
         ]);
-        $this->adminRole->users()->attach($sentinelUser);
-        Sentinel::login($sentinelUser);
-        $user = \App\Models\User::find($sentinelUser->id);
 
         $member = Member::factory()->create([
             'firstname' => 'Invoice',
@@ -220,13 +201,11 @@ class InvoiceControllerTest extends TestCase
      */
     public function test_invoice_page_shows_group_orders()
     {
-        $sentinelUser = Sentinel::registerAndActivate([
+        $user = \App\Models\User::factory()->create([
             'email' => 'invoicegroups@example.com',
-            'password' => 'password',
+            'password' => bcrypt('password'),
+            'is_admin' => true,
         ]);
-        $this->adminRole->users()->attach($sentinelUser);
-        Sentinel::login($sentinelUser);
-        $user = \App\Models\User::find($sentinelUser->id);
 
         $group = Group::factory()->create(['name' => 'Test Group']);
         $product = Product::factory()->create(['name' => 'Group Beer']);
@@ -252,13 +231,11 @@ class InvoiceControllerTest extends TestCase
      */
     public function test_invoice_with_invoice_lines()
     {
-        $sentinelUser = Sentinel::registerAndActivate([
+        $user = \App\Models\User::factory()->create([
             'email' => 'invoicelines@example.com',
-            'password' => 'password',
+            'password' => bcrypt('password'),
+            'is_admin' => true,
         ]);
-        $this->adminRole->users()->attach($sentinelUser);
-        Sentinel::login($sentinelUser);
-        $user = \App\Models\User::find($sentinelUser->id);
 
         // Use the invoice group created in setUp
         $invoiceGroup = InvoiceGroup::where('status', true)->first();
@@ -290,13 +267,11 @@ class InvoiceControllerTest extends TestCase
     public function test_sepa_file_generation()
     {
         // Create admin user
-        $sentinelUser = Sentinel::registerAndActivate([
+        $user = \App\Models\User::factory()->create([
             'email' => 'sepatest@example.com',
-            'password' => 'password',
+            'password' => bcrypt('password'),
+            'is_admin' => true,
         ]);
-        $this->adminRole->users()->attach($sentinelUser);
-        Sentinel::login($sentinelUser);
-        $user = \App\Models\User::find($sentinelUser->id);
 
         // Create invoice group and set as current month
         $invoiceGroup = InvoiceGroup::factory()->create([

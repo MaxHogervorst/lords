@@ -7,19 +7,12 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 uses(RefreshDatabase::class);
 
 beforeEach(function () {
-    $this->sentinelUser = \Sentinel::registerAndActivate([
+    $this->user = User::factory()->create([
         'email' => 'invoice@example.com',
-        'password' => 'password',
+        'password' => bcrypt('password'),
+        'is_admin' => true,
     ]);
-    \Sentinel::login($this->sentinelUser);
-    $this->user = User::find($this->sentinelUser->id);
-
-    // Create admin role
-    $role = \Sentinel::getRoleRepository()->createModel()->create([
-        'name' => 'Admin',
-        'slug' => 'admin',
-    ]);
-    $role->users()->attach($this->user);
+    $this->actingAs($this->user);
 
     $this->invoiceGroup = InvoiceGroup::factory()->create(['status' => true]);
 });
@@ -32,9 +25,8 @@ test('invoice index page loads', function () {
 });
 
 test('invoice page requires admin authentication', function () {
-    // Remove admin role
-    $role = \Sentinel::findRoleBySlug('admin');
-    $role->users()->detach($this->user);
+    // Remove admin privileges
+    $this->user->update(['is_admin' => false]);
 
     $response = $this->get('/invoice');
 

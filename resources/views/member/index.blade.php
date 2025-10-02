@@ -56,7 +56,7 @@
         <input type="hidden" name="_token" value="{{ csrf_token() }}">
         <button type="submit" class="btn btn-outline btn-primary" data-ajax-submit="#member-form" data-ajax-callback-function="addMember"><i class="fa fa-plus fa-fw">  </i>Add Member</button>
     </form>
-    @if(\Sentinel::inRole('admin'))
+    @if(Auth::check() && Auth::user()->isAdmin())
         Filter Bankinfo: <input type="checkbox" id="bankinfo"> <br />
         Filter Had Collection: <input type="checkbox" id="collection">
     @endif
@@ -72,7 +72,7 @@
                     <th>First Name</th>
                     <th>Last Name</th>
                     <th class="col-sm-1">Actions</th>
-                    @if(\Sentinel::inRole('admin'))
+                    @if(Auth::check() && Auth::user()->isAdmin())
                         <th>BIC</th>
                         <th>Iban</th>
                         <th class="col-sm-1">Had Collection</th>
@@ -90,7 +90,7 @@
                         <button data-id="{{ $m->id }}" data-toggle="modal" data-target="#member-order"><i class="fa fa-plus fa-fw fa-lg"></i></button>
                         <button data-id="{{ $m->id }}"  data-toggle="modal" data-target="#member-edit"><i class="fa fa-edit fa-fw">  </i></button>
                     </td>
-                    @if(\Sentinel::inRole('admin'))
+                    @if(Auth::check() && Auth::user()->isAdmin())
                         <td>{{ $m->bic }}</td>
                         <td>{{ $m->iban }}</td>
                         <td>@if($m->had_collection) Yes @else No @endif</td>

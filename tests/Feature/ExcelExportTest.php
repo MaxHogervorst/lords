@@ -11,7 +11,6 @@ use App\Models\InvoiceProductPrice;
 use App\Models\Member;
 use App\Models\Order;
 use App\Models\Product;
-use Sentinel;
 use Tests\TestCase;
 
 class ExcelExportTest extends TestCase
@@ -28,13 +27,6 @@ class ExcelExportTest extends TestCase
 
         // Create at least one product
         Product::factory()->create();
-
-        // Create admin role for tests
-        $this->adminRole = Sentinel::getRoleRepository()->createModel()->firstOrCreate([
-            'slug' => 'admin',
-        ], [
-            'name' => 'Admin',
-        ]);
     }
 
     /**
@@ -42,13 +34,11 @@ class ExcelExportTest extends TestCase
      */
     public function test_excel_export_is_accessible_by_admin(): void
     {
-        $sentinelUser = Sentinel::registerAndActivate([
+        $user = \App\Models\User::factory()->create([
             'email' => 'exceladmin@example.com',
-            'password' => 'password',
+            'password' => bcrypt('password'),
+            'is_admin' => true,
         ]);
-        $this->adminRole->users()->attach($sentinelUser);
-        Sentinel::login($sentinelUser);
-        $user = \App\Models\User::find($sentinelUser->id);
 
         $invoiceGroup = InvoiceGroup::factory()->create([
             'name' => 'Excel Test Month',
@@ -66,13 +56,11 @@ class ExcelExportTest extends TestCase
      */
     public function test_excel_export_includes_member_orders(): void
     {
-        $sentinelUser = Sentinel::registerAndActivate([
+        $user = \App\Models\User::factory()->create([
             'email' => 'excelmember@example.com',
-            'password' => 'password',
+            'password' => bcrypt('password'),
+            'is_admin' => true,
         ]);
-        $this->adminRole->users()->attach($sentinelUser);
-        Sentinel::login($sentinelUser);
-        $user = \App\Models\User::find($sentinelUser->id);
 
         // Create invoice group
         $invoiceGroup = InvoiceGroup::factory()->create([
@@ -119,13 +107,11 @@ class ExcelExportTest extends TestCase
      */
     public function test_excel_export_includes_group_orders(): void
     {
-        $sentinelUser = Sentinel::registerAndActivate([
+        $user = \App\Models\User::factory()->create([
             'email' => 'excelgroup@example.com',
-            'password' => 'password',
+            'password' => bcrypt('password'),
+            'is_admin' => true,
         ]);
-        $this->adminRole->users()->attach($sentinelUser);
-        Sentinel::login($sentinelUser);
-        $user = \App\Models\User::find($sentinelUser->id);
 
         // Create invoice group
         $invoiceGroup = InvoiceGroup::factory()->create([
@@ -171,13 +157,11 @@ class ExcelExportTest extends TestCase
      */
     public function test_excel_export_includes_invoice_products(): void
     {
-        $sentinelUser = Sentinel::registerAndActivate([
+        $user = \App\Models\User::factory()->create([
             'email' => 'excelproduct@example.com',
-            'password' => 'password',
+            'password' => bcrypt('password'),
+            'is_admin' => true,
         ]);
-        $this->adminRole->users()->attach($sentinelUser);
-        Sentinel::login($sentinelUser);
-        $user = \App\Models\User::find($sentinelUser->id);
 
         // Create invoice group
         $invoiceGroup = InvoiceGroup::factory()->create([
@@ -206,13 +190,11 @@ class ExcelExportTest extends TestCase
      */
     public function test_excel_export_filename_includes_invoice_group_name(): void
     {
-        $sentinelUser = Sentinel::registerAndActivate([
+        $user = \App\Models\User::factory()->create([
             'email' => 'excelfilename@example.com',
-            'password' => 'password',
+            'password' => bcrypt('password'),
+            'is_admin' => true,
         ]);
-        $this->adminRole->users()->attach($sentinelUser);
-        Sentinel::login($sentinelUser);
-        $user = \App\Models\User::find($sentinelUser->id);
 
         $invoiceGroup = InvoiceGroup::factory()->create([
             'name' => 'January 2025',
@@ -230,13 +212,11 @@ class ExcelExportTest extends TestCase
      */
     public function test_excel_export_calculates_totals_correctly(): void
     {
-        $sentinelUser = Sentinel::registerAndActivate([
+        $user = \App\Models\User::factory()->create([
             'email' => 'exceltotals@example.com',
-            'password' => 'password',
+            'password' => bcrypt('password'),
+            'is_admin' => true,
         ]);
-        $this->adminRole->users()->attach($sentinelUser);
-        Sentinel::login($sentinelUser);
-        $user = \App\Models\User::find($sentinelUser->id);
 
         $invoiceGroup = InvoiceGroup::factory()->create([
             'name' => 'Totals Test Month',

@@ -8,12 +8,11 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 uses(RefreshDatabase::class);
 
 beforeEach(function () {
-    $this->sentinelUser = \Sentinel::registerAndActivate([
+    $this->user = User::factory()->create([
         'email' => 'grouplist@example.com',
-        'password' => 'password',
+        'password' => bcrypt('password'),
     ]);
-    \Sentinel::login($this->sentinelUser);
-    $this->user = User::find($this->sentinelUser->id);
+    $this->actingAs($this->user);
     $this->invoiceGroup = InvoiceGroup::factory()->create(['status' => true]);
 });
 
@@ -39,7 +38,7 @@ test('group index displays groups', function () {
 });
 
 test('group index requires authentication', function () {
-    \Sentinel::logout();
+    auth()->logout();
 
     $response = $this->get('/group');
 

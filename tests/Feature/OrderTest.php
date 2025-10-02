@@ -2,7 +2,6 @@
 
 namespace Tests\Feature;
 
-use Sentinel;
 use Tests\TestCase;
 
 class OrderTest extends TestCase
@@ -45,12 +44,10 @@ class OrderTest extends TestCase
             ->assertDontSee('Whoops')
             ->assertSee('Unauthorized.');
 
-        $sentinelUser = Sentinel::registerAndActivate([
+        $user = \App\Models\User::factory()->create([
             'email' => 'ordertest@example.com',
-            'password' => 'password',
+            'password' => bcrypt('password'),
         ]);
-        Sentinel::login($sentinelUser);
-        $user = \App\Models\User::find($sentinelUser->id);
 
         $this->actingAs($user)
             ->withSession([])

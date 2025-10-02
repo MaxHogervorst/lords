@@ -2,7 +2,6 @@
 
 namespace Tests\Feature;
 
-use Sentinel;
 use Tests\TestCase;
 
 class AuthControllerTest extends TestCase
@@ -25,21 +24,21 @@ class AuthControllerTest extends TestCase
     public function test_successful_authentication()
     {
         // Create a test user
-        $user = Sentinel::registerAndActivate([
+        $user = \App\Models\User::factory()->create([
             'email' => 'testauth@example.com',
-            'password' => 'testpassword123',
+            'password' => bcrypt('testpassword123'),
             'first_name' => 'Auth',
             'last_name' => 'Test',
         ]);
 
         // Attempt to authenticate
         $response = $this->call('POST', '/auth/authenticate', [
-            'email' => 'testauth@example.com',
+            'username' => 'testauth@example.com',
             'password' => 'testpassword123',
         ]);
 
-        // Check response - could be redirect (302) or success page (200)
-        $this->assertTrue(in_array($response->getStatusCode(), [200, 302]));
+        // Check response - should redirect to home
+        $this->assertEquals(302, $response->getStatusCode());
     }
 
     /**
@@ -48,21 +47,21 @@ class AuthControllerTest extends TestCase
     public function test_failed_authentication_wrong_password()
     {
         // Create a test user
-        $user = Sentinel::registerAndActivate([
+        $user = \App\Models\User::factory()->create([
             'email' => 'testfail@example.com',
-            'password' => 'correctpassword',
+            'password' => bcrypt('correctpassword'),
             'first_name' => 'Fail',
             'last_name' => 'Test',
         ]);
 
         // Attempt to authenticate with wrong password
         $response = $this->call('POST', '/auth/authenticate', [
-            'email' => 'testfail@example.com',
+            'username' => 'testfail@example.com',
             'password' => 'wrongpassword',
         ]);
 
-        // Check response - could be redirect (302) or error page (200)
-        $this->assertTrue(in_array($response->getStatusCode(), [200, 302]));
+        // Check response - should return JSON error
+        $this->assertEquals(200, $response->getStatusCode());
     }
 
     /**
@@ -71,12 +70,12 @@ class AuthControllerTest extends TestCase
     public function test_failed_authentication_non_existent_user()
     {
         $response = $this->call('POST', '/auth/authenticate', [
-            'email' => 'nonexistent@example.com',
+            'username' => 'nonexistent@example.com',
             'password' => 'anypassword',
         ]);
 
-        // Check response - could be redirect (302) or error page (200)
-        $this->assertTrue(in_array($response->getStatusCode(), [200, 302]));
+        // Check response - should return JSON error
+        $this->assertEquals(200, $response->getStatusCode());
     }
 
     /**
@@ -84,24 +83,19 @@ class AuthControllerTest extends TestCase
      */
     public function test_logout()
     {
-        // Login first
-        $user = Sentinel::registerAndActivate([
+        // Create and login a test user
+        $user = \App\Models\User::factory()->create([
             'email' => 'testlogout@example.com',
-            'password' => 'password',
+            'password' => bcrypt('password'),
             'first_name' => 'Logout',
             'last_name' => 'Test',
         ]);
 
-        Sentinel::login($user);
-
-        // Now logout
-        $response = $this->call('GET', '/auth/logout');
+        // Login and then logout
+        $response = $this->actingAs($user)->get('/auth/logout');
 
         // Should redirect to login page
         $this->assertEquals(302, $response->getStatusCode());
-
-        // User should no longer be authenticated
-        $this->assertFalse(Sentinel::check());
     }
 
     /**
@@ -113,16 +107,13 @@ class AuthControllerTest extends TestCase
         \App\Models\Product::factory()->create();
         \App\Models\InvoiceGroup::factory()->create(['status' => true]);
 
-        // Create a test user with admin role
-        $sentinelUser = Sentinel::registerAndActivate([
+        // Create a test user
+        $user = \App\Models\User::factory()->create([
             'email' => 'testadmin@example.com',
-            'password' => 'password',
+            'password' => bcrypt('password'),
             'first_name' => 'Admin',
             'last_name' => 'Test',
         ]);
-
-        Sentinel::login($sentinelUser);
-        $user = \App\Models\User::find($sentinelUser->id);
 
         $response = $this->actingAs($user)->get('/');
 

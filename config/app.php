@@ -167,7 +167,6 @@ return [
         Illuminate\Broadcasting\BroadcastServiceProvider::class,
         Clockwork\Support\Laravel\ClockworkServiceProvider::class,
         // Maatwebsite\Excel\ExcelServiceProvider::class, - auto-discovered
-        Cartalyst\Sentinel\Laravel\SentinelServiceProvider::class,
         // Barryvdh\Debugbar\ServiceProvider::class, - auto-discovered
         anlutro\LaravelSettings\ServiceProvider::class,
 
@@ -236,9 +235,6 @@ return [
         'Excel' => Maatwebsite\Excel\Facades\Excel::class,
         'Setting' => anlutro\LaravelSettings\Facade::class,
         'Settings' => anlutro\LaravelSettings\Facade::class,
-        'Activation' => Cartalyst\Sentinel\Laravel\Facades\Activation::class,
-        'Reminder' => Cartalyst\Sentinel\Laravel\Facades\Reminder::class,
-        'Sentinel' => Cartalyst\Sentinel\Laravel\Facades\Sentinel::class,
         'Debugbar' => Barryvdh\Debugbar\Facade::class,
 
     ],

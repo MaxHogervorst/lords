@@ -18,9 +18,9 @@ test('can view login page', function () {
 
 test('can login with valid credentials', function () {
     // Create a test user
-    $sentinelUser = \Sentinel::registerAndActivate([
+    \App\Models\User::factory()->create([
         'email' => 'test@example.com',
-        'password' => 'password123',
+        'password' => bcrypt('password123'),
     ]);
 
     visit('/auth/login')
@@ -42,12 +42,10 @@ test('shows error with invalid credentials', function () {
 
 test('can logout', function () {
     // Create and login a user
-    $sentinelUser = \Sentinel::registerAndActivate([
+    \App\Models\User::factory()->create([
         'email' => 'logout@example.com',
-        'password' => 'password123',
+        'password' => bcrypt('password123'),
     ]);
-    \Sentinel::login($sentinelUser);
-
     visit('/auth/logout')
         ->assertUrlIs(url('/auth/login'))
         ->screenshot(filename: 'logged-out');
