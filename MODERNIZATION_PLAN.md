@@ -64,11 +64,11 @@ This document outlines the remaining tasks to modernize the Laravel application 
 
 ### 3.1 Implement Service Layer
 Create services for business logic:
-- [ ] `InvoiceService` - handle invoice calculations and generation
-- [ ] `SepaService` - handle SEPA file generation
+- [x] `InvoiceCalculationService` - handle invoice calculations ✅
+- [x] `SepaGenerationService` - handle SEPA file generation ✅
+- [x] `InvoiceExportService` - handle Excel generation ✅
 - [ ] `MemberService` - handle member operations
 - [ ] `OrderService` - handle order processing
-- [ ] `ExcelExportService` - handle Excel generation
 
 ### 3.2 Implement Repository Pattern
 Create repositories for data access:
@@ -98,13 +98,16 @@ For single-responsibility operations:
 
 ## Phase 4: Controller Refactoring (Priority: High)
 
-### 4.1 Slim Down InvoiceController
-**Current:** 412 lines with business logic
-- [ ] Extract calculation logic to services
-- [ ] Move SEPA generation to dedicated service
-- [ ] Move Excel export to dedicated service
-- [ ] Keep controller methods under 20 lines each
-- [ ] Use dependency injection for services
+### 4.1 Slim Down InvoiceController ✅
+**Before:** 442 lines with business logic
+**After:** 199 lines (55% reduction)
+- [x] Extract calculation logic to services ✅
+- [x] Move SEPA generation to dedicated service ✅
+- [x] Move Excel export to dedicated service ✅
+- [x] Keep controller methods under 20 lines each ✅
+- [x] Use dependency injection for services ✅
+
+**Completed:** Created `InvoiceCalculationService`, `SepaGenerationService`, and `InvoiceExportService`. All 154 tests passing.
 
 ### 4.2 Implement Form Request Validation
 Replace `Validator::make()` with Form Requests:
@@ -130,7 +133,7 @@ Apply consistent patterns:
 - [ ] `FiscusController` - extract services
 - [ ] `GroupController` - clean up logic
 - [ ] `HomeController` - optimize queries
-- [ ] `InvoiceController` - major refactor (covered above)
+- [x] `InvoiceController` - major refactor (covered above) ✅
 - [ ] `MemberController` - use repositories
 - [ ] `OrderController` - use actions
 - [ ] `ProductController` - use form requests
