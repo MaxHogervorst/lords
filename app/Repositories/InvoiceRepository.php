@@ -7,6 +7,7 @@ namespace App\Repositories;
 use App\Models\InvoiceGroup;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Cache;
 
 class InvoiceRepository extends BaseRepository
 {
@@ -20,7 +21,15 @@ class InvoiceRepository extends BaseRepository
      */
     public function getCurrentMonth(): ?InvoiceGroup
     {
-        return $this->model->where('status', true)->first();
+        if (! Cache::has('invoice_group')) {
+            $invoiceGroup = $this->model->newQuery()->where('status', true)->first();
+
+            if ($invoiceGroup) {
+                Cache::put('invoice_group', $invoiceGroup, 1);
+            }
+        }
+
+        return Cache::get('invoice_group');
     }
 
     /**
@@ -28,7 +37,7 @@ class InvoiceRepository extends BaseRepository
      */
     public function getAllOrdered(string $direction = 'desc'): Collection
     {
-        return $this->model->orderBy('id', $direction)->get();
+        return $this->model->newQuery()->orderBy('id', $direction)->get();
     }
 
     /**
@@ -37,7 +46,7 @@ class InvoiceRepository extends BaseRepository
     public function setAsActive(InvoiceGroup $invoiceGroup): InvoiceGroup
     {
         // Deactivate all other groups
-        $this->model->where('status', true)->update(['status' => false]);
+        $this->model->newQuery()->where('status', true)->update(['status' => false]);
 
         // Activate the selected group
         $invoiceGroup->status = true;
@@ -52,7 +61,7 @@ class InvoiceRepository extends BaseRepository
     public function createAndSetActive(string $name): InvoiceGroup
     {
         // Deactivate all other groups
-        $this->model->where('status', true)->update(['status' => false]);
+        $this->model->newQuery()->where('status', true)->update(['status' => false]);
 
         // Create new active group
         $invoiceGroup = new InvoiceGroup();
@@ -68,7 +77,7 @@ class InvoiceRepository extends BaseRepository
      */
     public function findByName(string $name): ?InvoiceGroup
     {
-        return $this->model->where('name', $name)->first();
+        return $this->model->newQuery()->where('name', $name)->first();
     }
 
     /**

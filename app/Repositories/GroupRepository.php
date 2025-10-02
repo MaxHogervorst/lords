@@ -21,7 +21,7 @@ class GroupRepository extends BaseRepository
      */
     public function getByInvoiceGroup(InvoiceGroup $invoiceGroup, array $relations = []): Collection
     {
-        $query = $this->model->where('invoice_group_id', $invoiceGroup->id);
+        $query = $this->model->newQuery()->where('invoice_group_id', $invoiceGroup->id);
 
         if (!empty($relations)) {
             $query->with($relations);
@@ -35,7 +35,7 @@ class GroupRepository extends BaseRepository
      */
     public function getAllWithMembers(): Collection
     {
-        return $this->model->with('members')->get();
+        return $this->model->newQuery()->with('members')->get();
     }
 
     /**
@@ -43,7 +43,7 @@ class GroupRepository extends BaseRepository
      */
     public function getAllWithOrders(): Collection
     {
-        return $this->model->with('orders.product')->get();
+        return $this->model->newQuery()->with('orders.product')->get();
     }
 
     /**
@@ -51,7 +51,7 @@ class GroupRepository extends BaseRepository
      */
     public function search(string $term): Collection
     {
-        return $this->model
+        return $this->model->newQuery()
             ->where('name', 'like', "%{$term}%")
             ->get();
     }
@@ -61,6 +61,6 @@ class GroupRepository extends BaseRepository
      */
     public function getAllWithMemberCount(): Collection
     {
-        return $this->model->withCount('members')->get();
+        return $this->model->newQuery()->withCount('members')->get();
     }
 }

@@ -28,7 +28,7 @@ class ProductRepository extends BaseRepository
      */
     public function getActive(): Collection
     {
-        return $this->model->where('active', true)->get();
+        return $this->model->newQuery()->where('active', true)->get();
     }
 
     /**
@@ -36,7 +36,7 @@ class ProductRepository extends BaseRepository
      */
     public function getAllOrderedByName(string $direction = 'asc'): Collection
     {
-        return $this->model->orderBy('name', $direction)->get();
+        return $this->model->newQuery()->orderBy('name', $direction)->get();
     }
 
     /**
@@ -44,7 +44,7 @@ class ProductRepository extends BaseRepository
      */
     public function getAllOrderedByPrice(string $direction = 'asc'): Collection
     {
-        return $this->model->orderBy('price', $direction)->get();
+        return $this->model->newQuery()->orderBy('price', $direction)->get();
     }
 
     /**
@@ -52,7 +52,7 @@ class ProductRepository extends BaseRepository
      */
     public function search(string $term): Collection
     {
-        return $this->model
+        return $this->model->newQuery()
             ->where('name', 'like', "%{$term}%")
             ->get();
     }
@@ -62,7 +62,7 @@ class ProductRepository extends BaseRepository
      */
     public function getAllWithOrders(): Collection
     {
-        return $this->model->with('orders')->get();
+        return $this->model->newQuery()->with('orders')->get();
     }
 
     /**
@@ -70,7 +70,7 @@ class ProductRepository extends BaseRepository
      */
     public function getByPriceRange(float $minPrice, float $maxPrice): Collection
     {
-        return $this->model
+        return $this->model->newQuery()
             ->where('price', '>=', $minPrice)
             ->where('price', '<=', $maxPrice)
             ->get();
