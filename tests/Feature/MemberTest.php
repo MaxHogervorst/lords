@@ -27,7 +27,7 @@ class MemberTest extends TestCase
             'password' => 'password',
         ]);
         Sentinel::login($sentinelUser);
-        $user = \App\User::find($sentinelUser->id);
+        $user = \App\Models\User::find($sentinelUser->id);
 
         $this->actingAs($user)
             ->withSession([])
@@ -65,7 +65,7 @@ class MemberTest extends TestCase
             'password' => 'password',
         ]);
         Sentinel::login($sentinelUser);
-        $user = \App\User::find($sentinelUser->id);
+        $user = \App\Models\User::find($sentinelUser->id);
 
         $this->actingAs($user)
             ->withSession([])
@@ -102,7 +102,7 @@ class MemberTest extends TestCase
             'password' => 'password',
         ]);
         Sentinel::login($sentinelUser);
-        $user = \App\User::find($sentinelUser->id);
+        $user = \App\Models\User::find($sentinelUser->id);
 
         $this->actingAs($user)
             ->withSession([])

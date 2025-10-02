@@ -5,19 +5,21 @@
     "license": "MIT",
     "type": "project",
     "require": {
-        "php": ">=7.2.5",
-        "laravel/framework": "^7.0",
-        "laravel/tinker": "^2.0",
+        "php": ">=7.3.0",
+        "laravel/framework": "^8.0",
+        "laravel/tinker": "^2.5",
+        "guzzlehttp/guzzle": "^7.0.1",
         "cartalyst/sentinel": "*",
         "laravelcollective/html": "^6.0",
         "barryvdh/laravel-debugbar": "^3.1",
         "anlutro/l4-settings": "^1.4"
     },
     "require-dev": {
-        "facade/ignition": "^2.0",
+        "facade/ignition": "^2.5",
+        "nunomaduro/collision": "^5.0",
         "fzaninotto/faker": "~1.4",
         "mockery/mockery": "0.9.*",
-        "phpunit/phpunit": "^8.5|^9.0",
+        "phpunit/phpunit": "^9.3",
         "symfony/css-selector": "3.1.*",
         "symfony/dom-crawler": "3.1.*",
         "itsgoingd/clockwork": "~1.7",
@@ -36,7 +38,10 @@
     "autoload-dev": {
         "psr-4": {
             "Tests\\": "tests/"
-        }
+        },
+        "files": [
+            "tests/helpers.php"
+        ]
     },
     "scripts": {
         "post-root-package-install": [

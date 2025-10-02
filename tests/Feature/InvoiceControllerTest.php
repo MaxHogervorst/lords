@@ -54,7 +54,7 @@ class InvoiceControllerTest extends TestCase
         ]);
         $this->adminRole->users()->attach($sentinelUser);
         Sentinel::login($sentinelUser);
-        $user = \App\User::find($sentinelUser->id);
+        $user = \App\Models\User::find($sentinelUser->id);
 
         $this->actingAs($user)
             ->get('/invoice')
@@ -91,7 +91,7 @@ class InvoiceControllerTest extends TestCase
         ]);
         $this->adminRole->users()->attach($sentinelUser);
         Sentinel::login($sentinelUser);
-        $user = \App\User::find($sentinelUser->id);
+        $user = \App\Models\User::find($sentinelUser->id);
 
         $invoiceGroup = factory(InvoiceGroup::class)->create([
             'name' => 'Test Invoice Group',
@@ -115,7 +115,7 @@ class InvoiceControllerTest extends TestCase
         ]);
         $this->adminRole->users()->attach($sentinelUser);
         Sentinel::login($sentinelUser);
-        $user = \App\User::find($sentinelUser->id);
+        $user = \App\Models\User::find($sentinelUser->id);
 
         $this->actingAs($user)
             ->withSession([])
@@ -138,7 +138,7 @@ class InvoiceControllerTest extends TestCase
         ]);
         $this->adminRole->users()->attach($sentinelUser);
         Sentinel::login($sentinelUser);
-        $user = \App\User::find($sentinelUser->id);
+        $user = \App\Models\User::find($sentinelUser->id);
 
         $invoiceGroup = factory(InvoiceGroup::class)->create([
             'name' => 'Test Month',
@@ -166,7 +166,7 @@ class InvoiceControllerTest extends TestCase
         ]);
         $this->adminRole->users()->attach($sentinelUser);
         Sentinel::login($sentinelUser);
-        $user = \App\User::find($sentinelUser->id);
+        $user = \App\Models\User::find($sentinelUser->id);
 
         $invoiceGroup = factory(InvoiceGroup::class)->create([
             'name' => 'SEPA Test Month',
@@ -193,7 +193,7 @@ class InvoiceControllerTest extends TestCase
         ]);
         $this->adminRole->users()->attach($sentinelUser);
         Sentinel::login($sentinelUser);
-        $user = \App\User::find($sentinelUser->id);
+        $user = \App\Models\User::find($sentinelUser->id);
 
         $member = factory(Member::class)->create([
             'firstname' => 'Invoice',
@@ -229,7 +229,7 @@ class InvoiceControllerTest extends TestCase
         ]);
         $this->adminRole->users()->attach($sentinelUser);
         Sentinel::login($sentinelUser);
-        $user = \App\User::find($sentinelUser->id);
+        $user = \App\Models\User::find($sentinelUser->id);
 
         $group = factory(Group::class)->create(['name' => 'Test Group']);
         $product = factory(Product::class)->create(['name' => 'Group Beer']);
@@ -261,7 +261,7 @@ class InvoiceControllerTest extends TestCase
         ]);
         $this->adminRole->users()->attach($sentinelUser);
         Sentinel::login($sentinelUser);
-        $user = \App\User::find($sentinelUser->id);
+        $user = \App\Models\User::find($sentinelUser->id);
 
         // Use the invoice group created in setUp
         $invoiceGroup = InvoiceGroup::where('status', true)->first();
@@ -299,7 +299,7 @@ class InvoiceControllerTest extends TestCase
         ]);
         $this->adminRole->users()->attach($sentinelUser);
         Sentinel::login($sentinelUser);
-        $user = \App\User::find($sentinelUser->id);
+        $user = \App\Models\User::find($sentinelUser->id);
 
         // Create invoice group and set as current month
         $invoiceGroup = factory(InvoiceGroup::class)->create([

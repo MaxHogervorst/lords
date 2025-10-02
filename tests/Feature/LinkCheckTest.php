@@ -45,7 +45,7 @@ class LinkCheckTest extends TestCase
         $this->assertEquals(302, $response->getStatusCode());
 
         Sentinel::login($this->adminUser);
-        $user = \App\User::find($this->adminUser->id);
+        $user = \App\Models\User::find($this->adminUser->id);
 
         $this->actingAs($user)
             ->withSession([])
@@ -60,7 +60,7 @@ class LinkCheckTest extends TestCase
         $this->assertEquals(302, $response->getStatusCode());
 
         Sentinel::login($this->adminUser);
-        $user = \App\User::find($this->adminUser->id);
+        $user = \App\Models\User::find($this->adminUser->id);
 
         $this->actingAs($user)
             ->withSession([])
@@ -75,7 +75,7 @@ class LinkCheckTest extends TestCase
         $this->assertEquals(302, $response->getStatusCode());
 
         Sentinel::login($this->adminUser);
-        $user = \App\User::find($this->adminUser->id);
+        $user = \App\Models\User::find($this->adminUser->id);
 
         $this->actingAs($user)
             ->withSession([])
@@ -90,7 +90,7 @@ class LinkCheckTest extends TestCase
         $this->assertEquals(302, $response->getStatusCode());
 
         Sentinel::login($this->adminUser);
-        $user = \App\User::find($this->adminUser->id);
+        $user = \App\Models\User::find($this->adminUser->id);
 
         $this->actingAs($user)
             ->withSession([])
@@ -105,7 +105,7 @@ class LinkCheckTest extends TestCase
         $this->assertEquals(302, $response->getStatusCode());
 
         Sentinel::login($this->adminUser);
-        $user = \App\User::find($this->adminUser->id);
+        $user = \App\Models\User::find($this->adminUser->id);
 
         $this->actingAs($user)
             ->withSession([])
@@ -116,7 +116,7 @@ class LinkCheckTest extends TestCase
         Sentinel::logout();
 
         Sentinel::login($this->regularUser);
-        $regularUser = \App\User::find($this->regularUser->id);
+        $regularUser = \App\Models\User::find($this->regularUser->id);
 
         $response = $this->actingAs($regularUser)
             ->withSession([])
@@ -130,7 +130,7 @@ class LinkCheckTest extends TestCase
         $this->assertEquals(302, $response->getStatusCode());
 
         Sentinel::login($this->adminUser);
-        $user = \App\User::find($this->adminUser->id);
+        $user = \App\Models\User::find($this->adminUser->id);
 
         $this->actingAs($user)
             ->withSession([])
@@ -141,7 +141,7 @@ class LinkCheckTest extends TestCase
         Sentinel::logout();
 
         Sentinel::login($this->regularUser);
-        $regularUser = \App\User::find($this->regularUser->id);
+        $regularUser = \App\Models\User::find($this->regularUser->id);
 
         $response = $this->actingAs($regularUser)
             ->withSession([])
@@ -155,7 +155,7 @@ class LinkCheckTest extends TestCase
         $this->assertEquals(302, $response->getStatusCode());
 
         Sentinel::login($this->adminUser);
-        $user = \App\User::find($this->adminUser->id);
+        $user = \App\Models\User::find($this->adminUser->id);
 
         $this->actingAs($user)
             ->withSession([])
@@ -166,7 +166,7 @@ class LinkCheckTest extends TestCase
         Sentinel::logout();
 
         Sentinel::login($this->regularUser);
-        $regularUser = \App\User::find($this->regularUser->id);
+        $regularUser = \App\Models\User::find($this->regularUser->id);
 
         $response = $this->actingAs($regularUser)
             ->withSession([])
