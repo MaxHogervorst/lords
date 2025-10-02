@@ -34,7 +34,7 @@ services:
         value: "${APP_URL}"  # Will be set automatically by DO
 
       - key: DB_CONNECTION
-        value: "mysql"
+        value: "pgsql"
 
       - key: DB_HOST
         value: "${db.HOSTNAME}"
@@ -98,8 +98,8 @@ services:
 
 databases:
   - name: db
-    engine: MYSQL
-    version: "8"
+    engine: PG
+    version: "16"
     production: false  # Set to true for production (starts at $15/month)
     cluster_name: lords-db
     db_name: lords
