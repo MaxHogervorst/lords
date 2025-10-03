@@ -15,7 +15,6 @@ use Tests\TestCase;
 
 class ExcelExportTest extends TestCase
 {
-
     private $adminRole;
 
     protected function setUp(): void

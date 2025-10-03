@@ -69,6 +69,6 @@ class Member extends Model
 
     public function getFullName(): string
     {
-        return $this->firstname.' '.$this->lastname;
+        return $this->firstname . ' ' . $this->lastname;
     }
 }

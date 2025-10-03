@@ -24,7 +24,8 @@ class FiscusController extends Controller
         private readonly MemberRepository $memberRepository,
         private readonly InvoiceRepository $invoiceRepository,
         private readonly InvoiceLineRepository $invoiceLineRepository
-    ) {}
+    ) {
+    }
 
     /**
      * Display a listing of the resource.
@@ -59,9 +60,9 @@ class FiscusController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => $result['product_name'].' Successfully added, '
-                        .$result['price'].' per person.'
-                        .$result['member_count'].' Total persons',
+            'message' => $result['product_name'] . ' Successfully added, '
+                        . $result['price'] . ' per person.'
+                        . $result['member_count'] . ' Total persons',
         ]);
     }
 
@@ -107,9 +108,9 @@ class FiscusController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => $result['product_name'].' Successfully '.$result['update_type'].', '
-                        .$result['price'].' per person.'
-                        .$result['member_count'].' Total persons',
+            'message' => $result['product_name'] . ' Successfully ' . $result['update_type'] . ', '
+                        . $result['price'] . ' per person.'
+                        . $result['member_count'] . ' Total persons',
         ]);
     }
 
@@ -120,6 +121,6 @@ class FiscusController extends Controller
     {
         $name = $this->fiscusService->deleteInvoiceProduct($invoiceProduct);
 
-        return response()->json(['success' => true, 'message' => $name.' Successfully deleted']);
+        return response()->json(['success' => true, 'message' => $name . ' Successfully deleted']);
     }
 }

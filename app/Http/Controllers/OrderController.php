@@ -16,7 +16,8 @@ class OrderController extends Controller
         private readonly OrderRepository $orderRepository,
         private readonly InvoiceRepository $invoiceRepository,
         private readonly ProductRepository $productRepository
-    ) {}
+    ) {
+    }
 
     /**
      * Store a newly created resource in storage.

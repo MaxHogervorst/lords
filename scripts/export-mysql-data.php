@@ -1,5 +1,6 @@
 #!/usr/bin/env php
 <?php
+
 /**
  * Export MySQL data to JSON format for PostgreSQL import
  *
@@ -42,7 +43,7 @@ foreach ($tables as $table) {
 
     try {
         // Check if table exists
-        $exists = DB::select("SHOW TABLES LIKE ?", [$table]);
+        $exists = DB::select('SHOW TABLES LIKE ?', [$table]);
 
         if (empty($exists)) {
             echo "SKIPPED (table doesn't exist)\n";
@@ -63,7 +64,7 @@ foreach ($tables as $table) {
         echo "OK ({$count} rows)\n";
 
     } catch (Exception $e) {
-        echo "ERROR: " . $e->getMessage() . "\n";
+        echo 'ERROR: ' . $e->getMessage() . "\n";
     }
 }
 

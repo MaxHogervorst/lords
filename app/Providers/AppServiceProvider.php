@@ -2,7 +2,6 @@
 
 namespace App\Providers;
 
-use App\Repositories\Contracts\RepositoryInterface;
 use App\Repositories\GroupRepository;
 use App\Repositories\InvoiceLineRepository;
 use App\Repositories\InvoiceProductPriceRepository;

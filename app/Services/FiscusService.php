@@ -12,12 +12,12 @@ class FiscusService
     public function createInvoiceProduct(array $data, int $invoiceGroupId): array
     {
         return DB::transaction(function () use ($data, $invoiceGroupId) {
-            $invoiceproduct = new InvoiceProduct;
+            $invoiceproduct = new InvoiceProduct();
             $invoiceproduct->name = $data['finalproductname'];
             $invoiceproduct->invoice_group_id = $invoiceGroupId;
             $invoiceproduct->save();
 
-            $invoiceproductprice = new InvoiceProductPrice;
+            $invoiceproductprice = new InvoiceProductPrice();
             $invoiceproductprice->invoice_product_id = $invoiceproduct->id;
             $invoiceproductprice->price = $data['finalpriceperperson'];
             $invoiceproductprice->description = $data['finalproductdescription'];
@@ -47,7 +47,7 @@ class FiscusService
 
                 InvoiceLine::where('invoice_product_price_id', '=', $invoiceproductprice->id)->delete();
             } else {
-                $invoiceproductprice = new InvoiceProductPrice;
+                $invoiceproductprice = new InvoiceProductPrice();
                 $invoiceproductprice->invoice_product_id = $invoiceProduct->id;
                 $invoiceproductprice->price = $data['finalpriceperperson'];
                 $invoiceproductprice->description = $data['finalproductdescription'];
@@ -90,7 +90,7 @@ class FiscusService
     {
         $count = 0;
         foreach ($memberIds as $memberId) {
-            $invoiceline = new InvoiceLine;
+            $invoiceline = new InvoiceLine();
             $invoiceline->invoice_product_price_id = $priceId;
             $invoiceline->member_id = $memberId;
             $invoiceline->save();

@@ -17,7 +17,8 @@ class MemberController extends Controller
         private readonly MemberRepository $memberRepository,
         private readonly ProductRepository $productRepository,
         private readonly InvoiceRepository $invoiceRepository
-    ) {}
+    ) {
+    }
 
     /**
      * Display a listing of the resource.

@@ -14,7 +14,6 @@ use Tests\TestCase;
 
 class InvoiceControllerTest extends TestCase
 {
-
     private $adminRole;
 
     protected function setUp(): void
@@ -334,7 +333,7 @@ class InvoiceControllerTest extends TestCase
         $this->assertEquals(200, $response->getStatusCode());
 
         // Check that SEPA XML file was created
-        $files = glob($sepaDir.'/GSRC RCUR *.xml');
+        $files = glob($sepaDir . '/GSRC RCUR *.xml');
         $this->assertNotEmpty($files, 'SEPA XML file should be generated');
 
         // Read and verify the XML content

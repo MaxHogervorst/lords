@@ -6,7 +6,7 @@ use App\Models\Member;
 use App\Services\FiscusService;
 
 beforeEach(function () {
-    $this->fiscusService = new FiscusService;
+    $this->fiscusService = new FiscusService();
 });
 
 test('create invoice product with members', function () {

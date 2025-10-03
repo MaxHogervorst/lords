@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Services;
 
 use App\Models\InvoiceGroup;
-use App\Models\InvoiceProduct;
 use App\Models\Member;
 use App\Repositories\InvoiceProductRepository;
 use App\Repositories\InvoiceRepository;
@@ -19,7 +18,8 @@ class InvoiceCalculationService
         private readonly ProductRepository $productRepository,
         private readonly InvoiceProductRepository $invoiceProductRepository,
         private readonly MemberRepository $memberRepository
-    ) {}
+    ) {
+    }
     /**
      * Calculate total amount for a member including orders, group orders, and invoice lines.
      */

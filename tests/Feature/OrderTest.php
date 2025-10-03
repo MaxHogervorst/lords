@@ -6,7 +6,6 @@ use Tests\TestCase;
 
 class OrderTest extends TestCase
 {
-
     protected function setUp(): void
     {
         parent::setUp();
@@ -29,7 +28,7 @@ class OrderTest extends TestCase
     {
         $invoiceGroup = \App\Models\InvoiceGroup::where('status', true)->first();
         $product = \App\Models\Product::first();
-        $name = 'Sally '.date('d-m-Y');
+        $name = 'Sally ' . date('d-m-Y');
         $group = factory(\App\Models\Group::class)->create([
             'name' => $name,
             'invoice_group_id' => $invoiceGroup->id,

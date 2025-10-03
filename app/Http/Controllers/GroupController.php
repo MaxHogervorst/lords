@@ -23,7 +23,8 @@ class GroupController extends Controller
         private readonly MemberRepository $memberRepository,
         private readonly ProductRepository $productRepository,
         private readonly InvoiceRepository $invoiceRepository
-    ) {}
+    ) {
+    }
 
     public function index(): View
     {
@@ -116,7 +117,7 @@ class GroupController extends Controller
             return response()->json(['errors' => $v->errors()]);
         }
 
-        $groupmember = new GroupMember;
+        $groupmember = new GroupMember();
         $groupmember->group_id = $request->get('groupid');
         $groupmember->member_id = $request->get('member');
         $groupmember->save();

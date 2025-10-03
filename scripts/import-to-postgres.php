@@ -1,5 +1,6 @@
 #!/usr/bin/env php
 <?php
+
 /**
  * Import MySQL JSON data to PostgreSQL
  *
@@ -82,7 +83,7 @@ foreach ($tables as $table) {
         echo "OK ({$count} rows)\n";
 
     } catch (Exception $e) {
-        echo "ERROR: " . $e->getMessage() . "\n";
+        echo 'ERROR: ' . $e->getMessage() . "\n";
         // Re-enable constraints even on error
         DB::statement('SET session_replication_role = DEFAULT;');
     }

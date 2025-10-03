@@ -35,6 +35,6 @@ class InvoicesExport implements FromView, WithTitle
 
     public function title(): string
     {
-        return 'Invoice '.$this->currentmonth->name;
+        return 'Invoice ' . $this->currentmonth->name;
     }
 }

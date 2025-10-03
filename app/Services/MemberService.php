@@ -13,7 +13,8 @@ class MemberService
 {
     public function __construct(
         private readonly MemberRepository $memberRepository
-    ) {}
+    ) {
+    }
     /**
      * Get all members with relationships.
      */

@@ -11,7 +11,6 @@ use Tests\TestCase;
 
 class GroupTest extends TestCase
 {
-
     protected function setUp(): void
     {
         parent::setUp();
@@ -42,7 +41,7 @@ class GroupTest extends TestCase
             ->assertJsonMissing(['success' => true])
             ->assertJsonStructure(['errors']);
 
-        $name = 'Sally '.date('d-m-Y');
+        $name = 'Sally ' . date('d-m-Y');
         $this->actingAs($user)
             ->withSession([])
             ->json('POST', '/group', ['name' => 'Sally', 'groupdate' => date('Y-m-d')])
@@ -57,13 +56,13 @@ class GroupTest extends TestCase
 
     public function test_edit_group()
     {
-        $name = 'Sally '.date('d-m-Y');
-        $name2 = 'Max '.date('d-m-Y');
+        $name = 'Sally ' . date('d-m-Y');
+        $name2 = 'Max ' . date('d-m-Y');
         $group = Group::factory()->create([
             'name' => $name,
         ]);
 
-        $this->json('PUT', '/group/'.$group->id, ['name' => $name2])
+        $this->json('PUT', '/group/' . $group->id, ['name' => $name2])
             ->assertDontSee('Whoops')
             ->assertSee('Unauthorized.');
 
@@ -74,14 +73,14 @@ class GroupTest extends TestCase
 
         $this->actingAs($user)
             ->withSession([])
-            ->json('PUT', '/group/'.$group->id, ['name' => null])
+            ->json('PUT', '/group/' . $group->id, ['name' => null])
             ->assertDontSee('Whoops')
             ->assertJsonMissing(['success' => true])
             ->assertJsonStructure(['errors']);
 
         $this->actingAs($user)
             ->withSession([])
-            ->json('PUT', '/group/'.$group->id, ['name' => $name2])
+            ->json('PUT', '/group/' . $group->id, ['name' => $name2])
             ->assertDontSee('Whoops')
             ->assertJson([
                 'success' => true,
@@ -92,12 +91,12 @@ class GroupTest extends TestCase
 
     public function test_delete_group()
     {
-        $name = 'Sally '.date('d-m-Y');
+        $name = 'Sally ' . date('d-m-Y');
         $group = Group::factory()->create([
             'name' => $name,
         ]);
 
-        $this->json('DELETE', '/group/'.$group->id)
+        $this->json('DELETE', '/group/' . $group->id)
             ->assertDontSee('Whoops')
             ->assertSee('Unauthorized.');
 
@@ -108,7 +107,7 @@ class GroupTest extends TestCase
 
         $this->actingAs($user)
             ->withSession([])
-            ->json('DELETE', '/group/'.$group->id)
+            ->json('DELETE', '/group/' . $group->id)
             ->assertDontSee('Whoops')
             ->assertJson([
                 'success' => true,
@@ -119,7 +118,7 @@ class GroupTest extends TestCase
 
     public function test_group_members()
     {
-        $name = 'Sally '.date('d-m-Y');
+        $name = 'Sally ' . date('d-m-Y');
         $group = Group::factory()->create([
             'name' => $name,
         ]);
@@ -158,7 +157,7 @@ class GroupTest extends TestCase
 
     public function test_delete_group_member()
     {
-        $name = 'Sally '.date('d-m-Y');
+        $name = 'Sally ' . date('d-m-Y');
         $group = Group::factory()->create([
             'name' => $name,
         ]);
@@ -173,7 +172,7 @@ class GroupTest extends TestCase
             'member_id' => $member->id,
         ]);
 
-        $this->json('GET', '/group/deletegroupmember/'.$group_member->id)
+        $this->json('GET', '/group/deletegroupmember/' . $group_member->id)
             ->assertDontSee('Whoops')
             ->assertSee('Unauthorized.');
 
@@ -184,7 +183,7 @@ class GroupTest extends TestCase
 
         $this->actingAs($user)
             ->withSession([])
-            ->json('GET', '/group/deletegroupmember/'.$group_member->id)
+            ->json('GET', '/group/deletegroupmember/' . $group_member->id)
             ->assertDontSee('Whoops')
             ->assertJson([
                 'success' => true,

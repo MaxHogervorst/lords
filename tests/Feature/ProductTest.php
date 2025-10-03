@@ -3,7 +3,6 @@
 use App\Models\InvoiceGroup;
 use App\Models\Product;
 use App\Models\User;
-use Illuminate\Support\Facades\Auth;
 
 beforeEach(function () {
     // Clear cache
@@ -59,7 +58,7 @@ test('edit product requires authentication', function () {
         'price' => 3.56,
     ]);
 
-    $this->json('PUT', '/product/'.$product->id, ['name' => 'Max'])
+    $this->json('PUT', '/product/' . $product->id, ['name' => 'Max'])
         ->assertDontSee('Whoops')
         ->assertSee('Unauthorized.');
 });
@@ -77,7 +76,7 @@ test('edit product validates required fields', function () {
 
     $this->actingAs($user)
         ->withSession([])
-        ->json('PUT', '/product/'.$product->id, ['productName' => 'Max', 'productPrice' => null])
+        ->json('PUT', '/product/' . $product->id, ['productName' => 'Max', 'productPrice' => null])
         ->assertDontSee('Whoops')
         ->assertJsonMissing(['success' => true])
         ->assertJsonStructure(['errors']);
@@ -96,7 +95,7 @@ test('edit product successfully', function () {
 
     $this->actingAs($user)
         ->withSession([])
-        ->json('PUT', '/product/'.$product->id, ['productName' => 'Max', 'productPrice' => 3.56])
+        ->json('PUT', '/product/' . $product->id, ['productName' => 'Max', 'productPrice' => 3.56])
         ->assertDontSee('Whoops')
         ->assertJson([
             'success' => true,
@@ -111,7 +110,7 @@ test('delete product requires authentication', function () {
         'price' => 3.56,
     ]);
 
-    $this->json('DELETE', '/product/'.$product->id)
+    $this->json('DELETE', '/product/' . $product->id)
         ->assertDontSee('Whoops')
         ->assertSee('Unauthorized.');
 });
@@ -129,7 +128,7 @@ test('delete product successfully', function () {
 
     $this->actingAs($user)
         ->withSession([])
-        ->json('DELETE', '/product/'.$product->id)
+        ->json('DELETE', '/product/' . $product->id)
         ->assertDontSee('Whoops')
         ->assertJson([
             'success' => true,

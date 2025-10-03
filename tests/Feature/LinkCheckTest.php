@@ -8,7 +8,6 @@ use Tests\TestCase;
 
 class LinkCheckTest extends TestCase
 {
-
     private $adminUser;
 
     private $regularUser;

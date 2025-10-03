@@ -3,7 +3,6 @@
 use App\Models\InvoiceGroup;
 use App\Models\Product;
 use App\Models\User;
-use Illuminate\Support\Facades\Auth;
 
 beforeEach(function () {
     // Clear cache

@@ -16,7 +16,8 @@ class ProductController extends Controller
 {
     public function __construct(
         private readonly ProductRepository $productRepository
-    ) {}
+    ) {
+    }
 
     public function autocomplete(Request $request): JsonResponse
     {
@@ -68,7 +69,7 @@ class ProductController extends Controller
 
         $this->updateProductCache();
 
-        return response()->json(['success' => true, 'message' => $product->name.' Successfully edited']);
+        return response()->json(['success' => true, 'message' => $product->name . ' Successfully edited']);
     }
 
     public function destroy(string $id): JsonResponse
@@ -80,7 +81,7 @@ class ProductController extends Controller
         if ($deleted) {
             $this->updateProductCache();
 
-            return response()->json(['success' => true, 'message' => $product->name.' Successfully deleted']);
+            return response()->json(['success' => true, 'message' => $product->name . ' Successfully deleted']);
         } else {
             return response()->json(['errors' => 'Could not be deleted']);
         }

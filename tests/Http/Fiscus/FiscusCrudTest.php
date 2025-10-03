@@ -78,7 +78,7 @@ test('update invoice product successfully', function () {
 });
 
 test('delete invoice product successfully', function () {
-    $fiscusService = new FiscusService;
+    $fiscusService = new FiscusService();
     $members = Member::factory()->count(2)->create();
 
     $data = [

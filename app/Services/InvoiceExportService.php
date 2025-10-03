@@ -17,7 +17,8 @@ class InvoiceExportService
         private readonly InvoiceCalculationService $calculationService,
         private readonly InvoiceRepository $invoiceRepository,
         private readonly InvoiceProductRepository $invoiceProductRepository
-    ) {}
+    ) {
+    }
 
     /**
      * Generate and download Excel export for an invoice group.

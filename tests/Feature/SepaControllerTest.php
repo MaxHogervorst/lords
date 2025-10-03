@@ -10,7 +10,6 @@ use Tests\TestCase;
 
 class SepaControllerTest extends TestCase
 {
-
     private $adminRole;
 
     protected function setUp(): void

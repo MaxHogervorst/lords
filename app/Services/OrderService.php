@@ -17,7 +17,8 @@ class OrderService
 {
     public function __construct(
         private readonly OrderRepository $orderRepository
-    ) {}
+    ) {
+    }
     /**
      * Create an order for a member or group.
      */

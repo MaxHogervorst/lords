@@ -14,7 +14,6 @@ use Tests\TestCase;
 
 class ModelRelationshipTest extends TestCase
 {
-
     /**
      * Test Member has many Groups relationship
      */
@@ -250,7 +249,7 @@ class ModelRelationshipTest extends TestCase
      */
     public function test_member_get_full_name()
     {
-        $member = new Member;
+        $member = new Member();
         $member->firstname = 'John';
         $member->lastname = 'Doe';
 

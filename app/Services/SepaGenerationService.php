@@ -18,7 +18,8 @@ class SepaGenerationService
     public function __construct(
         private readonly InvoiceCalculationService $calculationService,
         private readonly MemberRepository $memberRepository
-    ) {}
+    ) {
+    }
 
     /**
      * Generate SEPA files and return batch information.

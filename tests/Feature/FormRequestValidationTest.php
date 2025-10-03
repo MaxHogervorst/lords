@@ -8,7 +8,7 @@ use App\Http\Requests\StoreProductRequest;
 use Illuminate\Support\Facades\Validator;
 
 test('store fiscus request validates required fields', function () {
-    $request = new StoreFiscusRequest;
+    $request = new StoreFiscusRequest();
 
     $validator = Validator::make([], $request->rules());
 
@@ -20,7 +20,7 @@ test('store fiscus request validates required fields', function () {
 });
 
 test('store fiscus request validates member array', function () {
-    $request = new StoreFiscusRequest;
+    $request = new StoreFiscusRequest();
 
     $data = [
         'finalproductname' => 'Test',
@@ -36,7 +36,7 @@ test('store fiscus request validates member array', function () {
 });
 
 test('store group request validates required fields', function () {
-    $request = new StoreGroupRequest;
+    $request = new StoreGroupRequest();
 
     $validator = Validator::make([], $request->rules());
 
@@ -45,7 +45,7 @@ test('store group request validates required fields', function () {
 });
 
 test('store member request validates required fields', function () {
-    $request = new StoreMemberRequest;
+    $request = new StoreMemberRequest();
 
     $validator = Validator::make([], $request->rules());
 
@@ -55,7 +55,7 @@ test('store member request validates required fields', function () {
 });
 
 test('store order request validates numeric fields', function () {
-    $request = new StoreOrderRequest;
+    $request = new StoreOrderRequest();
 
     $data = [
         'memberId' => 'not-a-number',
@@ -71,7 +71,7 @@ test('store order request validates numeric fields', function () {
 });
 
 test('store product request validates required fields', function () {
-    $request = new StoreProductRequest;
+    $request = new StoreProductRequest();
 
     $validator = Validator::make([], $request->rules());
 

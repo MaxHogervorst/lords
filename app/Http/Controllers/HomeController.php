@@ -13,7 +13,8 @@ class HomeController extends Controller
     public function __construct(
         private readonly InvoiceRepository $invoiceRepository,
         private readonly OrderRepository $orderRepository
-    ) {}
+    ) {
+    }
 
     public function getIndex(): View
     {

@@ -6,7 +6,6 @@ use Tests\TestCase;
 
 class AuthControllerTest extends TestCase
 {
-
     /**
      * Test that login page is accessible
      */

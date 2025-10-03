@@ -25,7 +25,8 @@ class InvoiceController extends Controller
         private readonly InvoiceRepository $invoiceRepository,
         private readonly MemberRepository $memberRepository,
         private readonly ProductRepository $productRepository
-    ) {}
+    ) {
+    }
 
     /**
      * Get member from session by ID.
@@ -113,7 +114,6 @@ class InvoiceController extends Controller
     {
         return $this->exportService->exportToExcel();
     }
-
 
     public function getSepa(): View
     {

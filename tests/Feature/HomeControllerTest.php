@@ -12,7 +12,6 @@ use Tests\TestCase;
 
 class HomeControllerTest extends TestCase
 {
-
     protected function setUp(): void
     {
         parent::setUp();
