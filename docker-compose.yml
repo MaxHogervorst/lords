@@ -2,17 +2,13 @@ services:
   app:
     build:
       context: .
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile.production
     image: lords-app
     container_name: lords-app
     restart: unless-stopped
     working_dir: /var/www
-    environment:
-      PLAYWRIGHT_BROWSERS_PATH: /root/.cache/ms-playwright
-    volumes:
-      - ./:/var/www
-      - ./storage:/var/www/storage
-      - ./bootstrap/cache:/var/www/bootstrap/cache
+    ports:
+      - "8080:8080"
     networks:
       - lords-network
     depends_on:
@@ -42,20 +38,6 @@ services:
       - "6379:6379"
     networks:
       - lords-network
-
-  nginx:
-    image: nginx:alpine
-    container_name: lords-nginx
-    restart: unless-stopped
-    ports:
-      - "8000:80"
-    volumes:
-      - ./:/var/www
-      - ./docker/nginx:/etc/nginx/conf.d
-    networks:
-      - lords-network
-    depends_on:
-      - app
 
 networks:
   lords-network:
