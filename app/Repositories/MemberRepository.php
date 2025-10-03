@@ -108,6 +108,35 @@ class MemberRepository extends BaseRepository
     }
 
     /**
+     * Get members with activity in a specific invoice group.
+     * Only returns members who have orders, group memberships, or invoice lines for the given invoice group.
+     */
+    public function getWithActivityForInvoiceGroup(int $invoiceGroupId, array $relations = []): Collection
+    {
+        $query = $this->model->newQuery()
+            ->where(function ($query) use ($invoiceGroupId) {
+                // Members with direct orders
+                $query->whereHas('orders', function ($q) use ($invoiceGroupId) {
+                    $q->where('invoice_group_id', $invoiceGroupId);
+                })
+                // OR members in groups with the invoice group
+                ->orWhereHas('groups', function ($q) use ($invoiceGroupId) {
+                    $q->where('invoice_group_id', $invoiceGroupId);
+                })
+                // OR members with invoice lines for this invoice group
+                ->orWhereHas('invoice_lines.productprice.product', function ($q) use ($invoiceGroupId) {
+                    $q->where('invoice_group_id', $invoiceGroupId);
+                });
+            });
+
+        if (!empty($relations)) {
+            $query->with($relations);
+        }
+
+        return $query->get();
+    }
+
+    /**
      * Get query builder instance (public access for complex queries).
      */
     public function query()

@@ -53,9 +53,9 @@ class InvoiceController extends Controller
         $currentmonth = $this->invoiceRepository->getCurrentMonth();
         $products = $this->productRepository->getAllAsArrayIdAsKey();
 
-        // Eager load orders and groups filtered by current invoice group
-        $members = $this->memberRepository->all(
-            ['*'],
+        // Only load members with activity in current invoice group (massive performance improvement)
+        $members = $this->memberRepository->getWithActivityForInvoiceGroup(
+            $currentmonth->id,
             [
                 'orders' => function ($query) use ($currentmonth) {
                     $query->where('invoice_group_id', $currentmonth->id);

@@ -24,12 +24,9 @@ class Product extends Model
     public static function toArrayIdAsKey(): array
     {
         if (! Cache::has('products')) {
-            $products = self::all();
-            $products_new = [];
-            foreach ($products as $product) {
-                $products_new[$product->id] = $product;
-            }
-            Cache::put('products', $products_new, 1);
+            // Use keyBy for better performance than foreach loop
+            $products = self::all()->keyBy('id')->all();
+            Cache::put('products', $products, 1);
         }
 
         return Cache::get('products');
