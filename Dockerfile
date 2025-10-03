@@ -44,6 +44,10 @@ WORKDIR /var/www
 # Copy existing application directory
 COPY . /var/www
 
+# Install dependencies and optimize autoloader
+RUN composer install --no-dev --optimize-autoloader --no-interaction --prefer-dist \
+    && composer dump-autoload --optimize --classmap-authoritative
+
 # Create necessary directories and set permissions
 RUN mkdir -p /var/www/storage/logs \
     /var/www/storage/framework/cache \
