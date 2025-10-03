@@ -41,8 +41,15 @@ WORKDIR /var/www
 # Copy existing application directory
 COPY . /var/www
 
-# Copy existing application directory permissions
-RUN chown -R www-data:www-data /var/www
+# Create necessary directories and set permissions
+RUN mkdir -p /var/www/storage/logs \
+    /var/www/storage/framework/cache \
+    /var/www/storage/framework/sessions \
+    /var/www/storage/framework/views \
+    /var/www/bootstrap/cache \
+    && touch /var/www/storage/logs/laravel.log \
+    && chown -R www-data:www-data /var/www \
+    && chmod -R 775 /var/www/storage /var/www/bootstrap/cache
 
 # Expose port 9000 and start php-fpm server
 EXPOSE 9000
