@@ -79,6 +79,7 @@ COPY docker/supervisor/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 
 # Create startup script
 RUN echo '#!/bin/sh' > /start.sh && \
+    echo 'php artisan optimize:clear' >> /start.sh && \
     echo 'php artisan config:cache' >> /start.sh && \
     echo 'php artisan route:cache' >> /start.sh && \
     echo 'php artisan view:cache' >> /start.sh && \
