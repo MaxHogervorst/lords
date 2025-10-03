@@ -115,3 +115,8 @@
 1759378065-7286-2135665280,1759378065.7065,GET,/invoice,App\Http\Controllers\InvoiceController@getIndex,200,90.533971786499,request
 1759431350-3594-1578685344,1759431350.2808,GET,/invoice,App\Http\Controllers\InvoiceController@getIndex,302,131.54292106628,request
 1759431350-4282-1173254891,1759431350.4193,GET,/auth/login,App\Http\Controllers\AuthController@getLogin,200,32.658100128174,request
+1759452059-5973-947063287,1759452059.4223,GET,/auth/login,App\Http\Controllers\AuthController@getLogin,200,353.32298278809,request
+1759452073-0229-748244697,1759452072.9964,POST,/auth/authenticate,App\Http\Controllers\AuthController@postAuthenticate,302,314.37993049622,request
+1759452073-3237-1437481999,1759452073.3138,GET,/,App\Http\Controllers\HomeController@getIndex,404,71.799993515015,request
+1759452117-4250-326514396,1759452117.3735,GET,/,App\Http\Controllers\HomeController@getIndex,404,110.57305335999,request
+1759452121-6216-1156837205,1759452121.5842,GET,/,App\Http\Controllers\HomeController@getIndex,200,80.848932266235,request

@@ -21,8 +21,11 @@ RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash - \
 # Clear cache
 RUN apt-get clean && rm -rf /var/lib/apt/lists/*
 
+# Install PostgreSQL client
+RUN apt-get update && apt-get install -y libpq-dev && rm -rf /var/lib/apt/lists/*
+
 # Install PHP extensions
-RUN docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd zip sockets
+RUN docker-php-ext-install pdo_pgsql pgsql pdo_mysql mbstring exif pcntl bcmath gd zip sockets
 
 # Install Xdebug for code coverage (3.4+ for PHP 8.4)
 RUN pecl install xdebug-3.4.0 && docker-php-ext-enable xdebug
