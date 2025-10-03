@@ -45,7 +45,7 @@ class SepaGenerationService
 
         // Recurring members
         $memberRcur = $this->memberRepository->getMembersWithRcur(
-            ['orders.product', 'groups.orders.product', 'invoice_lines.productprice.product']
+            ['orders.product', 'groups.orders.product', 'groups.members', 'invoice_lines.productprice.product']
         );
 
         foreach ($memberRcur as $member) {
@@ -57,7 +57,7 @@ class SepaGenerationService
 
         // First-time members
         $memberFrst = $this->memberRepository->getMembersWithFrst(
-            ['orders.product', 'groups.orders.product', 'invoice_lines.productprice.product']
+            ['orders.product', 'groups.orders.product', 'groups.members', 'invoice_lines.productprice.product']
         );
 
         foreach ($memberFrst as $member) {

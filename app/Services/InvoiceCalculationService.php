@@ -22,6 +22,8 @@ class InvoiceCalculationService
     }
     /**
      * Calculate total amount for a member including orders, group orders, and invoice lines.
+     * REQUIRES: Member must be eager loaded with 'orders', 'groups.orders', 'groups.members',
+     *           and 'invoice_lines.productprice.product' relations.
      */
     public function calculateMemberTotal(Member $member, ?InvoiceGroup $invoiceGroup = null): float
     {
@@ -37,6 +39,7 @@ class InvoiceCalculationService
 
     /**
      * Calculate price from member's direct orders.
+     * REQUIRES: Member must be eager loaded with 'orders' relation.
      */
     public function calculateMemberOrders(Member $member, ?InvoiceGroup $invoiceGroup = null): float
     {
@@ -44,7 +47,7 @@ class InvoiceCalculationService
         $price = 0.0;
         $products = $this->productRepository->getAllAsArrayIdAsKey();
 
-        foreach ($member->orders()->where('invoice_group_id', '=', $invoiceGroup->id)->get() as $order) {
+        foreach ($member->orders->where('invoice_group_id', $invoiceGroup->id) as $order) {
             $price += $order->amount * $products[$order->product_id]['price'];
         }
 
@@ -53,6 +56,7 @@ class InvoiceCalculationService
 
     /**
      * Calculate price from member's group orders (split among group members).
+     * REQUIRES: Member must be eager loaded with 'groups.orders' and 'groups.members' relations.
      */
     public function calculateGroupOrders(Member $member, ?InvoiceGroup $invoiceGroup = null): float
     {
@@ -60,11 +64,13 @@ class InvoiceCalculationService
         $price = 0.0;
         $products = $this->productRepository->getAllAsArrayIdAsKey();
 
-        foreach ($member->groups()->where('invoice_group_id', '=', $invoiceGroup->id)->get() as $group) {
+        foreach ($member->groups->where('invoice_group_id', $invoiceGroup->id) as $group) {
             $totalPrice = 0.0;
+
             foreach ($group->orders as $order) {
                 $totalPrice += $order->amount * $products[$order->product_id]['price'];
             }
+
             $totalMembers = $group->members->count();
 
             if ($totalMembers > 0) {
@@ -77,6 +83,7 @@ class InvoiceCalculationService
 
     /**
      * Calculate price from invoice lines.
+     * REQUIRES: Member must be eager loaded with 'invoice_lines.productprice.product' relation.
      */
     public function calculateInvoiceLines(Member $member, InvoiceGroup $invoiceGroup): float
     {
@@ -93,6 +100,8 @@ class InvoiceCalculationService
 
     /**
      * Generate member info array for export/SEPA with calculated totals.
+     * REQUIRES: Member must be eager loaded with 'orders', 'groups.orders', 'groups.members',
+     *           and 'invoice_lines.productprice.product' relations.
      */
     public function generateMemberInfo(Member $member, ?InvoiceGroup $invoiceGroup = null): ?array
     {
@@ -133,7 +142,7 @@ class InvoiceCalculationService
 
         $members = $this->memberRepository->all(
             ['*'],
-            ['orders.product', 'groups.orders.product', 'invoice_lines.productprice.product']
+            ['orders.product', 'groups.orders.product', 'groups.members', 'invoice_lines.productprice.product']
         );
         $invoiceProducts = $this->invoiceProductRepository->getByInvoiceGroup($invoiceGroup);
 

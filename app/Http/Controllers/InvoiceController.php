@@ -68,6 +68,7 @@ class InvoiceController extends Controller
                     $query->where('invoice_group_id', $currentmonth->id);
                 },
                 'groups.orders.product',
+                'groups.members',
                 'invoice_lines.productprice.product'
             ]
         );
@@ -106,7 +107,7 @@ class InvoiceController extends Controller
             ->with('currentmonth', $currentmonth)
             ->with('members', $this->memberRepository->all(
                 ['*'],
-                ['orders.product', 'groups.orders.product', 'invoice_lines.productprice.product']
+                ['orders.product', 'groups.orders.product', 'groups.members', 'invoice_lines.productprice.product']
             ));
     }
 
