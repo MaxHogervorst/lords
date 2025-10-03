@@ -10,7 +10,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\View\View;
-use Symfony\Component\HttpFoundation\BinaryFileResponse;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class SepaController extends Controller
 {
@@ -63,7 +63,7 @@ class SepaController extends Controller
     /**
      * Download a SEPA file.
      */
-    public function download(string $filename): BinaryFileResponse
+    public function download(string $filename): StreamedResponse
     {
         abort_if(! Storage::disk('sepa')->exists($filename), 404, 'Requested file does not exist on our server!');
 

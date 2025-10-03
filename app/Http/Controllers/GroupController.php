@@ -122,7 +122,7 @@ class GroupController extends Controller
         $groupmember->member_id = $request->get('member');
         $groupmember->save();
 
-        $member = $this->memberRepository->find($request->get('member'));
+        $member = $this->memberRepository->find((int) $request->get('member'));
 
         return response()->json([
             'success' => true,

@@ -44,7 +44,7 @@ class OrderController extends Controller
 
         if ($order->exists) {
             // Load the product relationship
-            $product = $this->productRepository->find($order->product_id);
+            $product = $this->productRepository->find((int) $order->product_id);
 
             return response()->json([
                 'success' => true,

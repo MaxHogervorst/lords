@@ -110,11 +110,19 @@
         });
 
         $('#rootwizard .finish').click(function() {
+            // Temporarily enable disabled checkboxes for serialization
+            var disabledCheckboxes = $('.checkbox:checked:disabled');
+            disabledCheckboxes.prop('disabled', false);
+
+            var formData = $('#membersform').serialize() + '&' + $('#finalproductform').serialize();
+
+            // Re-disable checkboxes
+            disabledCheckboxes.prop('disabled', true);
 
             $.ajax({
                 url: '{{ url('fiscus') }}/'+ $('#invoiceproduct').val(),
                 method: 'PUT',
-                data: $('#membersform').serialize() + '&' + $('#finalproductform').serialize(),
+                data: formData,
                 success: function(data){
                     if(data.success)
                     {

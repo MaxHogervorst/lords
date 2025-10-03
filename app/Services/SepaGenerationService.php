@@ -78,9 +78,9 @@ class SepaGenerationService
         $batches = ['RCUR' => [], 'FRST' => []];
         $batchFailedMembers = [];
 
-        $maxMoneyPerBatch = Settings::get('creditorMaxMoneyPerBatch', 999999);
-        $maxTransactionsPerBatch = Settings::get('creditorMaxTransactionsPerBatch', 1000);
-        $maxMoneyPerTransaction = Settings::get('creditorMaxMoneyPerTransaction', 100000);
+        $maxMoneyPerBatch = (float) Settings::get('creditorMaxMoneyPerBatch', 999999);
+        $maxTransactionsPerBatch = (int) Settings::get('creditorMaxTransactionsPerBatch', 1000);
+        $maxMoneyPerTransaction = (float) Settings::get('creditorMaxMoneyPerTransaction', 100000);
 
         // Process RCUR batches
         if (!empty($members['RCUR'])) {
