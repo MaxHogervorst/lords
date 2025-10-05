@@ -1,0 +1,30 @@
+/**
+ * Application Styles
+ */
+
+/* Plugin styles */
+@import 'notyf/notyf.min.css';
+@import 'flatpickr/dist/flatpickr.min.css';
+@import 'flatpickr/dist/plugins/monthSelect/style.css';
+
+/* Alpine.js loading state */
+[x-cloak] {
+    display: none !important;
+}
+
+/* Pagination styles */
+.pagination {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.pagination .page-item {
+    display: inline-block;
+}
+
+.pagination .page-link {
+    display: inline-block;
+    white-space: nowrap;
+}

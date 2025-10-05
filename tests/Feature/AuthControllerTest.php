@@ -6,11 +6,16 @@ use Tests\TestCase;
 
 class AuthControllerTest extends TestCase
 {
+    // Remove RefreshDatabase trait to test
+    // use RefreshDatabase;
+
     /**
      * Test that login page is accessible
      */
     public function test_login_page_is_accessible()
     {
+        $this->assertGuest();
+
         $this->get('/auth/login')
             ->assertStatus(200)
             ->assertSee('Login')
@@ -142,7 +147,8 @@ class AuthControllerTest extends TestCase
 
         $response = $this->actingAs($user)->get('/auth/login');
 
-        $response->assertForbidden();
+        // Guest middleware redirects authenticated users to home
+        $response->assertRedirect('/');
     }
 
     /**
@@ -160,6 +166,7 @@ class AuthControllerTest extends TestCase
             'password' => 'password',
         ]);
 
-        $response->assertForbidden();
+        // Guest middleware redirects authenticated users to home
+        $response->assertRedirect('/');
     }
 }

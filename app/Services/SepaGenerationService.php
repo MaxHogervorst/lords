@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace App\Services;
 
 use App\Enums\SepaSequenceType;
+use App\Models\InvoiceGroup;
+use App\Repositories\InvoiceRepository;
 use App\Repositories\MemberRepository;
 use DateTime;
 use Digitick\Sepa\TransferFile\Factory\TransferFileFacadeFactory;
@@ -37,31 +39,62 @@ class SepaGenerationService
     }
 
     /**
-     * Collect and organize members by SEPA sequence type.
+     * Collect and organize members by SEPA sequence type for the current invoice group.
      */
-    public function collectMembersForSepa(): array
+    public function collectMembersForSepa(?InvoiceGroup $invoiceGroup = null): array
     {
+        $invoiceGroup = $invoiceGroup ?? app(InvoiceRepository::class)->getCurrentMonth();
         $members = ['RCUR' => [], 'FRST' => []];
 
-        // Recurring members
+        // Recurring members - only those with activity in current invoice group
         $memberRcur = $this->memberRepository->getMembersWithRcur(
-            ['orders.product', 'groups.orders.product', 'groups.members', 'invoice_lines.productprice.product']
+            $invoiceGroup->id,
+            [
+                'orders' => function ($query) use ($invoiceGroup) {
+                    $query->where('invoice_group_id', $invoiceGroup->id);
+                },
+                'orders.product',
+                'groups' => function ($query) use ($invoiceGroup) {
+                    $query->where('invoice_group_id', $invoiceGroup->id);
+                },
+                'groups.orders' => function ($query) use ($invoiceGroup) {
+                    $query->where('invoice_group_id', $invoiceGroup->id);
+                },
+                'groups.orders.product',
+                'groups.members',
+                'invoice_lines.productprice.product'
+            ]
         );
 
         foreach ($memberRcur as $member) {
-            $info = $this->calculationService->generateMemberInfo($member);
+            $info = $this->calculationService->generateMemberInfo($member, $invoiceGroup);
             if ($info !== null) {
                 $members['RCUR'][] = $info;
             }
         }
 
-        // First-time members
+        // First-time members - only those with activity in current invoice group
         $memberFrst = $this->memberRepository->getMembersWithFrst(
-            ['orders.product', 'groups.orders.product', 'groups.members', 'invoice_lines.productprice.product']
+            $invoiceGroup->id,
+            [
+                'orders' => function ($query) use ($invoiceGroup) {
+                    $query->where('invoice_group_id', $invoiceGroup->id);
+                },
+                'orders.product',
+                'groups' => function ($query) use ($invoiceGroup) {
+                    $query->where('invoice_group_id', $invoiceGroup->id);
+                },
+                'groups.orders' => function ($query) use ($invoiceGroup) {
+                    $query->where('invoice_group_id', $invoiceGroup->id);
+                },
+                'groups.orders.product',
+                'groups.members',
+                'invoice_lines.productprice.product'
+            ]
         );
 
         foreach ($memberFrst as $member) {
-            $info = $this->calculationService->generateMemberInfo($member);
+            $info = $this->calculationService->generateMemberInfo($member, $invoiceGroup);
             if ($info !== null) {
                 $members['FRST'][] = $info;
             }

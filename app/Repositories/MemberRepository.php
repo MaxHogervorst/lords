@@ -27,14 +27,28 @@ class MemberRepository extends BaseRepository
     }
 
     /**
-     * Get members with RCUR status (recurring).
+     * Get members with RCUR status (recurring) who have activity in the current invoice group.
      */
-    public function getMembersWithRcur(array $relations = []): Collection
+    public function getMembersWithRcur(int $invoiceGroupId, array $relations = []): Collection
     {
         $query = $this->model->newQuery()
             ->whereNotNull('bic')
             ->whereNotNull('iban')
-            ->where('had_collection', true);
+            ->where('had_collection', true)
+            ->where(function ($query) use ($invoiceGroupId) {
+                // Members with direct orders
+                $query->whereHas('orders', function ($q) use ($invoiceGroupId) {
+                    $q->where('invoice_group_id', $invoiceGroupId);
+                })
+                // OR members in groups with the invoice group
+                ->orWhereHas('groups', function ($q) use ($invoiceGroupId) {
+                    $q->where('invoice_group_id', $invoiceGroupId);
+                })
+                // OR members with invoice lines for this invoice group
+                ->orWhereHas('invoice_lines.productprice.product', function ($q) use ($invoiceGroupId) {
+                    $q->where('invoice_group_id', $invoiceGroupId);
+                });
+            });
 
         if (!empty($relations)) {
             $query->with($relations);
@@ -44,14 +58,28 @@ class MemberRepository extends BaseRepository
     }
 
     /**
-     * Get members with FRST status (first time).
+     * Get members with FRST status (first time) who have activity in the current invoice group.
      */
-    public function getMembersWithFrst(array $relations = []): Collection
+    public function getMembersWithFrst(int $invoiceGroupId, array $relations = []): Collection
     {
         $query = $this->model->newQuery()
             ->whereNotNull('bic')
             ->whereNotNull('iban')
-            ->where('had_collection', false);
+            ->where('had_collection', false)
+            ->where(function ($query) use ($invoiceGroupId) {
+                // Members with direct orders
+                $query->whereHas('orders', function ($q) use ($invoiceGroupId) {
+                    $q->where('invoice_group_id', $invoiceGroupId);
+                })
+                // OR members in groups with the invoice group
+                ->orWhereHas('groups', function ($q) use ($invoiceGroupId) {
+                    $q->where('invoice_group_id', $invoiceGroupId);
+                })
+                // OR members with invoice lines for this invoice group
+                ->orWhereHas('invoice_lines.productprice.product', function ($q) use ($invoiceGroupId) {
+                    $q->where('invoice_group_id', $invoiceGroupId);
+                });
+            });
 
         if (!empty($relations)) {
             $query->with($relations);
@@ -110,8 +138,9 @@ class MemberRepository extends BaseRepository
     /**
      * Get members with activity in a specific invoice group.
      * Only returns members who have orders, group memberships, or invoice lines for the given invoice group.
+     * Returns query builder to allow pagination.
      */
-    public function getWithActivityForInvoiceGroup(int $invoiceGroupId, array $relations = []): Collection
+    public function getWithActivityForInvoiceGroup(int $invoiceGroupId, array $relations = [])
     {
         $query = $this->model->newQuery()
             ->where(function ($query) use ($invoiceGroupId) {
@@ -133,7 +162,7 @@ class MemberRepository extends BaseRepository
             $query->with($relations);
         }
 
-        return $query->get();
+        return $query;
     }
 
     /**

@@ -1,0 +1,33 @@
+{
+  "node_modules/@tabler/icons-webfont/dist/fonts/tabler-icons.ttf": {
+    "file": "assets/tabler-icons-DSoBTikO.ttf",
+    "src": "node_modules/@tabler/icons-webfont/dist/fonts/tabler-icons.ttf"
+  },
+  "node_modules/@tabler/icons-webfont/dist/fonts/tabler-icons.woff": {
+    "file": "assets/tabler-icons-BgupLE2_.woff",
+    "src": "node_modules/@tabler/icons-webfont/dist/fonts/tabler-icons.woff"
+  },
+  "node_modules/@tabler/icons-webfont/dist/fonts/tabler-icons.woff2": {
+    "file": "assets/tabler-icons-CqiDyPoo.woff2",
+    "src": "node_modules/@tabler/icons-webfont/dist/fonts/tabler-icons.woff2"
+  },
+  "resources/css/app.css": {
+    "file": "assets/app-CtyxC3KK.css",
+    "src": "resources/css/app.css",
+    "isEntry": true
+  },
+  "resources/js/app.js": {
+    "file": "assets/app-VOtPFmLP-1759695040205.js",
+    "name": "app",
+    "src": "resources/js/app.js",
+    "isEntry": true,
+    "css": [
+      "assets/app-BeCnkjae.css"
+    ],
+    "assets": [
+      "assets/tabler-icons-CqiDyPoo.woff2",
+      "assets/tabler-icons-BgupLE2_.woff",
+      "assets/tabler-icons-DSoBTikO.ttf"
+    ]
+  }
+}

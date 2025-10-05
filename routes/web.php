@@ -13,8 +13,10 @@ use App\Http\Controllers\ProductController;
 use App\Http\Controllers\SepaController;
 
 // Guest routes
-Route::get('auth/login', [AuthController::class, 'getLogin'])->name('auth.login')->can('guest');
-Route::post('auth/authenticate', [AuthController::class, 'postAuthenticate'])->name('auth.authenticate')->can('guest');
+Route::middleware('guest')->group(function () {
+    Route::get('auth/login', [AuthController::class, 'getLogin'])->name('auth.login');
+    Route::post('auth/authenticate', [AuthController::class, 'postAuthenticate'])->name('auth.authenticate');
+});
 
 // Public invoice check
 Route::get('check-bill', [InvoiceController::class, 'getPerPerson'])->name('invoice.check-bill');
@@ -39,7 +41,7 @@ Route::middleware('auth')->group(function () {
     // Groups
     Route::prefix('group')->name('group.')->group(function () {
         Route::post('addmember', [GroupController::class, 'postAddMember'])->name('addmember');
-        Route::get('deletegroupmember/{groupMember}', [GroupController::class, 'getDeletegroupmember'])->name('deletegroupmember');
+        Route::delete('groupmember/{groupMember}', [GroupController::class, 'deleteGroupMember'])->name('group.member.destroy');
     });
     Route::resource('group', GroupController::class);
 

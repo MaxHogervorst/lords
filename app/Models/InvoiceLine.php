@@ -12,6 +12,11 @@ class InvoiceLine extends Model
 
     protected $table = 'invoice_lines';
 
+    protected $fillable = [
+        'member_id',
+        'invoice_product_price_id',
+    ];
+
     public function member(): BelongsTo
     {
         return $this->belongsTo(Member::class);

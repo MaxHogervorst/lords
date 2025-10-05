@@ -39,16 +39,17 @@ class InvoiceCalculationService
 
     /**
      * Calculate price from member's direct orders.
-     * REQUIRES: Member must be eager loaded with 'orders' relation.
+     * REQUIRES: Member must be eager loaded with 'orders.product' relation.
      */
     public function calculateMemberOrders(Member $member, ?InvoiceGroup $invoiceGroup = null): float
     {
         $invoiceGroup = $invoiceGroup ?? $this->invoiceRepository->getCurrentMonth();
         $price = 0.0;
-        $products = $this->productRepository->getAllAsArrayIdAsKey();
 
         foreach ($member->orders->where('invoice_group_id', $invoiceGroup->id) as $order) {
-            $price += $order->amount * $products[$order->product_id]['price'];
+            if ($order->product) {
+                $price += $order->amount * $order->product->price;
+            }
         }
 
         return $price;
@@ -56,19 +57,20 @@ class InvoiceCalculationService
 
     /**
      * Calculate price from member's group orders (split among group members).
-     * REQUIRES: Member must be eager loaded with 'groups.orders' and 'groups.members' relations.
+     * REQUIRES: Member must be eager loaded with 'groups.orders.product' and 'groups.members' relations.
      */
     public function calculateGroupOrders(Member $member, ?InvoiceGroup $invoiceGroup = null): float
     {
         $invoiceGroup = $invoiceGroup ?? $this->invoiceRepository->getCurrentMonth();
         $price = 0.0;
-        $products = $this->productRepository->getAllAsArrayIdAsKey();
 
         foreach ($member->groups->where('invoice_group_id', $invoiceGroup->id) as $group) {
             $totalPrice = 0.0;
 
             foreach ($group->orders as $order) {
-                $totalPrice += $order->amount * $products[$order->product_id]['price'];
+                if ($order->product) {
+                    $totalPrice += $order->amount * $order->product->price;
+                }
             }
 
             $totalMembers = $group->members->count();
@@ -133,18 +135,40 @@ class InvoiceCalculationService
     }
 
     /**
-     * Build Excel data for all members with invoice products breakdown.
+     * Build Excel data for members with activity in the invoice group.
      */
     public function buildExcelData(InvoiceGroup $invoiceGroup): array
     {
         $result = [];
         $total = 0.0;
 
-        $members = $this->memberRepository->all(
-            ['*'],
-            ['orders.product', 'groups.orders.product', 'groups.members', 'invoice_lines.productprice.product']
-        );
+        // Only load members with activity in this invoice group
+        $members = $this->memberRepository->getWithActivityForInvoiceGroup(
+            $invoiceGroup->id,
+            [
+                'orders' => function ($query) use ($invoiceGroup) {
+                    $query->where('invoice_group_id', $invoiceGroup->id);
+                },
+                'orders.product',
+                'groups' => function ($query) use ($invoiceGroup) {
+                    $query->where('invoice_group_id', $invoiceGroup->id);
+                },
+                'groups.orders' => function ($query) use ($invoiceGroup) {
+                    $query->where('invoice_group_id', $invoiceGroup->id);
+                },
+                'groups.orders.product',
+                'groups.members',
+                'invoice_lines.productprice.product'
+            ]
+        )->get();
+
         $invoiceProducts = $this->invoiceProductRepository->getByInvoiceGroup($invoiceGroup);
+
+        // Pre-build products array template once
+        $productsTemplate = [];
+        foreach ($invoiceProducts as $product) {
+            $productsTemplate[$product->id] = 0;
+        }
 
         foreach ($members as $member) {
             $memberInfo = [];
@@ -155,11 +179,8 @@ class InvoiceCalculationService
                          + $this->calculateGroupOrders($member, $invoiceGroup);
             $memberInfo[] = $ordersTotal;
 
-            // Build products array
-            $products = [];
-            foreach ($invoiceProducts as $product) {
-                $products[$product->id] = 0;
-            }
+            // Build products array from template
+            $products = $productsTemplate;
 
             foreach ($member->invoice_lines as $invoiceLine) {
                 if ($invoiceLine->productprice->product->invoice_group_id == $invoiceGroup->id) {

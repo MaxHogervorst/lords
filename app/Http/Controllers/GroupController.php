@@ -54,25 +54,75 @@ class GroupController extends Controller
         ]);
     }
 
-    public function show(string $id): View
+    public function show(string $id): JsonResponse
     {
         $group = $this->groupRepository->find((int) $id);
         $products = $this->productRepository->all();
         $members = $this->memberRepository->all();
         $currentmonth = $this->invoiceRepository->getCurrentMonth();
 
-        return view('group.order')
-            ->with('group', $group)
-            ->with('products', $products)
-            ->with('members', $members)
-            ->with('currentmonth', $currentmonth);
+        // Get orders for this group in current month
+        $orders = $group->orders()
+            ->where('invoice_group_id', '=', $currentmonth->id)
+            ->with('product')
+            ->get()
+            ->map(fn($order) => [
+                'id' => $order->id,
+                'created_at' => $order->created_at->format('Y-m-d H:i'),
+                'product_name' => $order->product->name,
+                'amount' => $order->amount
+            ]);
+
+        // Get order totals grouped by product
+        $orderTotals = $group->orders()
+            ->where('invoice_group_id', '=', $currentmonth->id)
+            ->selectRaw('orders.product_id, count(orders.id) as count')
+            ->groupBy('product_id')
+            ->with('product')
+            ->get()
+            ->map(fn($total) => [
+                'product_id' => $total->product_id,
+                'product_name' => $total->product->name,
+                'count' => $total->count
+            ]);
+
+        // Get current group members with pivot id
+        $groupMembers = $group->members->map(fn($member) => [
+            'id' => $member->id,
+            'firstname' => $member->firstname,
+            'lastname' => $member->lastname,
+            'pivot_id' => $member->pivot->id
+        ]);
+
+        return response()->json([
+            'group' => [
+                'id' => $group->id,
+                'name' => $group->name
+            ],
+            'products' => $products->map(fn($p) => [
+                'id' => $p->id,
+                'name' => $p->name
+            ]),
+            'members' => $members->map(fn($m) => [
+                'id' => $m->id,
+                'firstname' => $m->firstname,
+                'lastname' => $m->lastname
+            ]),
+            'groupMembers' => $groupMembers,
+            'orders' => $orders,
+            'orderTotals' => $orderTotals,
+            'currentMonth' => $currentmonth->id
+        ]);
     }
 
-    public function edit(string $id): View
+    public function edit(string $id): JsonResponse
     {
         $group = $this->groupRepository->find((int) $id);
 
-        return view('group.edit')->with('group', $group);
+        return response()->json([
+            'id' => $group->id,
+            'name' => $group->name
+        ]);
     }
 
     public function update(StoreGroupRequest $request, Group $group): JsonResponse
@@ -132,14 +182,18 @@ class GroupController extends Controller
         ]);
     }
 
-    public function getDeletegroupmember(GroupMember $groupMember): JsonResponse
+    public function deleteGroupMember(GroupMember $groupMember): JsonResponse
     {
         $groupMember->delete();
 
         if ($groupMember->exists) {
-            return response()->json(['errors' => "Couldn't be deleted"]);
-        } else {
-            return response()->json(['success' => true, 'id' => $groupMember->id]);
+            return response()->json(['success' => false, 'message' => "Couldn't delete member from group"], 500);
         }
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Member removed from group successfully',
+            'id' => $groupMember->id
+        ]);
     }
 }

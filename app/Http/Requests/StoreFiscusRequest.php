@@ -23,7 +23,7 @@ class StoreFiscusRequest extends FormRequest
     {
         return [
             'finalproductname' => 'required',
-            'finalproductdescription' => 'required',
+            'finalproductdescription' => 'nullable',
             'finalpriceperperson' => 'required|numeric',
             'finalselectedmembers' => 'min:1',
             'member' => 'required|array|min:1',
@@ -38,7 +38,6 @@ class StoreFiscusRequest extends FormRequest
     {
         return [
             'finalproductname.required' => 'Product name is required',
-            'finalproductdescription.required' => 'Product description is required',
             'finalpriceperperson.required' => 'Price per person is required',
             'finalpriceperperson.numeric' => 'Price must be a number',
             'member.required' => 'At least one member must be selected',

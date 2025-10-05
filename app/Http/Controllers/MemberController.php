@@ -49,26 +49,68 @@ class MemberController extends Controller
         ]);
     }
 
-    public function show(string $id): View
+    public function show(string $id): JsonResponse
     {
         $member = $this->memberRepository->find((int) $id);
         $products = $this->productRepository->all();
         $currentmonth = $this->invoiceRepository->getCurrentMonth();
 
-        return view('member.order')
-            ->with('member', $member)
-            ->with('products', $products)
-            ->with('currentmonth', $currentmonth);
+        // Get orders for this member in current month
+        $orders = $member->orders()
+            ->where('invoice_group_id', '=', $currentmonth->id)
+            ->with('product')
+            ->get()
+            ->map(fn($order) => [
+                'id' => $order->id,
+                'created_at' => $order->created_at->format('Y-m-d H:i'),
+                'product_name' => $order->product->name,
+                'amount' => $order->amount
+            ]);
+
+        // Get order totals grouped by product
+        $orderTotals = $member->orders()
+            ->where('invoice_group_id', '=', $currentmonth->id)
+            ->selectRaw('orders.product_id, count(orders.id) as count')
+            ->groupBy('product_id')
+            ->with('product')
+            ->get()
+            ->map(fn($total) => [
+                'product_id' => $total->product_id,
+                'product_name' => $total->product->name,
+                'count' => $total->count
+            ]);
+
+        return response()->json([
+            'member' => [
+                'id' => $member->id,
+                'firstname' => $member->firstname,
+                'lastname' => $member->lastname
+            ],
+            'products' => $products->map(fn($p) => [
+                'id' => $p->id,
+                'name' => $p->name
+            ]),
+            'orders' => $orders,
+            'orderTotals' => $orderTotals,
+            'currentMonth' => $currentmonth->id
+        ]);
     }
 
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(string $id): View
+    public function edit(string $id): JsonResponse
     {
         $member = $this->memberRepository->find((int) $id);
 
-        return view('member.edit')->with('member', $member);
+        return response()->json([
+            'id' => $member->id,
+            'firstname' => $member->firstname,
+            'lastname' => $member->lastname,
+            'bic' => $member->bic,
+            'iban' => $member->iban,
+            'had_collection' => (bool) $member->had_collection
+        ]);
     }
 
     /**

@@ -48,13 +48,13 @@ class InvoiceController extends Controller
         return $invoiceGroupId ? $this->invoiceRepository->find($invoiceGroupId) : null;
     }
 
-    public function getIndex(): View
+    public function getIndex(Request $request): View
     {
         $currentmonth = $this->invoiceRepository->getCurrentMonth();
         $products = $this->productRepository->getAllAsArrayIdAsKey();
 
         // Only load members with activity in current invoice group (massive performance improvement)
-        $members = $this->memberRepository->getWithActivityForInvoiceGroup(
+        $membersQuery = $this->memberRepository->getWithActivityForInvoiceGroup(
             $currentmonth->id,
             [
                 'orders' => function ($query) use ($currentmonth) {
@@ -72,6 +72,11 @@ class InvoiceController extends Controller
                 'invoice_lines.productprice.product'
             ]
         );
+
+        // Paginate members with consistent ordering
+        $perPage = $request->input('per_page', 10);
+        $members = $membersQuery->orderBy('lastname')->orderBy('firstname')
+            ->paginate($perPage)->appends(['per_page' => $perPage]);
 
         return view('invoice.index')
             ->with('invoicegroups', $this->invoiceRepository->getAllOrdered('desc'))

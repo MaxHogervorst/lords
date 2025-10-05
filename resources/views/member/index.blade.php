@@ -1,128 +1,146 @@
 @extends('layout.master')
-@section('script')
-    <script>
-        $(document).ready(function(){
-            $("#bankinfo").change(function() {
-                if(this.checked) {
-                    $('#members tbody tr').each(function() {
-                        if ($(this).find('td:empty').length == 0) $(this).hide();
-                    });
-                }
-                else{
-                    $('#members tr').each(function() {
-                         $(this).show();
-                    });
-                }
-            });
-            $("#collection").change(function() {
-                if(this.checked) {
-                    $('#members tbody tr').each(function() {
-                    	console.log($(':nth-child(6)', this).text());
-                        if($(':nth-child(6)', this).text() == ' Yes ')
-                        	$(this).hide();
-                    });
-                }
-                else{
-                    $('#members tr').each(function() {
-                         $(this).show();
-                    });
-                }
-            });
-
-        });
-        function addMember(data)
-        {
-            $('#members').prepend('<tr> <td>' + data.firstname + '</td> <td>' + data.lastname + '</td><td></td><td></td><td></td>No<td>  <button data-id="'+ data.id +'" data-toggle="modal" data-target="#member-order"><i class="fa fa-plus fa-fw fa-lg"></i></button><button data-id="' + data.id + '" data-toggle="modal" data-target="#member-edit"><i class="fa fa-edit fa-fw">  </i></button></td></tr>');
-            $('tbody tr').removeClass('visible').show().addClass('visible').css({display: 'table-row'});
-        }
-
-
-        $('#member-order').on('show.bs.modal', function (event) {
-          $('#memberordermodalcontent').load('{{ url('member/') }}/'+ $(event.relatedTarget).data('id'))
-        });
-
-        $('#member-edit').on('show.bs.modal', function (event) {
-          $('#membereditmodalcontent').load('{{ url('member/') }}/'+ $(event.relatedTarget).data('id') + '/edit')
-        });
-    </script>
-@stop
-
 
 @section('content')
+    <div x-data='membersManager(@json($members))' x-cloak>
+        <!-- Search and Add Form -->
+        <div class="card mb-3">
+            <div class="card-body">
+                <form x-ref="addMemberForm" @submit.prevent="addMember" action="{{ url('member') }}" method="post">
+                    <div class="row g-2">
+                        <div class="col">
+                            <input
+                                type="text"
+                                x-ref="firstNameSearch"
+                                name="name"
+                                placeholder="First Name"
+                                class="form-control"
+                                autofocus
+                                autocomplete="off"
+                                @input="searchFirstName = $event.target.value">
+                        </div>
+                        <div class="col">
+                            <input
+                                type="text"
+                                name="lastname"
+                                placeholder="Last Name"
+                                class="form-control"
+                                autocomplete="off"
+                                @input="searchLastName = $event.target.value">
+                        </div>
+                        <input type="hidden" name="_token" value="{{ csrf_token() }}">
+                        <div class="col-auto">
+                            <button
+                                type="submit"
+                                class="btn btn-primary"
+                                data-testid="add-member-button"
+                                :disabled="$store.app.isLoading">
+                                <i data-lucide="plus"></i>
+                                <span x-text="$store.app.isLoading ? 'Adding...' : 'Add Member'"></span>
+                            </button>
+                        </div>
+                    </div>
 
-    <form id="member-form" name="member-form" class="form-inline" action="{{ URL::to('member') }}" method="post" enctype="multipart/form-data">
-        <input type="search" id="filter" name="name" placeholder="First Name" class="form-control" autofocus="" autocomplete="off">
-        <input type="search" id="lastname" name="lastname" placeholder="Last Name" class="form-control" autofocus="" autocomplete="off">
-        <input type="hidden" name="_token" value="{{ csrf_token() }}">
-        <button type="submit" class="btn btn-outline btn-primary" data-ajax-submit="#member-form" data-ajax-callback-function="addMember"><i class="fa fa-plus fa-fw">  </i>Add Member</button>
-    </form>
-    @can('admin')
-        Filter Bankinfo: <input type="checkbox" id="bankinfo"> <br />
-        Filter Had Collection: <input type="checkbox" id="collection">
-    @endcan
-
-    <div class="row">&nbsp;</div>
-
-    <div class="table-responsive">
-        <table class="table table-bordered table-striped" id="members">
-
-            <thead>
-                <tr>
-
-                    <th>First Name</th>
-                    <th>Last Name</th>
-                    <th class="col-sm-1">Actions</th>
                     @can('admin')
-                        <th>BIC</th>
-                        <th>Iban</th>
-                        <th class="col-sm-1">Had Collection</th>
+                    <div class="row mt-3">
+                        <div class="col-auto">
+                            <label class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" x-model="filterBankInfo">
+                                <span class="form-check-label">Filter Bankinfo</span>
+                            </label>
+                        </div>
+                        <div class="col-auto">
+                            <label class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" x-model="filterCollection">
+                                <span class="form-check-label">Filter Had Collection</span>
+                            </label>
+                        </div>
+                    </div>
                     @endcan
+                </form>
+            </div>
+        </div>
 
-                </tr>
-            </thead>
+        <!-- Members Table -->
+        <div class="card">
+            <div class="table-responsive">
+                <table class="table table-vcenter card-table">
+                    <thead>
+                        <tr>
+                            <th>First Name</th>
+                            <th>Last Name</th>
+                            <th class="w-1">Actions</th>
+                            @can('admin')
+                                <th>BIC</th>
+                                <th>Iban</th>
+                                <th class="w-1">Had Collection</th>
+                            @endcan
+                        </tr>
+                    </thead>
 
-            <tbody>
-                @foreach ($members as $m)
-                <tr>
-                    <td>{{ $m->firstname }}</td>
-                    <td>{{ $m->lastname }}</td>
-                    <td>
-                        <button data-id="{{ $m->id }}" data-toggle="modal" data-target="#member-order"><i class="fa fa-plus fa-fw fa-lg"></i></button>
-                        <button data-id="{{ $m->id }}"  data-toggle="modal" data-target="#member-edit"><i class="fa fa-edit fa-fw">  </i></button>
-                    </td>
-                    @can('admin')
-                        <td>{{ $m->bic }}</td>
-                        <td>{{ $m->iban }}</td>
-                        <td>@if($m->had_collection) Yes @else No @endif</td>
-                    @endcan
+                    <tbody>
+                        <template x-for="member in filteredMembers" :key="member.id">
+                            <tr>
+                                <td x-text="member.firstname"></td>
+                                <td x-text="member.lastname"></td>
+                                <td class="text-nowrap">
+                                    <button
+                                        type="button"
+                                        class="btn btn-sm btn-ghost-primary"
+                                        :data-testid="'member-order-' + member.id"
+                                        @click="loadOrderModal(member.id)">
+                                        <i data-lucide="plus"></i>
+                                    </button>
+                                    <button
+                                        type="button"
+                                        class="btn btn-sm btn-ghost-primary"
+                                        :data-testid="'member-edit-' + member.id"
+                                        @click="loadEditModal(member.id)">
+                                        <i data-lucide="edit"></i>
+                                    </button>
+                                </td>
+                                @can('admin')
+                                    <td x-text="member.bic || ''"></td>
+                                    <td x-text="member.iban || ''"></td>
+                                    <td x-text="member.had_collection ? 'Yes' : 'No'"></td>
+                                @endcan
+                            </tr>
+                        </template>
 
-                </tr>
-                @endforeach
-            </tbody>
-
-        </table>
+                        <template x-if="filteredMembers.length === 0">
+                            <tr>
+                                @can('admin')
+                                    <td colspan="6" class="text-center text-muted">
+                                        No members found
+                                    </td>
+                                @else
+                                    <td colspan="3" class="text-center text-muted">
+                                        No members found
+                                    </td>
+                                @endcan
+                            </tr>
+                        </template>
+                    </tbody>
+                </table>
+            </div>
+        </div>
     </div>
-
-
-
 
 @stop
 
 @section('modal')
-<div id="member-order" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
-	<div class="modal-dialog" >
- 		<div class="modal-content">
-			<div id="memberordermodalcontent"></div>
-	</div><!-- /.modal-content -->
-</div><!-- /.modal-dialog -->
-</div><!-- /.modal -->
+<div class="modal modal-blur fade" id="member-order" tabindex="-1">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            @include('member.order')
+        </div>
+    </div>
+</div>
 
-<div id="member-edit" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
-	<div class="modal-dialog" >
- 		<div class="modal-content">
-            <div id="membereditmodalcontent"></div>
-		</div><!-- /.modal-content -->
-	</div><!-- /.modal-dialog -->
-</div><!-- /.modal -->
-
+<div class="modal modal-blur fade" id="member-edit" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            @include('member.edit')
+        </div>
+    </div>
+</div>
 @stop

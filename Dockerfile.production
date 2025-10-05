@@ -1,3 +1,26 @@
+# ============================================
+# Stage 1: Build frontend assets with Node.js
+# ============================================
+FROM node:20-alpine AS frontend-builder
+
+WORKDIR /build
+
+# Copy package files
+COPY package*.json ./
+
+# Install npm dependencies
+RUN npm ci --only=production
+
+# Copy source files needed for build
+COPY resources/js ./resources/js
+COPY vite.config.js ./
+
+# Build production assets
+RUN npm run build
+
+# ============================================
+# Stage 2: Build PHP application
+# ============================================
 FROM php:8.4-fpm-alpine AS base
 
 # Install system dependencies
@@ -59,6 +82,9 @@ RUN composer install --no-dev --no-scripts --no-autoloader --prefer-dist --optim
 
 # Copy application code
 COPY . .
+
+# Copy built frontend assets from frontend-builder stage
+COPY --from=frontend-builder /build/public/build ./public/build
 
 # Generate optimized autoload files (optimize without strict classmap)
 RUN composer dump-autoload --optimize --no-dev

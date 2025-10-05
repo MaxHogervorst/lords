@@ -51,11 +51,15 @@ class ProductController extends Controller
         }
     }
 
-    public function edit(string $id): View
+    public function edit(string $id): JsonResponse
     {
         $product = $this->productRepository->find((int) $id);
 
-        return view('product.edit')->with('product', $product);
+        return response()->json([
+            'id' => $product->id,
+            'name' => $product->name,
+            'price' => $product->price
+        ]);
     }
 
     public function update(StoreProductRequest $request, Product $product): JsonResponse

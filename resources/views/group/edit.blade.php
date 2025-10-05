@@ -1,23 +1,27 @@
-<div class="modal-header">
-    <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
-    <h4 class="modal-title">{{ $group->name }}</h4>
-</div>
+<div x-data="groupEditModal" x-show="$store.modals.editModal.type === 'group'">
+    <div class="modal-header">
+        <h5 class="modal-title" x-text="group.name"></h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+    </div>
 
-<div class="modal-body">
-    <form id="member-edit-form" name="product-form-edit" class="form-inline" action="{{ url('group/' . $group->id) }}" method="post">
-        <div class="form-group">
-            <input type="text" id="memberName" name="name" class="form-control" value="{{ $group->name }}" >
+    <div class="modal-body">
+        <form id="group-edit-form" @submit.prevent="updateGroup">
+            <div class="mb-3">
+                <label for="groupName" class="form-label">Group Name</label>
+                <input type="text" id="groupName" name="name" :value="group.name" class="form-control" data-testid="group-name-input">
+            </div>
             <input type="hidden" name="_token" value="{{ csrf_token() }}">
-
-        </div>
-            <button type="button" class="btn btn-outline btn-primary" data-ajax-type="PUT" data-ajax-submit="#member-edit-form" data-ajax-callback-function="afterRefreshMessage"><i class="fa fa-save fa-fw">  </i>Save Changes</button>
         </form>
+    </div>
 
-</div>
-<div class="modal-footer">
-    <form id="member-delete-form" name="member-delete-form" class="form-horizontal" action="{{ url('group/' . $group->id) }}" method="post">
-        <input type="hidden" name="_token" value="{{ csrf_token() }}">
-        <button type="button" class="btn btn-outline btn-primary" data-ajax-type="DELETE" data-ajax-submit="#member-delete-form" data-ajax-callback-function="afterRefreshMessage"><i class="fa fa-edit fa-fw">  </i>Delete Member</button>
-    </form>
-    </form>
+    <div class="modal-footer">
+        <button type="button" class="btn btn-danger" @click="deleteGroup" :disabled="isLoading" data-testid="group-delete-button">
+            <i data-lucide="trash-2"></i>
+            <span x-text="isLoading ? 'Deleting...' : 'Delete Group'"></span>
+        </button>
+        <button type="submit" class="btn btn-primary" form="group-edit-form" :disabled="isLoading" data-testid="group-save-button">
+            <i data-lucide="save"></i>
+            <span x-text="isLoading ? 'Saving...' : 'Save Changes'"></span>
+        </button>
+    </div>
 </div>
