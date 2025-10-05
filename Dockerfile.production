@@ -13,6 +13,7 @@ RUN npm ci
 
 # Copy source files needed for build
 COPY resources/js ./resources/js
+COPY resources/css ./resources/css
 COPY vite.config.js ./
 
 # Build production assets
