@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\FiscusController;
 use App\Http\Controllers\GroupController;
@@ -20,6 +21,8 @@ Route::middleware('guest')->group(function () {
 
 // Public invoice check
 Route::get('check-bill', [InvoiceController::class, 'getPerPerson'])->name('invoice.check-bill');
+Route::post('invoice/setperson', [InvoiceController::class, 'postSetPerson'])->name('invoice.setperson');
+Route::post('invoice/setpersonalinvoicegroup', [InvoiceController::class, 'postSetPersonalInvoiceGroup'])->name('invoice.setpersonalinvoicegroup');
 
 // Authenticated routes
 Route::middleware('auth')->group(function () {
@@ -28,12 +31,6 @@ Route::middleware('auth')->group(function () {
 
     // Home
     Route::get('/', [HomeController::class, 'getIndex'])->name('home');
-
-    // Invoice management
-    Route::prefix('invoice')->name('invoice.')->group(function () {
-        Route::post('setperson', [InvoiceController::class, 'postSetPerson'])->name('setperson');
-        Route::post('setpersonalinvoicegroup', [InvoiceController::class, 'postSetPersonalInvoiceGroup'])->name('setpersonalinvoicegroup');
-    });
 
     // Orders
     Route::post('order/store/{type}', [OrderController::class, 'postStore'])->name('order.store');
