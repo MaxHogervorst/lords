@@ -260,6 +260,229 @@ class InvoiceControllerTest extends TestCase
     }
 
     /**
+     * Test check-bill page is accessible without authentication
+     */
+    public function test_check_bill_page_is_accessible_without_auth()
+    {
+        $response = $this->get('/check-bill');
+
+        $response->assertStatus(200)
+            ->assertDontSee('Unauthorized')
+            ->assertDontSee('Whoops')
+            ->assertSee('Select Month')
+            ->assertSee('Lastname');
+    }
+
+    /**
+     * Test check-bill page shows invoice groups
+     */
+    public function test_check_bill_page_shows_invoice_groups()
+    {
+        $invoiceGroup = InvoiceGroup::factory()->create([
+            'name' => 'Public Test Month',
+            'status' => true,
+        ]);
+
+        $response = $this->get('/check-bill');
+
+        $response->assertStatus(200)
+            ->assertSee('Public Test Month');
+    }
+
+    /**
+     * Test setperson endpoint is accessible without authentication
+     */
+    public function test_setperson_is_accessible_without_auth()
+    {
+        $member = Member::factory()->create([
+            'firstname' => 'John',
+            'lastname' => 'Doe',
+            'iban' => 'NL91ABNA0417164300',
+        ]);
+
+        $response = $this->json('POST', '/invoice/setperson', [
+            'name' => 'Doe',
+            'iban' => 'NL91ABNA0417164300',
+        ]);
+
+        $response->assertStatus(200)
+            ->assertJson(['success' => true]);
+
+        // Verify session was set
+        $this->assertEquals($member->id, session('member_id'));
+    }
+
+    /**
+     * Test setperson endpoint with invalid data
+     */
+    public function test_setperson_fails_with_invalid_data()
+    {
+        $response = $this->json('POST', '/invoice/setperson', [
+            'name' => '',
+            'iban' => '',
+        ]);
+
+        $response->assertStatus(200)
+            ->assertJsonStructure(['errors']);
+    }
+
+    /**
+     * Test setperson endpoint with non-existent member
+     */
+    public function test_setperson_fails_with_non_existent_member()
+    {
+        $response = $this->json('POST', '/invoice/setperson', [
+            'name' => 'NonExistent',
+            'iban' => 'NL91ABNA0417164300',
+        ]);
+
+        $response->assertStatus(200)
+            ->assertJson(['errors' => 'Could not find member']);
+    }
+
+    /**
+     * Test setpersonalinvoicegroup endpoint is accessible without authentication
+     */
+    public function test_setpersonalinvoicegroup_is_accessible_without_auth()
+    {
+        $invoiceGroup = InvoiceGroup::factory()->create([
+            'name' => 'Test Personal Month',
+            'status' => false,
+        ]);
+
+        $response = $this->json('POST', '/invoice/setpersonalinvoicegroup', [
+            'invoiceGroup' => $invoiceGroup->id,
+        ]);
+
+        $response->assertStatus(200)
+            ->assertJson(['success' => true]);
+
+        // Verify session was set
+        $this->assertEquals($invoiceGroup->id, session('personal_invoice_group_id'));
+    }
+
+    /**
+     * Test setpersonalinvoicegroup endpoint with invalid data
+     */
+    public function test_setpersonalinvoicegroup_fails_with_invalid_data()
+    {
+        $response = $this->json('POST', '/invoice/setpersonalinvoicegroup', [
+            'invoiceGroup' => '',
+        ]);
+
+        $response->assertStatus(200)
+            ->assertJsonStructure(['errors']);
+    }
+
+    /**
+     * Test setpersonalinvoicegroup endpoint with non-existent invoice group
+     */
+    public function test_setpersonalinvoicegroup_fails_with_non_existent_group()
+    {
+        $response = $this->json('POST', '/invoice/setpersonalinvoicegroup', [
+            'invoiceGroup' => 99999,
+        ]);
+
+        $response->assertStatus(200)
+            ->assertJson(['errors' => 'Could not find month']);
+    }
+
+    /**
+     * Test check-bill page displays member invoice data
+     */
+    public function test_check_bill_displays_member_invoice_data()
+    {
+        // Use the invoice group from setUp
+        $invoiceGroup = InvoiceGroup::where('status', true)->first();
+
+        // Create member
+        $member = Member::factory()->create([
+            'firstname' => 'Jane',
+            'lastname' => 'Smith',
+            'iban' => 'NL20INGB0001234567',
+        ]);
+
+        // Create product
+        $product = Product::factory()->create([
+            'name' => 'Test Product',
+            'price' => 5.00,
+        ]);
+
+        // Refresh product cache
+        \Cache::forget('products');
+        Product::toArrayIdAsKey();
+
+        // Create order
+        Order::factory()->create([
+            'ownerable_id' => $member->id,
+            'ownerable_type' => 'App\\Models\\Member',
+            'product_id' => $product->id,
+            'invoice_group_id' => $invoiceGroup->id,
+            'amount' => 3,
+        ]);
+
+        // Set member in session
+        $response = $this->withSession(['member_id' => $member->id])
+            ->get('/check-bill');
+
+        $response->assertStatus(200)
+            ->assertSee('Jane Smith')
+            ->assertSee('Test Product');
+    }
+
+    /**
+     * Test check-bill page displays group orders
+     */
+    public function test_check_bill_displays_group_orders()
+    {
+        // Use the invoice group from setUp
+        $invoiceGroup = InvoiceGroup::where('status', true)->first();
+
+        // Create members
+        $member1 = Member::factory()->create([
+            'firstname' => 'Member',
+            'lastname' => 'One',
+        ]);
+        $member2 = Member::factory()->create([
+            'firstname' => 'Member',
+            'lastname' => 'Two',
+        ]);
+
+        $group = Group::factory()->create([
+            'name' => 'Test Party Group',
+            'invoice_group_id' => $invoiceGroup->id,
+        ]);
+
+        $group->members()->attach([$member1->id, $member2->id]);
+
+        // Create product
+        $product = Product::factory()->create([
+            'name' => 'Group Beer',
+            'price' => 10.00,
+        ]);
+
+        // Refresh product cache
+        \Cache::forget('products');
+        Product::toArrayIdAsKey();
+
+        // Create group order
+        Order::factory()->create([
+            'ownerable_id' => $group->id,
+            'ownerable_type' => 'App\\Models\\Group',
+            'product_id' => $product->id,
+            'invoice_group_id' => $invoiceGroup->id,
+            'amount' => 2,
+        ]);
+
+        // Set member in session
+        $response = $this->withSession(['member_id' => $member1->id])
+            ->get('/check-bill');
+
+        $response->assertStatus(200)
+            ->assertSee('Test Party Group');
+    }
+
+    /**
      * Test SEPA file generation with actual data
      */
     public function test_sepa_file_generation()

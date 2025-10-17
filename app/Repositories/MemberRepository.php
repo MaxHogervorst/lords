@@ -128,10 +128,8 @@ class MemberRepository extends BaseRepository
     public function findWithInvoiceLinesByMemberId(int $memberId): ?Member
     {
         return $this->model->newQuery()
-            ->with('orders.product', 'groups.orders.product')
-            ->whereHas('invoice_lines.productprice.product', function ($q) use ($memberId) {
-                $q->where('member_id', $memberId);
-            })
+            ->with('orders.product', 'groups.orders.product', 'groups.members', 'invoice_lines.productprice.product')
+            ->where('id', $memberId)
             ->first();
     }
 
