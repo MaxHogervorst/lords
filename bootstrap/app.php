@@ -17,6 +17,9 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/health',
     )
     ->withMiddleware(function (Middleware $middleware) {
+        // Trust proxies for DigitalOcean App Platform
+        $middleware->trustProxies(at: '*');
+
         // Global middleware
         $middleware->use([
             \Illuminate\Foundation\Http\Middleware\CheckForMaintenanceMode::class,
