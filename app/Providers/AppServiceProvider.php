@@ -20,8 +20,18 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        if ($this->app->environment('production') && str_starts_with(config('app.url'), 'https://')) {
+        // Force HTTPS in production
+        if ($this->app->environment('production')) {
             URL::forceScheme('https');
+
+            // Ensure APP_URL is set correctly for URL generation
+            // This helps when running behind reverse proxies
+            if ($appUrl = config('app.url')) {
+                $parsedUrl = parse_url($appUrl);
+                if (isset($parsedUrl['host'])) {
+                    URL::forceRootUrl($appUrl);
+                }
+            }
         }
     }
 
