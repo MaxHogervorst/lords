@@ -50,6 +50,9 @@ Route::middleware('auth')->group(function () {
     // Auth
     Route::get('auth/logout', [AuthController::class, 'getLogout'])->name('auth.logout');
 
+    // Test route to debug
+    Route::get('test-home', [HomeController::class, 'getIndex'])->name('test.home');
+
     // Home
     Route::get('/', [HomeController::class, 'getIndex'])->name('home');
 
