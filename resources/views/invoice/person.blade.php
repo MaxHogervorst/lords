@@ -11,28 +11,18 @@
                     create: false
                 });
             }
-
-            // Initialize Flatpickr for month picker (if exists)
-            const invoiceMonth = document.getElementById('invoiceMonth');
-            if (invoiceMonth) {
-                flatpickr(invoiceMonth, {
-                    plugins: [
-                        new monthSelectPlugin({
-                            shorthand: true,
-                            dateFormat: "m-Y",
-                            altFormat: "F Y"
-                        })
-                    ]
-                });
-            }
         });
     </script>
 @stop
 
 @section('content')
+    <div class="text-center mb-4">
+        <h1 class="display-5">Check Your Bill</h1>
+        <p class="text-muted">View your personal invoice for GSRC Lords</p>
+    </div>
 
-
-    <div class="row" x-data="{
+    <!-- Month Selection Card -->
+    <div class="card mb-3" x-data="{
         async selectMonth() {
             const formData = new FormData(document.getElementById('invoicegroupForm'));
             try {
@@ -45,132 +35,159 @@
             }
         }
     }">
-        <form id="invoicegroupForm" method="post" action="invoice/setpersonalinvoicegroup">
-        <label for="inputEmail" class="col-lg-1 form-label">Select Month</label>
-        <div class="col-sm-4">
-            <div class="input-group">
+        <div class="card-header">
+            <h3 class="card-title">Select Invoice Month</h3>
+        </div>
+        <div class="card-body">
+            <form id="invoicegroupForm" method="post" action="invoice/setpersonalinvoicegroup">
                 <input type="hidden" name="_token" value="{{ csrf_token() }}">
-                <select id="invoiceGroup" name="invoiceGroup" class="form-control"  autocomplete="off">
-                        <option value="">Search and select month</option>
-                        @foreach($invoicegroups as $i)
-                            @if($i->status)
-                                <option value={{ $i->id }}>Active Month: {{ $i->name}}</option>
-                            @else
-                                <option value={{ $i->id }}>{{ $i->name}}</option>
+                <div class="row g-2">
+                    <div class="col">
+                        <select id="invoiceGroup" name="invoiceGroup" class="form-select" autocomplete="off">
+                            <option value="">Search and select month</option>
+                            @foreach($invoicegroups as $i)
+                                @if($i->status)
+                                    <option value="{{ $i->id }}" {{ $currentmonth->id == $i->id ? 'selected' : '' }}>Active Month: {{ $i->name }}</option>
+                                @else
+                                    <option value="{{ $i->id }}" {{ $currentmonth->id == $i->id ? 'selected' : '' }}>{{ $i->name }}</option>
+                                @endif
+                            @endforeach
+                        </select>
+                    </div>
+                    <div class="col-auto">
+                        <button type="button" class="btn btn-primary" @click="selectMonth">
+                            <i data-lucide="check"></i>
+                            Select
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="alert alert-info">
+        <strong>Viewing:</strong> {{ $currentmonth->name }}
+    </div>
+
+    <!-- Person Lookup Card -->
+    <div class="card mb-3">
+        <div class="card-header">
+            <h3 class="card-title">Lookup Your Invoice</h3>
+        </div>
+        <div class="card-body">
+            <form id="invoicePersonGroup" method="post" action="invoice/setperson" x-data="{
+                async lookupPerson() {
+                    const formData = new FormData(document.getElementById('invoicePersonGroup'));
+                    try {
+                        const response = await http.post('invoice/setperson', formData);
+                        if (response.data.success) {
+                            location.reload();
+                        }
+                    } catch (error) {
+                        Alpine.store('notifications').error('Error looking up person');
+                    }
+                }
+            }">
+                <input type="hidden" name="_token" value="{{ csrf_token() }}">
+                <div class="row g-3">
+                    <div class="col-md-5">
+                        <label class="form-label">Last Name</label>
+                        <input
+                            type="text"
+                            name="name"
+                            class="form-control"
+                            placeholder="Enter your last name"
+                            autocomplete="off">
+                    </div>
+                    <div class="col-md-5">
+                        <label class="form-label">IBAN</label>
+                        <input
+                            type="text"
+                            name="iban"
+                            class="form-control"
+                            placeholder="Enter your IBAN"
+                            autocomplete="off">
+                    </div>
+                    <div class="col-md-2 d-flex align-items-end">
+                        <button type="button" class="btn btn-primary w-100" @click="lookupPerson">
+                            <i data-lucide="search"></i>
+                            Look Up
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Invoice Details Card -->
+    @if(!is_null($m))
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Invoice for {{ $m->firstname . ' ' . $m->lastname }}</h3>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-vcenter card-table">
+                    <thead>
+                        <tr>
+                            <th>Product</th>
+                            <th>Description</th>
+                            <th class="text-end">Amount</th>
+                            <th class="text-end">Total Price</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php $total = 0; ?>
+
+                        {{-- Individual Orders --}}
+                        @foreach($m->orders()->where('invoice_group_id', '=', $currentmonth->id)->get() as $o)
+                            <?php $price = $o->amount * $products[$o->product_id]['price']; $total += $price; ?>
+                            <tr>
+                                <td>{{ $products[$o->product_id]['name'] }}</td>
+                                <td>{{ $products[$o->product_id]['name'] }}</td>
+                                <td class="text-end">{{ $o->amount }}</td>
+                                <td class="text-end">&euro;{{ number_format($price, 2, ".", ",") }}</td>
+                            </tr>
+                        @endforeach
+
+                        {{-- Group Orders --}}
+                        @foreach($m->groups()->where('invoice_group_id', '=', $currentmonth->id)->get() as $g)
+                            <?php $totalprice = 0; ?>
+                            @foreach($g->orders as $o)
+                                <?php $totalprice += $o->amount * $products[$o->product_id]['price']; ?>
+                            @endforeach
+                            <?php $totalmebers = $g->members->count(); $price = ($totalprice / $totalmebers); $total += $price; ?>
+                            <tr>
+                                <td>{{ $g->name }}</td>
+                                <td>
+                                    <span class="text-muted">Groupmembers: {{ $totalmebers }}</span>
+                                    <span class="text-muted">| Total price: &euro;{{ number_format($totalprice, 2, ".", ",") }}</span>
+                                </td>
+                                <td class="text-end">1</td>
+                                <td class="text-end">&euro;{{ number_format($price, 2, ".", ",") }}</td>
+                            </tr>
+                        @endforeach
+
+                        {{-- Invoice Lines --}}
+                        @foreach($m->invoice_lines as $il)
+                            @if($il->productprice->product->invoice_group_id == $currentmonth->id)
+                                <?php $price = $il->productprice->price; $total += $price; ?>
+                                <tr>
+                                    <td>{{ $il->productprice->product->name }}</td>
+                                    <td>{{ $il->productprice->description }}</td>
+                                    <td class="text-end">1</td>
+                                    <td class="text-end">&euro;{{ number_format($price, 2, ".", ",") }}</td>
+                                </tr>
                             @endif
                         @endforeach
-                </select>
-                <span class="input-group-btn">
-                    <button type="button" class="btn btn-outline-primary" @click="selectMonth"><i data-lucide="check"></i>Select </button>
-                </span>
-           </div>
-        </div>
-        </form>
-    </div>
-    <h2>Viewing: {{ $currentmonth->name }}</h2>
-
-        <form id="invoicePersonGroup" method="post" action="invoice/setperson" x-data="{
-            async lookupPerson() {
-                const formData = new FormData(document.getElementById('invoicePersonGroup'));
-                try {
-                    const response = await http.post('invoice/setperson', formData);
-                    if (response.data.success) {
-                        location.reload();
-                    }
-                } catch (error) {
-                    Alpine.store('notifications').error('Error looking up person');
-                }
-            }
-        }">
-            <label for="inputEmail" class="col-lg-1 form-label">Lastname</label>
-            <div class="col-sm-4">
-                <div class="input-group">
-                    <input type="hidden" name="_token" value="{{ csrf_token() }}">
-                        <input type="text" name="name">
-                </div>
-            </div>
-            <label for="inputEmail" class="col-lg-1 form-label">IBAN</label>
-            <div class="col-sm-4">
-                <div class="input-group">
-                        <input type="text" name="iban">
-                    <span class="input-group-btn">
-                        <button type="button" class="btn btn-outline-primary" @click="lookupPerson"><i data-lucide="check"></i>Look Up </button>
-                    </span>
-                </div>
-            </div>
-        </form>
-    @if( ! is_null($m))
-    <div class="row">&nbsp;</div>
-
-
-
-        <table class="table table-striped">
-            <thead>
-                <tr>
-                    <th colspan="4"><h3><b>{{ $m->firstname . ' ' . $m->lastname }}</b></h3></th>
-                </tr>
-                <tr>
-                    <th>Product</th>
-                    <th>Description</th>
-                    <th class="col-sm-1">Amount</th>
-                    <th class="col-sm-1">TotalPrice</th>
-                </tr>
-            </thead>
-            <tbody>
-                <?php $total = 0; ?>
-                @foreach($m->orders()->where('invoice_group_id', '=', $currentmonth->id)->get() as $o)
-                    <?php $price = $o->amount * $products[$o->product_id]['price']; $total += $price; ?>
-                    <tr>
-                        <td> {{ $products[$o->product_id]['name'] }}</td>
-                        <td> {{ $products[$o->product_id]['name'] }}</td>
-                        <td> {{ $o->amount }}</td>
-                        <td>&euro;{{ number_format($price, 2, ".", ",")  }}</td>
-                    </tr>
-                @endforeach
-
-                 @foreach($m->groups()->where('invoice_group_id', '=', $currentmonth->id)->get() as $g)
-
-
-                    <?php $totalprice = 0; ?>
-                    @foreach($g->orders as $o)
-                        <?php $totalprice += $o->amount * $products[$o->product_id]['price']; ?>
-                    @endforeach
-                    <?php $totalmebers = $g->members->count(); $price = ($totalprice / $totalmebers); $total += $price; ?>
-
-                    <tr>
-                        <td>{{ $g->name }}</td>
-                        <td>Groupmembers: {{ $totalmebers }} Total price: &euro;{{ $totalprice }}</td>
-                        <td>1</td>
-                        <td>&euro;{{ number_format($price, 2, ".", ",")  }}</td>
-                    </tr>
-
-
-                @endforeach
-
-                @foreach($m->invoice_lines as $il)
-                    @if($il->productprice->product->invoice_group_id == $currentmonth->id)
-                        <?php $price = $il->productprice->price; $total += $price; ?>
+                    </tbody>
+                    <tfoot>
                         <tr>
-                            <td>{{ $il->productprice->product->name }}</td>
-                            <td>{{ $il->productprice->description }}</td>
-                            <td>1</td>
-                            <td>&euro;{{ number_format($price, 2, ".", ",")  }}</td>
+                            <td colspan="3" class="text-end fw-bold">Total:</td>
+                            <td class="text-end fw-bold">&euro;{{ number_format($total, 2, ".", ",") }}</td>
                         </tr>
-                    @endif
-                @endforeach
-
-            </tbody>
-            <tfoot>
-                <tr class="info">
-                    <td colspan="3" align="right"><b>Total:</b></td>
-                    <td align="left"><b>&euro;{{ number_format($total, 2, ".", ",")}}</b></td>
-                </tr>
-            </tfoot>
-
-
-        </table>
-
-        @endif
-
-
+                    </tfoot>
+                </table>
+            </div>
+        </div>
+    @endif
 @stop

@@ -42,12 +42,14 @@ beforeEach(function () {
 
 test('can view check-bill page without authentication', function () {
     $this->visit('/check-bill')
-        ->assertSee('Select Month')
-        ->assertSee('Lastname')
+        ->assertSee('Check Your Bill')
+        ->assertSee('Select Invoice Month')
+        ->assertSee('Lookup Your Invoice')
+        ->assertSee('Last Name')
         ->assertSee('IBAN')
         ->assertVisible('input[name="name"]')
         ->assertVisible('input[name="iban"]')
-        ->assertSee('January 2025');
+        ->assertSee('Viewing: January 2025');
 });
 
 test('displays member invoice data when session is set', function () {
@@ -55,7 +57,7 @@ test('displays member invoice data when session is set', function () {
     $page = $this->withSession(['member_id' => $this->member->id])
         ->visit('/check-bill');
 
-    $page->assertSee('John Doe')
+    $page->assertSee('Invoice for John Doe')
         ->assertSee('Test Beer')
         ->assertSee('Total:');
 });
@@ -99,6 +101,7 @@ test('displays group orders correctly', function () {
 test('shows current viewing month', function () {
     $page = $this->visit('/check-bill');
 
-    // Check that viewing month is displayed
-    $page->assertSee('Viewing: January 2025');
+    // Check that viewing month is displayed in the alert
+    $page->assertSee('Viewing:')
+        ->assertSee('January 2025');
 });

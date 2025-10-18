@@ -269,8 +269,9 @@ class InvoiceControllerTest extends TestCase
         $response->assertStatus(200)
             ->assertDontSee('Unauthorized')
             ->assertDontSee('Whoops')
-            ->assertSee('Select Month')
-            ->assertSee('Lastname');
+            ->assertSee('Check Your Bill')
+            ->assertSee('Select Invoice Month')
+            ->assertSee('Last Name');
     }
 
     /**
@@ -426,7 +427,7 @@ class InvoiceControllerTest extends TestCase
             ->get('/check-bill');
 
         $response->assertStatus(200)
-            ->assertSee('Jane Smith')
+            ->assertSee('Invoice for Jane Smith')
             ->assertSee('Test Product');
     }
 
