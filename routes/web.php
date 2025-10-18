@@ -52,7 +52,15 @@ Route::middleware('auth')->group(function () {
 
     // Test route to debug - simple response
     Route::get('test-simple', function () {
-        return 'Simple route works! Auth: ' . (auth()->check() ? 'YES' : 'NO');
+        $autoloadExists = file_exists(base_path('vendor/autoload.php'));
+        $composerExists = file_exists(base_path('vendor/composer/autoload_classmap.php'));
+
+        return response()->json([
+            'auth' => auth()->check(),
+            'autoload_exists' => $autoloadExists,
+            'composer_classmap_exists' => $composerExists,
+            'homecontroller_class_exists' => class_exists('App\Http\Controllers\HomeController'),
+        ]);
     });
 
     // Test route to debug - controller
