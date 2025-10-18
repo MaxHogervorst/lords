@@ -13,6 +13,27 @@ use App\Http\Controllers\OrderController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\SepaController;
 
+// Debug endpoint (remove after debugging)
+Route::get('debug-request', function () {
+    return response()->json([
+        'url' => request()->url(),
+        'fullUrl' => request()->fullUrl(),
+        'path' => request()->path(),
+        'baseUrl' => request()->getBaseUrl(),
+        'schemeAndHttpHost' => request()->getSchemeAndHttpHost(),
+        'headers' => [
+            'X-Forwarded-For' => request()->header('X-Forwarded-For'),
+            'X-Forwarded-Proto' => request()->header('X-Forwarded-Proto'),
+            'X-Forwarded-Host' => request()->header('X-Forwarded-Host'),
+            'X-Forwarded-Port' => request()->header('X-Forwarded-Port'),
+            'X-Forwarded-Prefix' => request()->header('X-Forwarded-Prefix'),
+            'Host' => request()->header('Host'),
+        ],
+        'app_url' => config('app.url'),
+        'auth' => auth()->check(),
+    ]);
+});
+
 // Guest routes
 Route::middleware('guest')->group(function () {
     Route::get('auth/login', [AuthController::class, 'getLogin'])->name('auth.login');
