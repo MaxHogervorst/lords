@@ -63,9 +63,13 @@ class InvoiceRepository extends BaseRepository
 
     /**
      * Create new invoice group and set as active.
+     * Converts date input to month name format (e.g., "10-25" → "October 2025")
      */
     public function createAndSetActive(string $name): InvoiceGroup
     {
+        // Convert date format to month name (e.g., "10-25" → "October 2025")
+        $formattedName = $this->formatInvoiceGroupName($name);
+
         // Deactivate all other groups
         $this->model->newQuery()->where('status', true)->update(['status' => false]);
 
@@ -74,7 +78,7 @@ class InvoiceRepository extends BaseRepository
 
         // Create new active group
         $invoiceGroup = new InvoiceGroup();
-        $invoiceGroup->name = $name;
+        $invoiceGroup->name = $formattedName;
         $invoiceGroup->status = true;
         $invoiceGroup->save();
 
@@ -82,6 +86,31 @@ class InvoiceRepository extends BaseRepository
         Cache::put('invoice_group', $invoiceGroup, 1);
 
         return $invoiceGroup;
+    }
+
+    /**
+     * Format invoice group name from date input to month name.
+     * Supports formats: "10-25", "2025-10", "10/25", "October 2025", etc.
+     */
+    private function formatInvoiceGroupName(string $name): string
+    {
+        // If already in month name format, return as-is
+        if (preg_match('/^[A-Za-z]+ \d{4}$/', $name)) {
+            return $name;
+        }
+
+        // Try to parse various date formats
+        $formats = ['m-y', 'Y-m', 'm/y', 'Y/m', 'm-Y', 'y-m'];
+
+        foreach ($formats as $format) {
+            $date = \DateTime::createFromFormat($format, $name);
+            if ($date !== false) {
+                return $date->format('F Y'); // e.g., "October 2025"
+            }
+        }
+
+        // If we can't parse it, return the original name
+        return $name;
     }
 
     /**
