@@ -109,8 +109,13 @@ COPY docker/supervisor/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 
 # Create startup script with OPcache clear
 RUN echo '#!/bin/sh' > /start.sh && \
-    echo '# Clear all Laravel caches' >> /start.sh && \
-    echo 'php artisan optimize:clear' >> /start.sh && \
+    echo '# Clear only specific caches, NOT autoloader' >> /start.sh && \
+    echo 'php artisan config:clear' >> /start.sh && \
+    echo 'php artisan route:clear' >> /start.sh && \
+    echo 'php artisan view:clear' >> /start.sh && \
+    echo '' >> /start.sh && \
+    echo '# Regenerate composer autoloader to ensure controllers load' >> /start.sh && \
+    echo 'composer dump-autoload --optimize --no-dev' >> /start.sh && \
     echo '' >> /start.sh && \
     echo '# Clear OPcache (critical with validate_timestamps=0)' >> /start.sh && \
     echo 'php -r "if (function_exists(\"opcache_reset\")) { opcache_reset(); echo \"OPcache cleared\\n\"; }"' >> /start.sh && \
