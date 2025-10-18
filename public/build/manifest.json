@@ -12,12 +12,12 @@
     "src": "node_modules/@tabler/icons-webfont/dist/fonts/tabler-icons.woff2"
   },
   "resources/css/app.css": {
-    "file": "assets/app-6obW7HNG.css",
+    "file": "assets/app-DvUvQ-av.css",
     "src": "resources/css/app.css",
     "isEntry": true
   },
   "resources/js/app.js": {
-    "file": "assets/app-VOtPFmLP-1760768310534.js",
+    "file": "assets/app-VOtPFmLP-1760768381894.js",
     "name": "app",
     "src": "resources/js/app.js",
     "isEntry": true,

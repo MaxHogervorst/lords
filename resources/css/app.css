@@ -18,6 +18,22 @@
     opacity: 1 !important;
 }
 
+/* TomSelect dropdown fixes */
+.ts-dropdown,
+.ts-dropdown-content {
+    background-color: #ffffff !important;
+    opacity: 1 !important;
+}
+
+.ts-dropdown .option {
+    background-color: #ffffff !important;
+}
+
+.ts-dropdown .option:hover,
+.ts-dropdown .option.active {
+    background-color: #f0f0f0 !important;
+}
+
 /* Pagination styles */
 .pagination {
     display: flex;
