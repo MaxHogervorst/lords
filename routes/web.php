@@ -50,18 +50,27 @@ Route::middleware('auth')->group(function () {
     // Auth
     Route::get('auth/logout', [AuthController::class, 'getLogout'])->name('auth.logout');
 
-    // Test route to debug - actually call the controller method
+    // Test route to debug - check if routes are registered
     Route::get('test-simple', function () {
-        try {
-            $controller = app()->make(\App\Http\Controllers\HomeController::class);
-            $response = $controller->getIndex();
-            return 'SUCCESS! Controller method executed. Response type: ' . get_class($response);
-        } catch (\Exception $e) {
-            return response()->json([
-                'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString(),
-            ]);
-        }
+        $routes = collect(app('router')->getRoutes())->map(function($route) {
+            return [
+                'method' => implode('|', $route->methods()),
+                'uri' => $route->uri(),
+                'name' => $route->getName(),
+                'action' => $route->getActionName(),
+            ];
+        });
+
+        $homeRoutes = $routes->filter(function($route) {
+            return str_contains($route['uri'], '/') ||
+                   str_contains($route['action'], 'HomeController') ||
+                   str_contains(strtolower($route['name'] ?? ''), 'home');
+        });
+
+        return response()->json([
+            'total_routes' => $routes->count(),
+            'home_related_routes' => $homeRoutes->values(),
+        ]);
     });
 
     // Test route to debug - controller
