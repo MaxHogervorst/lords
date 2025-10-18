@@ -12,6 +12,12 @@
     display: none !important;
 }
 
+/* Dropdown menu fixes */
+.dropdown-menu {
+    background-color: #ffffff !important;
+    opacity: 1 !important;
+}
+
 /* Pagination styles */
 .pagination {
     display: flex;
