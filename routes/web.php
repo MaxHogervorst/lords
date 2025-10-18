@@ -83,6 +83,9 @@ Route::middleware('auth')->group(function () {
     // Test route to debug - controller
     Route::get('test-home', [HomeController::class, 'getIndex'])->name('test.home');
 
+    // Test with prefix
+    Route::get('home-with-prefix', [HomeController::class, 'getIndex'])->name('home.prefixed');
+
     // Home
     Route::get('/', [HomeController::class, 'getIndex'])->name('home');
 
