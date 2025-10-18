@@ -17,6 +17,14 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/health',
     )
     ->withMiddleware(function (Middleware $middleware) {
+        // Trust proxies for Digital Ocean, but ONLY for specific headers
+        // Avoid trusting X-Forwarded-Host/Prefix which can break routing
+        $middleware->trustProxies(
+            at: '*',
+            headers: \Illuminate\Http\Request::HEADER_X_FORWARDED_FOR |
+                     \Illuminate\Http\Request::HEADER_X_FORWARDED_PROTO
+        );
+
         // Global middleware
         $middleware->use([
             \Illuminate\Foundation\Http\Middleware\CheckForMaintenanceMode::class,
