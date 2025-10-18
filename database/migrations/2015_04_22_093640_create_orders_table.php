@@ -5,7 +5,6 @@ use Illuminate\Database\Schema\Blueprint;
 
 class CreateOrdersTable extends Migration
 {
-
     /**
      * Run the migrations.
      *
@@ -30,6 +29,6 @@ class CreateOrdersTable extends Migration
      */
     public function down()
     {
-        Schema::drop('orders');
+        Schema::dropIfExists('orders');
     }
 }

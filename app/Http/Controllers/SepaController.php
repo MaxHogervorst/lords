@@ -1,32 +1,34 @@
-<?php namespace App\Http\Controllers;
+<?php
 
-use Illuminate\Support\Facades\Input;
-use Illuminate\Support\Facades\Response;
+declare(strict_types=1);
+
+namespace App\Http\Controllers;
+
+use anlutro\LaravelSettings\Facade as Settings;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
-use Offline\Settings\Facades\Settings;
+use Illuminate\View\View;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class SepaController extends Controller
 {
-
     /**
      * Display a listing of the resource.
-     *
-     * @return Response
      */
-    public function index()
+    public function index(): View
     {
         return view('sepa.index');
     }
 
     /**
      * Store a newly created resource in storage.
-     *
-     * @return Response
      */
-    public function store()
+    public function store(Request $request): JsonResponse
     {
         $v = Validator::make(
-            Input::all(),
+            $request->all(),
             [
                 'creditorName' => 'required',
                 'creditorAccountIBAN' => 'required',
@@ -36,23 +38,35 @@ class SepaController extends Controller
                 'creditorMaxMoneyPerBatch' => 'required',
                 'creditorMaxMoneyPerTransaction' => 'required',
                 'ReqdColltnDt' => 'required',
-                'creditorMaxTransactionsPerBatch' => 'required'
-            ]);
+                'creditorMaxTransactionsPerBatch' => 'required',
+            ]
+        );
 
-        if (!$v->passes()) {
-            return Response::json(['errors' => $v->errors()]);
+        if (! $v->passes()) {
+            return response()->json(['errors' => $v->errors()]);
         } else {
-            Settings::set('creditorName', Input::get('creditorName'));
-            Settings::set('creditorAccountIBAN', Input::get('creditorAccountIBAN'));
-            Settings::set('creditorAgentBIC', Input::get('creditorAgentBIC'));
-            Settings::set('creditorId', Input::get('creditorId'));
-            Settings::set('creditorPain', Input::get('creditorPain'));
-            Settings::set('creditorMaxMoneyPerBatch', Input::get('creditorMaxMoneyPerBatch'));
-            Settings::set('creditorMaxMoneyPerTransaction', Input::get('creditorMaxMoneyPerTransaction'));
-            Settings::set('creditorMaxTransactionsPerBatch', Input::get('creditorMaxTransactionsPerBatch'));
-            Settings::set('ReqdColltnDt', Input::get('ReqdColltnDt'));
+            Settings::set('creditorName', $request->get('creditorName'));
+            Settings::set('creditorAccountIBAN', $request->get('creditorAccountIBAN'));
+            Settings::set('creditorAgentBIC', $request->get('creditorAgentBIC'));
+            Settings::set('creditorId', $request->get('creditorId'));
+            Settings::set('creditorPain', $request->get('creditorPain'));
+            Settings::set('creditorMaxMoneyPerBatch', $request->get('creditorMaxMoneyPerBatch'));
+            Settings::set('creditorMaxMoneyPerTransaction', $request->get('creditorMaxMoneyPerTransaction'));
+            Settings::set('creditorMaxTransactionsPerBatch', $request->get('creditorMaxTransactionsPerBatch'));
+            Settings::set('ReqdColltnDt', $request->get('ReqdColltnDt'));
+            Settings::save();
 
-            return Response::json(['success' => true]);
+            return response()->json(['success' => true]);
         }
+    }
+
+    /**
+     * Download a SEPA file.
+     */
+    public function download(string $filename): StreamedResponse
+    {
+        abort_if(! Storage::disk('sepa')->exists($filename), 404, 'Requested file does not exist on our server!');
+
+        return Storage::disk('sepa')->download($filename);
     }
 }

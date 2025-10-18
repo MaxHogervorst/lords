@@ -1,8 +1,9 @@
-<?php namespace App\Http\Controllers;
+<?php
+
+namespace App\Http\Controllers;
 
 class WelcomeController extends Controller
 {
-
     /*
     |--------------------------------------------------------------------------
     | Welcome Controller
@@ -26,10 +27,8 @@ class WelcomeController extends Controller
 
     /**
      * Show the application welcome screen to the user.
-     *
-     * @return Response
      */
-    public function index()
+    public function index(): \Illuminate\View\View
     {
         return view('welcome');
     }

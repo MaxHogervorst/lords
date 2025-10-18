@@ -13,7 +13,7 @@
             <input type="hidden" name="_token" value="{{ csrf_token() }}">
             <input type="hidden" name="groupid" value="{{ $group->id }}">
         </div>
-        <button type="button" class="btn btn-outline btn-primary" data-ajax-submit="#add-groupmembers-form" data-ajax-callback-function="addGroupMember" ><i class="fa fa-plus fa-fw">  </i>Add Member</button>
+        <button type="button" class="btn btn-outline-primary" data-ajax-submit="#add-groupmembers-form" data-ajax-callback-function="addGroupMember" ><i data-lucide="plus"></i>Add Member</button>
 
     </form>
 

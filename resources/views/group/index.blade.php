@@ -1,95 +1,115 @@
 @extends('layout.master')
 
-@section('script')
-<script>
-    $(document).ready(function(){
-         $('#groupDate').datepicker({
-                    todayHighlight: true,
-                    format: "dd-mm-yyyy"
-               });
-
-    });
-
-    $('#member-order').on('show.bs.modal', function (event) {
-      $('#memberordermodalcontent').load('{{ url('group/') }}/'+ $(event.relatedTarget).data('id'))
-    });
-
-    $('#member-edit').on('show.bs.modal', function (event) {
-              $('#membereditmodalcontent').load('{{ url('group/') }}/'+ $(event.relatedTarget).data('id') + '/edit')
-            });
-
-    function addGroup(data)
-    {
-        $('#members').prepend('<tr>  <td>' + data.name + '</td> <td><button class="btn-order" data-id="' + data.id + '" data-toggle="modal" data-target="#member-order"><i class="fa fa-plus fa-fw fa-lg"></i></button> <button data-id="' + data.id + '" data-toggle="modal" data-target="#member-edit"><i class="fa fa-edit fa-fw">  </i></button></td> </tr>');
-        $('tbody tr').removeClass('visible').show().addClass('visible').css({display: 'table-row'});
-    }
-
-
-
-</script>
-@stop
-
-
 @section('content')
 
-<div class="row">&nbsp;</div>
-
-
-    <form id="member-form" name="member-form" class="form-inline" action="{{ url('group') }}" method="post">
-        <input type="search" id="filter" name="name" placeholder="Search or Add" class="form-control" autofocus="" autocomplete="off">
-        <input type="text" id="groupDate" name="groupdate" class="form-control"   autocomplete="off" value="{{ $results[1] }}">
-        <input type="hidden" name="_token" value="{{ csrf_token() }}">
-        <button type="button" class="btn btn-outline btn-primary" data-ajax-type="POST" data-ajax-submit="#member-form" data-ajax-callback-function="addGroup"><i class="fa fa-plus fa-fw">  </i>Add Group</button>
-    </form>
-
-    <div class="row">&nbsp;</div>
-
-    <div class="table-responsive">
-        <table class="table table-bordered table-striped" id="members">
-
-            <thead>
-                <tr>
-                    <th>Group Name</th>
-                    <th class="col-sm-1">Actions</th>
-                </tr>
-            </thead>
-
-            <tbody>
-                @foreach ($results[0] as $m)
-                <tr>
-                    <td>{{ $m->name }}</td>
-                    <td>
-                        <button class="btn-order" data-id="{{ $m->id }}" data-toggle="modal" data-target="#member-order"><i class="fa fa-plus fa-fw fa-lg"></i></button>
-                        <button data-id="{{ $m->id }}" data-toggle="modal" data-target="#member-edit"><i class="fa fa-edit fa-fw">  </i></button>
-                    </td>
-                </tr>
-                @endforeach
-            </tbody>
-
-        </table>
+<div x-data='groupsManager(@json($results[0]))' x-cloak>
+    <!-- Search and Add Form -->
+    <div class="card mb-3">
+        <div class="card-body">
+            <form x-ref="addGroupForm" @submit.prevent="addGroup" action="{{ url('group') }}" method="post">
+                <div class="row g-2">
+                    <div class="col">
+                        <input
+                            type="text"
+                            x-ref="searchInput"
+                            id="filter"
+                            name="name"
+                            @input="searchQuery = $event.target.value"
+                            placeholder="Search or Add"
+                            class="form-control"
+                            autofocus
+                            autocomplete="off">
+                    </div>
+                    <div class="col">
+                        <input
+                            type="text"
+                            x-ref="groupDatePicker"
+                            id="groupDate"
+                            name="groupdate"
+                            autocomplete="off"
+                            placeholder="Group Date"
+                            class="form-control"
+                            value="{{ $results[1] }}">
+                    </div>
+                    <input type="hidden" name="_token" value="{{ csrf_token() }}">
+                    <div class="col-auto">
+                        <button
+                            type="submit"
+                            class="btn btn-primary"
+                            data-testid="add-group-button"
+                            :disabled="$store.app.isLoading">
+                            <i data-lucide="plus"></i>
+                            <span x-text="$store.app.isLoading ? 'Adding...' : 'Add Group'"></span>
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
     </div>
 
+    <!-- Groups Table -->
+    <div class="card">
+        <div class="table-responsive">
+            <table class="table table-vcenter card-table" id="members">
+                <thead>
+                    <tr>
+                        <th>Group Name</th>
+                        <th class="w-1">Actions</th>
+                    </tr>
+                </thead>
 
+                <tbody>
+                    <template x-for="group in filteredGroups" :key="group.id">
+                        <tr>
+                            <td x-text="group.name"></td>
+                            <td class="text-nowrap">
+                                <button
+                                    type="button"
+                                    class="btn btn-sm btn-ghost-primary"
+                                    :data-testid="'group-order-' + group.id"
+                                    :data-id="group.id"
+                                    @click="loadOrderModal(group.id)">
+                                    <i data-lucide="plus"></i>
+                                </button>
+                                <button
+                                    type="button"
+                                    class="btn btn-sm btn-ghost-primary"
+                                    :data-testid="'group-edit-' + group.id"
+                                    :data-id="group.id"
+                                    @click="loadEditModal(group.id)">
+                                    <i data-lucide="edit"></i>
+                                </button>
+                            </td>
+                        </tr>
+                    </template>
+
+                    <template x-if="filteredGroups.length === 0">
+                        <tr>
+                            <td colspan="2" class="text-center text-muted">No groups found</td>
+                        </tr>
+                    </template>
+                </tbody>
+            </table>
+        </div>
+    </div>
 </div>
+
 @stop
 
 @section('modal')
-<div id="member-order" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
-	<div class="modal-dialog" >
- 		<div class="modal-content">
-			<div id="memberordermodalcontent"></div>
-	</div><!-- /.modal-content -->
-</div><!-- /.modal-dialog -->
-</div><!-- /.modal -->
+<div class="modal modal-blur fade" id="member-order" tabindex="-1">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            @include('group.order')
+        </div>
+    </div>
+</div>
 
-<div id="member-edit" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
-	<div class="modal-dialog" >
- 		<div class="modal-content">
-            <div id="membereditmodalcontent"></div>
-		</div><!-- /.modal-content -->
-	</div><!-- /.modal-dialog -->
-</div><!-- /.modal -->
+<div class="modal modal-blur fade" id="group-edit" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            @include('group.edit')
+        </div>
+    </div>
+</div>
 @stop
-
-
-

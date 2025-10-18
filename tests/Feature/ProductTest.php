@@ -1,0 +1,138 @@
+<?php
+
+use App\Models\InvoiceGroup;
+use App\Models\Product;
+use App\Models\User;
+
+beforeEach(function () {
+    // Clear cache
+    \Cache::flush();
+
+    // Create required data for tests
+    Product::factory()->create();
+    InvoiceGroup::factory()->create(['status' => true]);
+});
+
+test('create product requires authentication', function () {
+    $this->json('POST', '/product', ['name' => 'Sally'])
+        ->assertDontSee('Whoops')
+        ->assertSee('Unauthorized.');
+});
+
+test('create product validates required fields', function () {
+    $user = User::factory()->create([
+        'email' => 'producttest@example.com',
+        'password' => bcrypt('password'),
+    ]);
+
+    $this->actingAs($user)
+        ->withSession([])
+        ->json('POST', '/product', ['name' => 'Sally'])
+        ->assertDontSee('Whoops')
+        ->assertJsonMissing(['success' => true])
+        ->assertJsonStructure(['errors']);
+});
+
+test('create product successfully', function () {
+    $user = User::factory()->create([
+        'email' => 'producttest@example.com',
+        'password' => bcrypt('password'),
+    ]);
+
+    $this->actingAs($user)
+        ->withSession([])
+        ->json('POST', '/product', ['name' => 'Sally', 'productPrice' => '3.56'])
+        ->assertDontSee('Whoops')
+        ->assertJson([
+            'success' => true,
+            'name' => 'Sally',
+            'price' => '3.56',
+        ]);
+
+    $this->assertDatabaseHas('products', ['name' => 'Sally', 'price' => '3.56']);
+});
+
+test('edit product requires authentication', function () {
+    $product = Product::factory()->create([
+        'name' => 'Sally',
+        'price' => 3.56,
+    ]);
+
+    $this->json('PUT', '/product/' . $product->id, ['name' => 'Max'])
+        ->assertDontSee('Whoops')
+        ->assertSee('Unauthorized.');
+});
+
+test('edit product validates required fields', function () {
+    $product = Product::factory()->create([
+        'name' => 'Sally',
+        'price' => 3.56,
+    ]);
+
+    $user = User::factory()->create([
+        'email' => 'productedit@example.com',
+        'password' => bcrypt('password'),
+    ]);
+
+    $this->actingAs($user)
+        ->withSession([])
+        ->json('PUT', '/product/' . $product->id, ['productName' => 'Max', 'productPrice' => null])
+        ->assertDontSee('Whoops')
+        ->assertJsonMissing(['success' => true])
+        ->assertJsonStructure(['errors']);
+});
+
+test('edit product successfully', function () {
+    $product = Product::factory()->create([
+        'name' => 'Sally',
+        'price' => 3.56,
+    ]);
+
+    $user = User::factory()->create([
+        'email' => 'productedit@example.com',
+        'password' => bcrypt('password'),
+    ]);
+
+    $this->actingAs($user)
+        ->withSession([])
+        ->json('PUT', '/product/' . $product->id, ['productName' => 'Max', 'productPrice' => 3.56])
+        ->assertDontSee('Whoops')
+        ->assertJson([
+            'success' => true,
+        ]);
+
+    $this->assertDatabaseHas('products', ['id' => $product->id, 'name' => 'Max', 'price' => 3.56]);
+});
+
+test('delete product requires authentication', function () {
+    $product = Product::factory()->create([
+        'name' => 'Sally',
+        'price' => 3.56,
+    ]);
+
+    $this->json('DELETE', '/product/' . $product->id)
+        ->assertDontSee('Whoops')
+        ->assertSee('Unauthorized.');
+});
+
+test('delete product successfully', function () {
+    $product = Product::factory()->create([
+        'name' => 'Sally',
+        'price' => 3.56,
+    ]);
+
+    $user = User::factory()->create([
+        'email' => 'productdelete@example.com',
+        'password' => bcrypt('password'),
+    ]);
+
+    $this->actingAs($user)
+        ->withSession([])
+        ->json('DELETE', '/product/' . $product->id)
+        ->assertDontSee('Whoops')
+        ->assertJson([
+            'success' => true,
+        ]);
+
+    $this->assertDatabaseMissing('products', ['id' => $product->id]);
+});

@@ -5,7 +5,6 @@ use Illuminate\Database\Schema\Blueprint;
 
 class CreateMembersTable extends Migration
 {
-
     /**
      * Run the migrations.
      *
@@ -28,6 +27,6 @@ class CreateMembersTable extends Migration
      */
     public function down()
     {
-        Schema::drop('members');
+        Schema::dropIfExists('members');
     }
 }

@@ -5,7 +5,6 @@ use Illuminate\Database\Schema\Blueprint;
 
 class CreateInvoiceProductsTable extends Migration
 {
-
     /**
      * Run the migrations.
      *
@@ -28,6 +27,6 @@ class CreateInvoiceProductsTable extends Migration
      */
     public function down()
     {
-        Schema::drop('invoice_products');
+        Schema::dropIfExists('invoice_products');
     }
 }

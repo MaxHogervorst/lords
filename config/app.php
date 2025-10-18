@@ -162,14 +162,13 @@ return [
         Illuminate\Translation\TranslationServiceProvider::class,
         Illuminate\Validation\ValidationServiceProvider::class,
         Illuminate\View\ViewServiceProvider::class,
-        Collective\Html\HtmlServiceProvider::class,
+        // Package auto-discovery enabled for Laravel 5.5+
+        // Collective\Html\HtmlServiceProvider::class, - auto-discovered
         Illuminate\Broadcasting\BroadcastServiceProvider::class,
-        Clockwork\Support\Laravel\ClockworkServiceProvider::class,
-        Maatwebsite\Excel\ExcelServiceProvider::class,
-        Offline\Settings\SettingsServiceProvider::class,
-        Cartalyst\Sentinel\Laravel\SentinelServiceProvider::class,
-        Barryvdh\Debugbar\ServiceProvider::class,
-        Mpociot\LaravelTestFactoryHelper\TestFactoryHelperServiceProvider::class,
+        // Clockwork\Support\Laravel\ClockworkServiceProvider::class, - dev only
+        // Maatwebsite\Excel\ExcelServiceProvider::class, - auto-discovered
+        // Barryvdh\Debugbar\ServiceProvider::class, - auto-discovered
+        anlutro\LaravelSettings\ServiceProvider::class,
 
         /*
          * Package Service Providers...
@@ -184,7 +183,6 @@ return [
         App\Providers\AuthServiceProvider::class,
         // App\Providers\BroadcastServiceProvider::class,
         App\Providers\EventServiceProvider::class,
-        App\Providers\RouteServiceProvider::class,
 
     ],
 
@@ -233,13 +231,9 @@ return [
         'URL' => Illuminate\Support\Facades\URL::class,
         'Validator' => Illuminate\Support\Facades\Validator::class,
         'View' => Illuminate\Support\Facades\View::class,
-        'Form' => Collective\Html\FormFacade::class,
-        'Html' => Collective\Html\HtmlFacade::class,
-        'Excel'     => Maatwebsite\Excel\Facades\Excel::class,
-        'Settings'  => Offline\Settings\Facades\Settings::class,
-        'Activation' => Cartalyst\Sentinel\Laravel\Facades\Activation::class,
-        'Reminder'   => Cartalyst\Sentinel\Laravel\Facades\Reminder::class,
-        'Sentinel'   => Cartalyst\Sentinel\Laravel\Facades\Sentinel::class,
+        'Excel' => Maatwebsite\Excel\Facades\Excel::class,
+        'Setting' => anlutro\LaravelSettings\Facade::class,
+        'Settings' => anlutro\LaravelSettings\Facade::class,
         'Debugbar' => Barryvdh\Debugbar\Facade::class,
 
     ],

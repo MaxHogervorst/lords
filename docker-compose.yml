@@ -1,0 +1,48 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile.production
+    image: lords-app
+    container_name: lords-app
+    restart: unless-stopped
+    working_dir: /var/www
+    ports:
+      - "8080:8080"
+    networks:
+      - lords-network
+    depends_on:
+      - db
+      - redis
+
+  db:
+    image: postgres:17-alpine
+    container_name: lords-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${DB_DATABASE:-lords}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-secret}
+      POSTGRES_USER: ${DB_USERNAME:-lords_user}
+    volumes:
+      - dbdata:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    networks:
+      - lords-network
+
+  redis:
+    image: redis:alpine
+    container_name: lords-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    networks:
+      - lords-network
+
+networks:
+  lords-network:
+    driver: bridge
+
+volumes:
+  dbdata:
+    driver: local

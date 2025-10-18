@@ -1,121 +1,199 @@
-<?php namespace App\Http\Controllers;
+<?php
 
+declare(strict_types=1);
+
+namespace App\Http\Controllers;
+
+use App\Http\Requests\StoreGroupRequest;
 use App\Models\Group;
 use App\Models\GroupMember;
-use App\Models\InvoiceGroup;
-use App\Models\Member;
-use App\Models\Product;
-use Illuminate\Support\Facades\Input;
-use Illuminate\Support\Facades\Response;
+use App\Repositories\GroupRepository;
+use App\Repositories\InvoiceRepository;
+use App\Repositories\MemberRepository;
+use App\Repositories\ProductRepository;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\View\View;
 
 class GroupController extends Controller
 {
-    public function index()
-    {
-        $Group = Group::where('invoice_group_id', '=', InvoiceGroup::getCurrentMonth()->id)->get();
-        return view('group.index')->withResults([$Group, date('d-m-Y')]);
+    public function __construct(
+        private readonly GroupRepository $groupRepository,
+        private readonly MemberRepository $memberRepository,
+        private readonly ProductRepository $productRepository,
+        private readonly InvoiceRepository $invoiceRepository
+    ) {
     }
 
-    public function store()
+    public function index(): View
     {
-        $v = Validator::make(Input::all(), ['name' => 'required']);
+        $currentMonth = $this->invoiceRepository->getCurrentMonth();
+        $groups = $this->groupRepository->getByInvoiceGroup($currentMonth);
 
-        if (!$v->passes()) {
-            return Response::json(['errors' => $v->errors()]);
-        } else {
-            $myDateTime = new \DateTime(Input::get('groupDate'));
-            $date = $myDateTime->format('d-m-Y');
-            $name = Input::get('name') . ' ' . $date;
-            $group = new Group;
-            $group->name = $name;
-            $group->invoice_group_id = InvoiceGroup::getCurrentMonth()->id;
-            $group->save();
-            if ($group->exists) {
-                return Response::json(['success' => true, 'id' => $group->id, 'name' => $group->name]);
-            } else {
-                return Response::json(['errors' => 'Could not be added to the database']);
-            }
-        }
-    }
-    public function show($id)
-    {
-        return view('group.order')->with('group', Group::find($id))->with('products', Product::all())->with('members', Member::all())->with('currentmonth', InvoiceGroup::getCurrentMonth());
+        return view('group.index')->withResults([$groups, date('d-m-Y')]);
     }
 
-    public function edit($id)
+    public function store(StoreGroupRequest $request): JsonResponse
     {
-        return view('group.edit')->with('group', Group::find($id));
+        $validated = $request->validated();
+        $myDateTime = new \DateTime($validated['groupdate']);
+        $date = $myDateTime->format('d-m-Y');
+        $name = $validated['name'] . ' ' . $date;
+
+        $currentMonth = $this->invoiceRepository->getCurrentMonth();
+        $group = $this->groupRepository->create([
+            'name' => $name,
+            'invoice_group_id' => $currentMonth->id,
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'id' => $group->id,
+            'name' => $group->name
+        ]);
     }
 
-    public function update($id)
+    public function show(string $id): JsonResponse
     {
-        $v = Validator::make(Input::all(), ['name' => 'required']);
+        $group = $this->groupRepository->find((int) $id);
+        $products = $this->productRepository->all();
+        $members = $this->memberRepository->all();
+        $currentmonth = $this->invoiceRepository->getCurrentMonth();
 
-        if (!$v->passes()) {
-            return Response::json(['errors' => $v->errors()]);
-        } else {
-            $member = Group::find($id);
-            $member->name = Input::get('name');
+        // Get orders for this group in current month
+        $orders = $group->orders()
+            ->where('invoice_group_id', '=', $currentmonth->id)
+            ->with('product')
+            ->get()
+            ->map(fn($order) => [
+                'id' => $order->id,
+                'created_at' => $order->created_at->format('Y-m-d H:i'),
+                'product_name' => $order->product->name,
+                'amount' => $order->amount
+            ]);
 
-            $member->save();
-            if ($member->exists) {
-                return Response::json(['success' => true, 'message' => $member->name . ' Successfully edited']);
-            } else {
-                return Response::json(['errors' => $v->errors()]);
-            }
-        }
+        // Get order totals grouped by product
+        $orderTotals = $group->orders()
+            ->where('invoice_group_id', '=', $currentmonth->id)
+            ->selectRaw('orders.product_id, count(orders.id) as count')
+            ->groupBy('product_id')
+            ->with('product')
+            ->get()
+            ->map(fn($total) => [
+                'product_id' => $total->product_id,
+                'product_name' => $total->product->name,
+                'count' => $total->count
+            ]);
+
+        // Get current group members with pivot id
+        $groupMembers = $group->members->map(fn($member) => [
+            'id' => $member->id,
+            'firstname' => $member->firstname,
+            'lastname' => $member->lastname,
+            'pivot_id' => $member->pivot->id
+        ]);
+
+        return response()->json([
+            'group' => [
+                'id' => $group->id,
+                'name' => $group->name
+            ],
+            'products' => $products->map(fn($p) => [
+                'id' => $p->id,
+                'name' => $p->name
+            ]),
+            'members' => $members->map(fn($m) => [
+                'id' => $m->id,
+                'firstname' => $m->firstname,
+                'lastname' => $m->lastname
+            ]),
+            'groupMembers' => $groupMembers,
+            'orders' => $orders,
+            'orderTotals' => $orderTotals,
+            'currentMonth' => $currentmonth->id
+        ]);
+    }
+
+    public function edit(string $id): JsonResponse
+    {
+        $group = $this->groupRepository->find((int) $id);
+
+        return response()->json([
+            'id' => $group->id,
+            'name' => $group->name
+        ]);
+    }
+
+    public function update(StoreGroupRequest $request, Group $group): JsonResponse
+    {
+        $validated = $request->validated();
+        $group = $this->groupRepository->update($group, [
+            'name' => $validated['name'],
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => $group->name . ' Successfully edited'
+        ]);
     }
 
     /**
      * Remove the specified resource from storage.
-     *
-     * @param  int  $id
-     * @return Response
      */
-    public function destroy($id)
+    public function destroy(string $id): JsonResponse
     {
-        $member = Group::find($id);
-        $member->delete();
-        if ($member->exists) {
-            return Response::json(['errors' => $member->name . " Couldn't be deleted"]);
-        } else {
-            return Response::json(['success' => true, 'message' => $member->name . ' Successfully deleted']);
-        }
+        $group = $this->groupRepository->find((int) $id);
+        $name = $group->name;
+        $this->groupRepository->delete($group);
+
+        return response()->json([
+            'success' => true,
+            'message' => $name . ' Successfully deleted'
+        ]);
     }
 
-    public function postAddmember()
+    public function postAddmember(Request $request): JsonResponse
     {
         $v = Validator::make(
-                Input::all(),
-                [
-                    'groupid' => 'required|numeric',
-                    'member' => 'required|numeric'
-                ]
+            $request->all(),
+            [
+                'groupid' => 'required|numeric',
+                'member' => 'required|numeric',
+            ]
         );
 
         if (!$v->passes()) {
-            return Response::json(['errors' => $v->errors()]);
-        } else {
-            $groupmember = new GroupMember();
-            $groupmember->group_id = Input::get('groupid');
-            $groupmember->member_id = Input::get('member');
-            $groupmember->save();
-            $member = Member::find(Input::get('member'));
-
-            return Response::json(['success' => true, 'membername' => $member->firstname . ' ' . $member->lastname, 'memberid' => $member->member_id, 'id' => $groupmember->id]);
+            return response()->json(['errors' => $v->errors()]);
         }
+
+        $groupmember = new GroupMember();
+        $groupmember->group_id = $request->get('groupid');
+        $groupmember->member_id = $request->get('member');
+        $groupmember->save();
+
+        $member = $this->memberRepository->find((int) $request->get('member'));
+
+        return response()->json([
+            'success' => true,
+            'membername' => $member->firstname . ' ' . $member->lastname,
+            'memberid' => $member->id,
+            'id' => $groupmember->id
+        ]);
     }
 
-    public function getDeletegroupmember($id)
+    public function deleteGroupMember(GroupMember $groupMember): JsonResponse
     {
-        $groupmember = GroupMember::find($id);
-        $groupmember->delete();
+        $groupMember->delete();
 
-        if ($groupmember->exists) {
-            return Response::json(['errors' => "Couldn't be deleted"]);
-        } else {
-            return Response::json(['success' => true, 'id' => $id]);
+        if ($groupMember->exists) {
+            return response()->json(['success' => false, 'message' => "Couldn't delete member from group"], 500);
         }
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Member removed from group successfully',
+            'id' => $groupMember->id
+        ]);
     }
 }

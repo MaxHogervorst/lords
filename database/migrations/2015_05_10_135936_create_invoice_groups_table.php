@@ -5,7 +5,6 @@ use Illuminate\Database\Schema\Blueprint;
 
 class CreateInvoiceGroupsTable extends Migration
 {
-
     /**
      * Run the migrations.
      *
@@ -28,6 +27,6 @@ class CreateInvoiceGroupsTable extends Migration
      */
     public function down()
     {
-        Schema::drop('invoice_groups');
+        Schema::dropIfExists('invoice_groups');
     }
 }

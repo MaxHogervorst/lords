@@ -75,3 +75,8 @@ span.clear {
 .selectize-input {
     width: 200px !important;
 }
+
+/* Alpine.js x-cloak - Prevent flash of unstyled content */
+[x-cloak] {
+    display: none !important;
+}

@@ -1,401 +1,222 @@
-<?php namespace App\Http\Controllers;
+<?php
 
-use App\Models\InvoiceGroup;
-use App\Models\InvoiceProduct;
-use App\Models\Member;
-use App\Models\Product;
-use Digitick\Sepa\TransferFile\Factory\TransferFileFacadeFactory;
+declare(strict_types=1);
+
+namespace App\Http\Controllers;
+
+use App\Repositories\InvoiceRepository;
+use App\Repositories\MemberRepository;
+use App\Repositories\ProductRepository;
+use App\Services\InvoiceCalculationService;
+use App\Services\InvoiceExportService;
+use App\Services\SepaGenerationService;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Facades\Input;
-use Illuminate\Support\Facades\Response;
 use Illuminate\Support\Facades\Validator;
-use Maatwebsite\Excel\Facades\Excel;
-use Offline\Settings\Facades\Settings;
+use Illuminate\View\View;
 
 class InvoiceController extends Controller
 {
-
-    /**
-     * Display a listing of the resource.
-     *
-     * @return Response
-     */
-    private $exceldata;
-    private $currentpaymentinfo;
-    private $total;
-    public function getIndex()
-    {
-        $currentmonth = InvoiceGroup::getCurrentMonth();
-        $products = Product::toArrayIdAsKey();
-        $members = Member::with(['orders'])
-            ->with(['groups.orders.product'])
-            ->with(['invoice_lines.productprice.product'])->get();
-        return view('invoice.index')->with('invoicegroups', InvoiceGroup::orderBy('id', SORT_DESC)->get())
-                                    ->with('currentmonth', $currentmonth)
-                                    ->with('members', $members)
-                                    ->with('products', $products);
+    public function __construct(
+        private readonly InvoiceCalculationService $calculationService,
+        private readonly SepaGenerationService $sepaService,
+        private readonly InvoiceExportService $exportService,
+        private readonly InvoiceRepository $invoiceRepository,
+        private readonly MemberRepository $memberRepository,
+        private readonly ProductRepository $productRepository
+    ) {
     }
 
-    public function getPerPerson()
+    /**
+     * Get member from session by ID.
+     */
+    private function getSessionMember(): ?object
+    {
+        $memberId = session('member_id');
+
+        return $memberId ? $this->memberRepository->find($memberId) : null;
+    }
+
+    /**
+     * Get invoice group from session by ID.
+     */
+    private function getSessionInvoiceGroup(): ?object
+    {
+        $invoiceGroupId = session('personal_invoice_group_id');
+
+        return $invoiceGroupId ? $this->invoiceRepository->find($invoiceGroupId) : null;
+    }
+
+    public function getIndex(Request $request): View
+    {
+        $currentmonth = $this->invoiceRepository->getCurrentMonth();
+        $products = $this->productRepository->getAllAsArrayIdAsKey();
+
+        // Only load members with activity in current invoice group (massive performance improvement)
+        $membersQuery = $this->memberRepository->getWithActivityForInvoiceGroup(
+            $currentmonth->id,
+            [
+                'orders' => function ($query) use ($currentmonth) {
+                    $query->where('invoice_group_id', $currentmonth->id);
+                },
+                'orders.product',
+                'groups' => function ($query) use ($currentmonth) {
+                    $query->where('invoice_group_id', $currentmonth->id);
+                },
+                'groups.orders' => function ($query) use ($currentmonth) {
+                    $query->where('invoice_group_id', $currentmonth->id);
+                },
+                'groups.orders.product',
+                'groups.members',
+                'invoice_lines.productprice.product'
+            ]
+        );
+
+        // Paginate members with consistent ordering
+        $perPage = $request->input('per_page', 10);
+        $members = $membersQuery->orderBy('lastname')->orderBy('firstname')
+            ->paginate($perPage)->appends(['per_page' => $perPage]);
+
+        return view('invoice.index')
+            ->with('invoicegroups', $this->invoiceRepository->getAllOrdered('desc'))
+            ->with('currentmonth', $currentmonth)
+            ->with('members', $members)
+            ->with('products', $products);
+    }
+
+    public function getPerPerson(): View
     {
         $m = null;
-        if (! is_null(session('member'))) {
-            $m = Member::with('orders.product', 'groups.orders.product')
-                ->whereHas('invoice_lines.productprice.product', function ($q) {
-                    $q->where('member_id', session('member')->id);
-                })->first();
+        $sessionMember = $this->getSessionMember();
+
+        if (! is_null($sessionMember)) {
+            $m = $this->memberRepository->findWithInvoiceLinesByMemberId($sessionMember->id);
         }
 
-        $products = Product::toArrayIdAsKey();
-        if (is_null(session('personal_invoice_group'))) {
-            $currentmonth = InvoiceGroup::getCurrentMonth();
-        } else {
-            $currentmonth = session('personal_invoice_group');
-        }
+        $products = $this->productRepository->getAllAsArrayIdAsKey();
+        $currentmonth = $this->getSessionInvoiceGroup() ?? $this->invoiceRepository->getCurrentMonth();
 
         return view('invoice.person')
-            ->with('invoicegroups', InvoiceGroup::orderBy('id', SORT_DESC)->get())
+            ->with('invoicegroups', $this->invoiceRepository->getAllOrdered('desc'))
             ->with('currentmonth', $currentmonth)
             ->with('m', $m)
             ->with('products', $products);
     }
 
-    public function getPdf()
+    public function getPdf(): View
     {
-        $currentmonth = InvoiceGroup::getCurrentMonth();
+        $currentmonth = $this->invoiceRepository->getCurrentMonth();
+
         return view('invoice.pdf')
             ->with('currentmonth', $currentmonth)
-            ->with('members', Member::with('orders.product', 'groups.orders.product', 'invoice_lines.productprice.product')->get());
-    }
-    public function getExcel()
-    {
-        $currentmonth = InvoiceGroup::getCurrentMonth();
-        $result = [];
-        $this->total = 0;
-        foreach (Member::with('orders.product', 'groups.orders.product', 'invoice_lines.productprice.product')->get() as $m) {
-            $memberinfo = [];
-            $memberinfo[] = $m->firstname . ' ' . $m->lastname;
-            $manor = 0;
-            $member_total = 0;
-
-            $manor += $this->CalculateMemberOrders($m);
-            $manor += $this->CalculateGroupOrders($m);
-
-            $memberinfo[] = $manor;
-            $member_total += $manor;
-            $products = [];
-            foreach (InvoiceProduct::where('invoice_group_id', '=', $currentmonth->id)->get() as $product) {
-                $products[$product->id] = 0;
-            }
-            foreach ($m->invoice_lines as $il) {
-                if ($il->productprice->product->invoice_group_id == $currentmonth->id) {
-                    $products[$il->productprice->product->id] = $il->productprice->price;
-                }
-            }
-            foreach ($products as $p) {
-                $member_total += $p;
-                $memberinfo[] = $p;
-            }
-            $memberinfo[] = $member_total;
-            $this->total += $member_total;
-//            if($total == 0)
-//			{
-//				continue;
-//			}
-//
-            $result[] = $memberinfo;
-        }
-        $this->exceldata = $result;
-
-        Excel::create($currentmonth->name, function ($excel) {
-            $excel->sheet('First sheet', function ($sheet) {
-                $sheet->loadView('invoice.excel') ->with('result', $this->exceldata)
-                    ->with('products', InvoiceProduct::where('invoice_group_id', '=', InvoiceGroup::getCurrentMonth()->id)->get())
-                    ->with('total', $this->total);
-            });
-        })->download('xls');
-
-        return view('invoice.excel')
-            ->with('result', $result)
-            ->with('products', InvoiceProduct::where('invoice_group_id', '=', $currentmonth->id)->get());
-    }
-    private function newMemberInfo($m)
-    {
-        $memberinfo = [];
-        $memberinfo['name'] = $m->firstname . ' ' . $m->lastname;
-        $memberinfo['iban'] = $m->iban;
-        $memberinfo['bic'] = $m->bic;
-        $memberinfo['mandate'] = str_pad($m->id, 10, '0', STR_PAD_LEFT);
-        $memberinfo['m'] = $m;
-
-        $manor = 0;
-        $manor += $this->CalculateMemberOrders($m);
-        $manor += $this->CalculateGroupOrders($m);
-
-        foreach ($m->invoice_lines as $il) {
-            if ($il->productprice->product->invoice_group_id == InvoiceGroup::getCurrentMonth()->id) {
-                $manor +=  $il->productprice->price;
-            }
-        }
-        $memberinfo['amount'] = $manor;
-        if ($manor > 0) {
-            return $memberinfo;
-        } else {
-            return null;
-        }
+            ->with('members', $this->memberRepository->all(
+                ['*'],
+                ['orders.product', 'groups.orders.product', 'groups.members', 'invoice_lines.productprice.product']
+            ));
     }
 
-    private function newBatch($seqType)
+    public function getExcel(): \Symfony\Component\HttpFoundation\BinaryFileResponse
     {
-        $this->currentpaymentinfo = 'GSRC' . date('Y-m-d H:i:s');
-        $currentbatch = TransferFileFacadeFactory::createDirectDebit('GSRC' . date('Y-m-d H:i:s'), 'me', Settings::get('creditorPain'));
-        $currentbatch->addPaymentInfo($this->currentpaymentinfo, [
-            'id'                    => 'GSRC' . date('Y-m-d H:i:s'),
-            'creditorName'          => Settings::get('creditorName'),
-            'creditorAccountIBAN'   => Settings::get('creditorAccountIBAN'),
-            'creditorAgentBIC'      => Settings::get('creditorAgentBIC'),
-            'seqType'               =>  $seqType,
-            'creditorId'            => Settings::get('creditorId'),
-            'dueDate'               => new \DateTime(date('Y-m-d', strtotime('now +' . Settings::get('ReqdColltnDt') . ' weekdays')))
-        ]);
-
-        return $currentbatch;
+        return $this->exportService->exportToExcel();
     }
 
-    public function getSepa()
+    public function getSepa(): View
     {
-        $memberswithoutbankinfo = Member::whereNull('bic')->whereNull('iban')->get();
+        $membersWithoutBankInfo = $this->sepaService->getMembersWithoutBankInfo();
+        $members = $this->sepaService->collectMembersForSepa();
+        $batchData = $this->sepaService->createBatches($members);
+        $batchLinks = $this->sepaService->saveBatchesToDisk($batchData);
 
-        $members = ['RCUR' => [], 'FRST' =>[]];
-        $member_rcur = Member::whereNotNull('bic')->whereNotNull('iban')->rcur()
-            ->with(['orders'])
-            ->with(['groups.orders.product'])
-            ->with(['invoice_lines.productprice.product'])->get();
-        foreach ($member_rcur as $m) {
-            $info = $this->newMemberInfo($m);
-            if ($info != null) {
-                $members['RCUR'][] = $info;
-            }
-        }
-        $member_frst = Member::whereNotNull('bic')->whereNotNull('iban')->frst()
-            ->with(['orders'])
-            ->with(['groups.orders.product'])
-            ->with(['invoice_lines.productprice.product'])->get();
-        foreach ($member_frst as $m) {
-            $info = $this->newMemberInfo($m);
-            if ($info != null) {
-                $members['FRST'][] = $info;
-            }
-        }
-        $batches = ['RCUR' => [], 'FRST' =>[]];
-
-        $batchfailedmembers = [];
-
-        $transactions = 0;
-        $batchtotalmoney = 0;
-        if (!empty($members['RCUR'])) {
-            $currentbatch = $this->newBatch('RCUR');
-
-            foreach ($members['RCUR'] as $m) {
-                if ($batchtotalmoney + $m['amount'] > Settings::get('creditorMaxMoneyPerBatch') || $transactions == Settings::get('creditorMaxTransactionsPerBatch')) {
-                    $batches['RCUR'][] = $currentbatch;
-                    $this->currentpaymentinfo = 'GSRC' . date('Y-m-d H:i:s');
-                    $currentbatch = $this->newBatch('RCUR');
-                    $transactions = 0;
-                    $batchtotalmoney = 0;
-                }
-                if ($m['amount'] > Settings::get('creditorMaxMoneyPerTransaction')) {
-                    $batchfailedmembers[] = $m;
-                } else {
-                    $currentbatch->addTransfer($this->currentpaymentinfo, [
-                        'amount' => $m['amount'],
-                        'debtorIban' => $m['iban'],
-                        'debtorBic' => $m['bic'],
-                        'debtorName' => $m['name'],
-                        'debtorMandate' => $m['mandate'],
-                        'debtorMandateSignDate' => '13.10.2012',
-                        'remittanceInformation' => 'GSRC Incasso ' . date('Y-m')
-                    ]);
-                    $batchtotalmoney += $m['amount'];
-                    $transactions++;
-                }
-            }
-            $batches['RCUR'][] = $currentbatch;
-        }
-        $transactions = 0;
-        $batchtotalmoney = 0;
-        if (!empty($members['FRST'])) {
-            $currentbatch = $this->newBatch('FRST');
-            foreach ($members['FRST'] as $m) {
-                if ($batchtotalmoney + $m['amount'] > Settings::get('creditorMaxMoneyPerBatch') || $transactions == Settings::get('creditorMaxTransactionsPerBatch')) {
-                    $batches['FRST'][] = $currentbatch;
-                    $this->currentpaymentinfo = 'GSRC' . date('Y-m-d H:i:s');
-                    $currentbatch = $this->newBatch('FRST');
-                    $transactions = 0;
-                    $batchtotalmoney = 0;
-                }
-                if ($m['amount'] > Settings::get('creditorMaxMoneyPerTransaction')) {
-                    $batchfailedmembers[] = $m;
-                } else {
-                    $currentbatch->addTransfer($this->currentpaymentinfo, [
-                        'amount' => $m['amount'],
-                        'debtorIban' => $m['iban'],
-                        'debtorBic' => $m['bic'],
-                        'debtorName' => $m['name'],
-                        'debtorMandate' => $m['mandate'],
-                        'debtorMandateSignDate' => '13.10.2012',
-                        'remittanceInformation' => 'GSRC Incasso ' . date('Y-m')
-                    ]);
-                    $batchtotalmoney += $m['amount'];
-                    $transactions++;
-                }
-            }
-            $batches['FRST'][] = $currentbatch;
-        }
-        $total = 0;
-        $i=0;
-        $batchlink = [];
-        foreach ($batches['RCUR'] as $b) {
-            $i++;
-            $filename = 'GSRC RCUR ' . $i . ' ' . date('Y-m-d') . '.xml';
-            $filepath = storage_path('SEPA/' . $filename);
-            $file = fopen($filepath, 'w');
-            fwrite($file, $b->asXML());
-            fclose($file);
-            $total++;
-            $batchlink[] = $filename;
-        }
-        $i=0;
-        foreach ($batches['FRST'] as $b) {
-            $i++;
-            $filename = 'GSRC FRST ' . $i . ' ' . date('Y-m-d') . '.xml';
-            $filepath = storage_path('SEPA/' . $filename);
-            $file = fopen($filepath, 'w');
-            fwrite($file, $b->asXML());
-            fclose($file);
-            $total++;
-            $batchlink[] = $filename;
-        }
         return view('invoice.sepa')
-                    ->with('total', $total)
-                    ->with('batchlink', $batchlink)
-                    ->with('memberswithtohightransaction', $batchfailedmembers)
-                    ->with('memberswithoutbankinfo', $memberswithoutbankinfo);
+            ->with('total', count($batchLinks))
+            ->with('batchlink', $batchLinks)
+            ->with('memberswithtohightransaction', $batchData['failedMembers'])
+            ->with('memberswithoutbankinfo', $membersWithoutBankInfo);
     }
 
     /**
      * Store a newly created resource in storage.
-     *
-     * @return Response
      */
-    public function postStoreinvoicegroup()
+    public function postStoreinvoicegroup(Request $request): JsonResponse
     {
-        $v = Validator::make(Input::all(), ['invoiceMonth' => 'required']);
+        $v = Validator::make($request->all(), ['invoiceMonth' => 'required']);
 
-        if (!$v->passes()) {
-            return Response::json(['errors' => $v->errors()]);
-        } else {
-            $invoicegroups = InvoiceGroup::where('status', '=', true);
-            $invoicegroups->update(['status' =>false]);
-
-            $invoicegroup = new InvoiceGroup();
-            $invoicegroup->name = Input::get('invoiceMonth');
-            $invoicegroup->status = true;
-            $invoicegroup->save();
-
-            if ($invoicegroup->exists) {
-                Cache::forget('invoice_group');
-                return Response::json(['success' => true, 'id' => $invoicegroup->id, 'name' => $invoicegroup->name]);
-            } else {
-                return Response::json(['errors' => 'Could not be added to the database']);
-            }
+        if (! $v->passes()) {
+            return response()->json(['errors' => $v->errors()]);
         }
+
+        $invoicegroup = $this->invoiceRepository->createAndSetActive($request->get('invoiceMonth'));
+
+        if (! $invoicegroup->exists) {
+            return response()->json(['errors' => 'Could not be added to the database']);
+        }
+
+        Cache::forget('invoice_group');
+
+        return response()->json(['success' => true, 'id' => $invoicegroup->id, 'name' => $invoicegroup->name]);
     }
 
-    public function postSetPersonalInvoiceGroup()
+    public function postSetPersonalInvoiceGroup(Request $request): JsonResponse
     {
-        $v = Validator::make(Input::all(), ['invoiceGroup' => 'required']);
+        $v = Validator::make($request->all(), ['invoiceGroup' => 'required']);
 
-        if (!$v->passes()) {
-            return Response::json(['errors' => $v->errors()]);
+        if (! $v->passes()) {
+            return response()->json(['errors' => $v->errors()]);
         } else {
-            $invoicegroup = InvoiceGroup::find(Input::get('invoiceGroup'));
+            $invoicegroup = $this->invoiceRepository->find((int) $request->get('invoiceGroup'));
 
             if (! is_null($invoicegroup)) {
-                session(['personal_invoice_group' => $invoicegroup]);
-                return Response::json(['success' => true]);
+                session(['personal_invoice_group_id' => $invoicegroup->id]);
+
+                return response()->json(['success' => true]);
             } else {
-                return Response::json(['errors' => 'Could not find month']);
+                return response()->json(['errors' => 'Could not find month']);
             }
         }
     }
-    public function postSetPerson()
-    {
-        $v = Validator::make(Input::all(), ['name' => 'required', 'iban' => 'required']);
 
-        if (!$v->passes()) {
-            return Response::json(['errors' => $v->errors()]);
+    public function postSetPerson(Request $request): JsonResponse
+    {
+        $v = Validator::make($request->all(), ['name' => 'required', 'iban' => 'required']);
+
+        if (! $v->passes()) {
+            return response()->json(['errors' => $v->errors()]);
         } else {
-            $member = Member::where(['lastname' => Input::get('name'), 'iban' => Input::get('iban')])->first();
+            $member = $this->memberRepository->findByLastnameAndIban(
+                $request->get('name'),
+                $request->get('iban')
+            );
             if (! is_null($member)) {
-                session(['member' => $member]);
-                return Response::json(['success' => true]);
+                session(['member_id' => $member->id]);
+
+                return response()->json(['success' => true]);
             } else {
-                return Response::json(['errors' => 'Could not find member']);
+                return response()->json(['errors' => 'Could not find member']);
             }
         }
     }
 
-    public function postSelectinvoicegroup()
+    public function postSelectinvoicegroup(Request $request): JsonResponse
     {
-        $v = Validator::make(Input::all(), ['invoiceGroup' => 'required']);
+        $v = Validator::make($request->all(), ['invoiceGroup' => 'required']);
 
-        if (!$v->passes()) {
-            return Response::json(['errors' => $v->errors()]);
-        } else {
-            $invoicegroups = InvoiceGroup::where('status', '=', true);
-            $invoicegroups->update(['status' =>false]);
-
-            $invoicegroup = InvoiceGroup::find(Input::get('invoiceGroup'));
-            $invoicegroup->status = true;
-            $invoicegroup->save();
-
-            $invoicegroups = InvoiceGroup::where('status', '=', true);
-
-            if ($invoicegroups->count() > 0) {
-                Cache::forget('invoice_group');
-                return Response::json(['success' => true]);
-            } else {
-                return Response::json(['errors' => 'Could not be added to the database']);
-            }
-        }
-    }
-
-    private function CalculateMemberOrders($member)
-    {
-        $price = 0;
-
-        $products = Product::toArrayIdAsKey();
-        foreach ($member->orders()->where('invoice_group_id', '=', InvoiceGroup::getCurrentMonth()->id)->get() as $o) {
-            $price += $o->amount * $products[$o->product_id]['price'];
+        if (! $v->passes()) {
+            return response()->json(['errors' => $v->errors()]);
         }
 
-        return $price;
-    }
-    private function CalculateGroupOrders($member)
-    {
-        $price = 0;
-        $products = Product::toArrayIdAsKey();
-        foreach ($member->groups()->where('invoice_group_id', '=', InvoiceGroup::getCurrentMonth()->id)->get() as $g) {
-            $totalprice = 0;
-            foreach ($g->orders as $o) {
-                $totalprice += $o->amount * $products[$o->product_id]['price'];
-            }
-            $totalmebers = $g->members->count();
+        $invoicegroup = $this->invoiceRepository->find((int) $request->get('invoiceGroup'));
+        $this->invoiceRepository->setAsActive($invoicegroup);
 
-            $price += ($totalprice / $totalmebers);
+        // Verify the operation was successful
+        $currentMonth = $this->invoiceRepository->getCurrentMonth();
+        if (is_null($currentMonth)) {
+            return response()->json(['errors' => 'Could not be added to the database']);
         }
 
-        return $price;
+        Cache::forget('invoice_group');
+
+        return response()->json(['success' => true]);
     }
+
 }

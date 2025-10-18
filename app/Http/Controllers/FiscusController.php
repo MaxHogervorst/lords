@@ -1,209 +1,126 @@
-<?php namespace App\Http\Controllers;
+<?php
 
-use App\Models\InvoiceGroup;
-use App\Models\InvoiceLine;
+declare(strict_types=1);
+
+namespace App\Http\Controllers;
+
+use App\Http\Requests\StoreFiscusRequest;
+use App\Http\Requests\UpdateFiscusRequest;
 use App\Models\InvoiceProduct;
 use App\Models\InvoiceProductPrice;
-use App\Models\Member;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Input;
-use Illuminate\Support\Facades\Response;
-use Illuminate\Support\Facades\Validator;
+use App\Repositories\InvoiceLineRepository;
+use App\Repositories\InvoiceProductRepository;
+use App\Repositories\InvoiceRepository;
+use App\Repositories\MemberRepository;
+use App\Services\FiscusService;
+use Illuminate\Http\JsonResponse;
+use Illuminate\View\View;
 
 class FiscusController extends Controller
 {
+    public function __construct(
+        protected FiscusService $fiscusService,
+        private readonly InvoiceProductRepository $invoiceProductRepository,
+        private readonly MemberRepository $memberRepository,
+        private readonly InvoiceRepository $invoiceRepository,
+        private readonly InvoiceLineRepository $invoiceLineRepository
+    ) {
+    }
 
     /**
      * Display a listing of the resource.
-     *
-     * @return Response
      */
-    public function index()
+    public function index(): View
     {
-        $invoice_products  = InvoiceProduct::where('invoice_group_id', '=', InvoiceGroup::getCurrentMonth()->id)->get();
+        $currentMonth = $this->invoiceRepository->getCurrentMonth();
+        $invoice_products = $this->invoiceProductRepository->getByInvoiceGroup($currentMonth);
+
         return view('fiscus.index')->with('invoice_products', $invoice_products);
     }
+
     /**
      * Display a listing of the resource.
-     *
-     * @return Response
      */
-    public function create()
+    public function create(): View
     {
-        $members= Member::all();
+        $members = $this->memberRepository->all();
+
         return view('fiscus.create')->with('members', $members);
     }
 
     /**
      * Store a newly created resource in storage.
-     *
-     * @return Response
      */
-    public function store()
+    public function store(StoreFiscusRequest $request): JsonResponse
     {
-        $v = Validator::make(Input::all(),
-            [
-                'finalproductname' => 'required',
-                'finalproductdescription' => 'required',
-                'finalpriceperperson' => 'required',
-                'finalselectedmembers' => 'min:1'
+        $validated = $request->validated();
+        $currentMonth = $this->invoiceRepository->getCurrentMonth();
 
-            ]
-        );
+        $result = $this->fiscusService->createInvoiceProduct($validated, $currentMonth->id);
 
-        if (!$v->passes()) {
-            return Response::json(['errors' => $v->errors()]);
-        } else {
-            $currentmonth = InvoiceGroup::getCurrentMonth()->id;
-            $invoiceproduct = new InvoiceProduct();
-            $invoiceproduct->name = Input::get('finalproductname');
-            $invoiceproduct->invoice_group_id = $currentmonth;
-            $invoiceproduct->save();
-
-            $invoiceproductprice = new InvoiceProductPrice();
-            $invoiceproductprice->invoice_product_id = $invoiceproduct->id;
-            $invoiceproductprice->price = Input::get('finalpriceperperson');
-            $invoiceproductprice->description = Input::get('finalproductdescription');
-            $invoiceproductprice->save();
-
-            $i = 0;
-            foreach (Input::get('member') as $m) {
-                $invoiceline = new InvoiceLine();
-                $invoiceline->invoice_product_price_id = $invoiceproductprice->id;
-                $invoiceline->member_id = $m;
-                $invoiceline->save();
-                if ($invoiceline->exists) {
-                    $i++;
-                }
-            }
-
-            return Response::json(['success' => true, 'message' => $invoiceproduct->name . ' Successfully added, '
-                                                                        . $invoiceproductprice->price . ' per person.'
-                                                                        . $i . ' Total persons' ]);
-        }
+        return response()->json([
+            'success' => true,
+            'message' => $result['product_name'] . ' Successfully added, '
+                        . $result['price'] . ' per person.'
+                        . $result['member_count'] . ' Total persons',
+        ]);
     }
 
     /**
      * Show the form for editing the specified resource.
-     *
-     * @param  int  $id
-     * @return Response
      */
-    public function getEdit()
+    public function getEdit(): View
     {
-        $members= Member::all();
-        $invoiceproducts = InvoiceProduct::where('invoice_group_id', '=', InvoiceGroup::getCurrentMonth()->id)->get();
+        $members = $this->memberRepository->all();
+        $currentMonth = $this->invoiceRepository->getCurrentMonth();
+        $invoiceproducts = $this->invoiceProductRepository->getByInvoiceGroup($currentMonth);
+
         return view('fiscus.edit')->with('members', $members)
             ->with('products', $invoiceproducts);
     }
 
-    public function getInvoiceprices($id)
+    public function getInvoiceprices(InvoiceProduct $invoiceProduct): JsonResponse
     {
-        return Response::json(InvoiceProductPrice::where('invoice_product_id', '=', $id)->get());
+        return response()->json($invoiceProduct->productprice);
     }
 
-    public function getAllinvoicelines($id)
+    public function getAllinvoicelines(InvoiceProduct $invoiceProduct): JsonResponse
     {
-        $subquery = DB::table('invoice_product_prices')
-            ->where('invoice_product_id', '=', $id)
-            ->select('id')
-            ->get();
+        $lines = $this->invoiceLineRepository->getByInvoiceProduct($invoiceProduct);
 
-        $query = DB::table('invoice_lines')
-                    ->whereIn('invoice_product_price_id', json_decode(json_encode($subquery), true))
-                    ->select('*')->get();
-
-        return Response::json($query);
+        return response()->json($lines);
     }
 
-    public function getSpecificinvoicelines($id)
+    public function getSpecificinvoicelines(InvoiceProductPrice $invoiceProductPrice): JsonResponse
     {
-        return Response::json(InvoiceLine::where('invoice_product_price_id', '=', $id)->get());
+        return response()->json($invoiceProductPrice->invoiceline);
     }
 
     /**
      * Update the specified resource in storage.
-     *
-     * @param  int  $id
-     * @return Response
      */
-    public function update($id)
+    public function update(UpdateFiscusRequest $request, InvoiceProduct $invoiceProduct): JsonResponse
     {
-        $update = 'added new price';
-        $v = Validator::make(Input::all(),
-            [
-                'finalproductdescription' => 'required',
-                'finalpriceperperson' => 'required',
-                'member' => 'min:1'
+        $validated = $request->validated();
+        $updatePriceId = $request->has('isupdate') ? $request->get('isupdate') : null;
 
-            ]
-        );
+        $result = $this->fiscusService->updateInvoiceProduct($invoiceProduct, $validated, $updatePriceId);
 
-        if (!$v->passes()) {
-            return Response::json(['errors' => $v->errors()]);
-        } else {
-            $invoiceproduct = InvoiceProduct::find($id);
-
-            if (Input::has('isupdate')) {
-                $update = 'updated';
-                $invoiceproductprice = InvoiceProductPrice::find(Input::get('isupdate'));
-                if ($invoiceproductprice->exists) {
-                    $invoiceproductprice->price = Input::get('finalpriceperperson');
-                    $invoiceproductprice->description = Input::get('finalproductdescription');
-                    $invoiceproductprice->save();
-
-                    DB::table('invoice_lines')->where('invoice_product_price_id', '=', $invoiceproductprice->id)->delete();
-                } else {
-                    return Response::json(['errors' => 'Could not find Product price']);
-                }
-            } else {
-                $invoiceproductprice = new InvoiceProductPrice();
-                $invoiceproductprice->invoice_product_id = $invoiceproduct->id;
-                $invoiceproductprice->price = Input::get('finalpriceperperson');
-                $invoiceproductprice->description = Input::get('finalproductdescription');
-                $invoiceproductprice->save();
-            }
-
-            if (Input::has('member')) {
-                $i = 0;
-                foreach (Input::get('member') as $m) {
-                    $invoiceline = new InvoiceLine();
-                    $invoiceline->invoice_product_price_id = $invoiceproductprice->id;
-                    $invoiceline->member_id = $m;
-                    $invoiceline->save();
-                    if ($invoiceline->exists) {
-                        $i++;
-                    }
-                }
-            }
-
-            return Response::json(['success' => true, 'message' => $invoiceproduct->name . ' Successfully ' . $update . ', '
-                                                                        . $invoiceproductprice->price . ' per person.'
-                                                                        . $i . ' Total persons' ]);
-        }
+        return response()->json([
+            'success' => true,
+            'message' => $result['product_name'] . ' Successfully ' . $result['update_type'] . ', '
+                        . $result['price'] . ' per person.'
+                        . $result['member_count'] . ' Total persons',
+        ]);
     }
 
     /**
      * Remove the specified resource from storage.
-     *
-     * @param  int  $id
-     * @return Response
      */
-    public function destroy($id)
+    public function destroy(InvoiceProduct $invoiceProduct): JsonResponse
     {
-        $product = InvoiceProduct::find(Input::get('product_id'));
-        if ($product != null) {
-            $name = $product->name;
-            foreach ($product->productprice as $price) {
-                foreach ($price->invoiceline as $line) {
-                    $line->delete();
-                }
-                $price->delete();
-            }
-            $product->delete();
-            return Response::json(['success' => true, 'message' => $name . ' Successfully deleted']);
-        } else {
-            return Response::json(['success' => false, 'message' => 'Could not find product']);
-        }
+        $name = $this->fiscusService->deleteInvoiceProduct($invoiceProduct);
+
+        return response()->json(['success' => true, 'message' => $name . ' Successfully deleted']);
     }
 }

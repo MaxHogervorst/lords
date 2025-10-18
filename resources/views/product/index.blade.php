@@ -1,69 +1,99 @@
 @extends('layout.master')
-@section('script')
-    <script>
-        $(document).ready(function() {
-            $('#productprice').keypress(function(event) { return isNumber(event, true); });
-        });
-        $('#product-edit').on('show.bs.modal', function (event) {
-                      $('#producteditmodalcontent').load('{{ url('product') }}/'+ $(event.relatedTarget).data('id') + '/edit')
-                    });
-        function addProduct(data)
-        {
-            $('#products').prepend('<tr> <td>' + data.name + '</td> <td>' + data.price + '</td> <td><button data-id="' + data.id +'" data-toggle="modal" data-target="#product-edit"><i class="fa fa-edit fa-fw">  </i></button></td> </tr>');
-            $('tbody tr').removeClass('visible').show().addClass('visible').css({display: 'table-row'});
-        }
-    </script>
-@stop
-
 
 @section('content')
-    <form id="product-form" name="member-form" class="form-inline" action="{{ url('product') }}" method="post">
-        <input type="search" id="filter" name="name" placeholder="Search or Add" class="form-control" autofocus="" autocomplete="off">
-        <input type="search" id="productprice" name="productPrice" placeholder="Product price" class="form-control" autocomplete="off">
-        <input type="hidden" name="_token" value="{{ csrf_token() }}">
-        <button type="submit" class="btn btn-outline btn-primary" data-ajax-type="POST" data-ajax-submit="#product-form" data-ajax-callback-function="addProduct"><i class="fa fa-plus fa-fw">  </i>Add Product</button>
-    </form>
+    <div x-data='productsManager(@json($results))' x-cloak>
+        <!-- Search and Add Form -->
+        <div class="card mb-3">
+            <div class="card-body">
+                <form x-ref="addProductForm" @submit.prevent="addProduct" action="{{ url('product') }}" method="post">
+                    <div class="row g-2">
+                        <div class="col">
+                            <input
+                                type="search"
+                                x-ref="searchInput"
+                                id="filter"
+                                name="name"
+                                x-model="searchQuery"
+                                placeholder="Search or Add"
+                                class="form-control"
+                                autofocus
+                                autocomplete="off">
+                        </div>
+                        <div class="col">
+                            <input
+                                type="text"
+                                id="productprice"
+                                name="productPrice"
+                                @keypress="validateNumber($event, true)"
+                                placeholder="Product price"
+                                class="form-control"
+                                autocomplete="off">
+                        </div>
+                        <input type="hidden" name="_token" value="{{ csrf_token() }}">
+                        <div class="col-auto">
+                            <button
+                                type="submit"
+                                class="btn btn-primary"
+                                data-testid="add-product-button"
+                                :disabled="$store.app.isLoading">
+                                <i data-lucide="plus"></i>
+                                <span x-text="$store.app.isLoading ? 'Adding...' : 'Add Product'"></span>
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
 
-    <div class="row">&nbsp;</div>
+        <!-- Products Table -->
+        <div class="card">
+            <div class="table-responsive">
+                <table class="table table-vcenter card-table" id="products">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Price</th>
+                            <th class="w-1">Actions</th>
+                        </tr>
+                    </thead>
 
-    <div class="table-responsive">
-        <table class="table table-bordered table-striped" id="products">
+                    <tbody>
+                        <template x-for="product in filteredProducts" :key="product.id">
+                            <tr :id="product.id">
+                                <td x-text="product.name"></td>
+                                <td x-text="product.price"></td>
+                                <td class="text-nowrap">
+                                    <button
+                                        type="button"
+                                        class="btn btn-sm btn-ghost-primary"
+                                        :data-testid="'product-edit-' + product.id"
+                                        :data-id="product.id"
+                                        @click="openEditModal(product.id)">
+                                        <i data-lucide="edit"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                        </template>
 
-            <thead>
-                <tr>
-
-                    <th>Name</th>
-                    <th>Price</th>
-                    <th class="col-sm-1">Actions</th>
-                </tr>
-            </thead>
-
-            <tbody>
-                @foreach ($results as $m)
-                <tr id="{{ $m->id }}">
-                    <td>{{ $m->name }}</td>
-                    <td>{{ $m->price }}</td>
-
-                    <td>
-                        <button data-id="{{ $m->id }}" data-toggle="modal" data-target="#product-edit"><i class="fa fa-edit fa-fw">  </i></button>
-                    </td>
-
-                </tr>
-                @endforeach
-            </tbody>
-
-        </table>
+                        <template x-if="filteredProducts.length === 0">
+                            <tr>
+                                <td colspan="3" class="text-center text-muted">No products found</td>
+                            </tr>
+                        </template>
+                    </tbody>
+                </table>
+            </div>
+        </div>
     </div>
 
 @stop
 
 @section('modal')
-
-<div id="product-edit" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
-	<div class="modal-dialog" >
- 		<div class="modal-content">
-            <div id="producteditmodalcontent"></div>
-		</div><!-- /.modal-content -->
-	</div><!-- /.modal-dialog -->
-</div><!-- /.modal -->
+<div class="modal modal-blur fade" id="product-edit" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            @include('product.edit')
+        </div>
+    </div>
+</div>
 @stop

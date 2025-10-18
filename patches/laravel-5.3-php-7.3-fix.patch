@@ -1,0 +1,20 @@
+--- a/vendor/laravel/framework/src/Illuminate/Database/Eloquent/Builder.php
++++ b/vendor/laravel/framework/src/Illuminate/Database/Eloquent/Builder.php
+@@ -1224,7 +1224,7 @@ class Builder
+         // We will keep track of how many wheres are on the query before running the
+         // scope so that we can properly group the added scope constraints in the
+         // query as their own isolated nested where statement and avoid issues.
+-        $originalWhereCount = count($query->wheres);
++        $originalWhereCount = is_countable($query->wheres) ? count($query->wheres) : 0;
+
+         $result = call_user_func_array($scope, $parameters) ?: $this;
+
+@@ -1270,7 +1270,7 @@ class Builder
+      */
+     protected function shouldNestWheresForScope(QueryBuilder $query, $originalWhereCount)
+     {
+-        return count($query->wheres) > $originalWhereCount;
++        return is_countable($query->wheres) && count($query->wheres) > $originalWhereCount;
+     }
+
+     /**

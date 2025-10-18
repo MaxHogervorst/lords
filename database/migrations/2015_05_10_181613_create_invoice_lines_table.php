@@ -5,7 +5,6 @@ use Illuminate\Database\Schema\Blueprint;
 
 class CreateInvoiceLinesTable extends Migration
 {
-
     /**
      * Run the migrations.
      *
@@ -28,6 +27,6 @@ class CreateInvoiceLinesTable extends Migration
      */
     public function down()
     {
-        Schema::drop('invoice_lines');
+        Schema::dropIfExists('invoice_lines');
     }
 }

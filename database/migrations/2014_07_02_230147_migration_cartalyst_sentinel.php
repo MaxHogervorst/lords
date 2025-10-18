@@ -11,9 +11,11 @@
  * bundled with this package in the LICENSE file.
  *
  * @version    2.0.6
+ *
  * @author     Cartalyst LLC
  * @license    BSD License (3-clause)
  * @copyright  (c) 2011-2015, Cartalyst LLC
+ *
  * @link       http://cartalyst.com
  */
 use Illuminate\Database\Migrations\Migration;
@@ -111,12 +113,12 @@ class MigrationCartalystSentinel extends Migration
      */
     public function down()
     {
-        Schema::drop('activations');
-        Schema::drop('persistences');
-        Schema::drop('reminders');
-        Schema::drop('roles');
-        Schema::drop('role_users');
-        Schema::drop('throttle');
-        Schema::drop('users');
+        Schema::dropIfExists('activations');
+        Schema::dropIfExists('persistences');
+        Schema::dropIfExists('reminders');
+        Schema::dropIfExists('roles');
+        Schema::dropIfExists('role_users');
+        Schema::dropIfExists('throttle');
+        Schema::dropIfExists('users');
     }
 }

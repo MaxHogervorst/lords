@@ -1,90 +1,98 @@
 @extends('layout.master')
 
-@section('script')
-    <script>
-        $(document).ready(function(){
-            $('#invoiceGroup').selectize({
-                selectOnTab: true,
-                dropdownParent: 'body'
-            });
-
-        $('#invoiceMonth').datepicker( {
-                        format: "MM-yyyy",
-                        viewMode: "months",
-                        minViewMode: "months",
-                        autoclose: true
-                    });
-
-        $('#newinvoicegroupbutton').click(function() {
-            $("#newInvoiceGroupModal").modal('show');
-            return false;
-        })
-
-        });
-    </script>
-@stop
-
 @section('content')
-
-    <form id="invoicegroupForm" method="post" action="invoice/selectinvoicegroup">
-    <div class="row">
-        <label for="inputEmail" class="col-lg-1 control-label">Select Month</label>
-        <div class="col-sm-4">
-            <div class="input-group">
-                <input type="hidden" name="_token" value="{{ csrf_token() }}">
-                <select id="invoiceGroup" name="invoiceGroup" class="form-control"  autocomplete="off">
-                        <option value="">Search and select month/option>
-                        @foreach($invoicegroups as $i)
-                            @if($i->status)
-                                <option value={{ $i->id }}>Active Month: {{ $i->name}}</option>
-                            @else
-                                <option value={{ $i->id }}>{{ $i->name}}</option>
-                            @endif
-                        @endforeach
-                </select>
-                <span class="input-group-btn">
-                    <button type="button" class="btn btn-outline btn-primary" data-ajax-submit="#invoicegroupForm" data-ajax-callback-function="reload"><i class="fa fa-check fa-fw">  </i>Select </button>
-                    <button id="newinvoicegroupbutton" class="btn btn-outline btn-primary" ><i class="fa fa-plus fa-fw">  </i>New</button>
-
-
-
-
-                </span>
-           </div>
+    <div x-data="invoiceManager()" x-cloak>
+        <!-- Month Selection -->
+        <div class="card mb-3">
+            <div class="card-body">
+                <form x-ref="selectInvoiceForm" @submit.prevent="selectInvoiceGroup" method="post">
+                    <input type="hidden" name="_token" value="{{ csrf_token() }}">
+                    <label for="invoiceGroup" class="form-label">Select Month</label>
+                    <div class="row g-2">
+                        <div class="col">
+                            <select x-ref="invoiceGroupSelect" id="invoiceGroup" name="invoiceGroup" autocomplete="off" class="form-select">
+                                <option value="">Search and select month</option>
+                                @foreach($invoicegroups as $i)
+                                    @if($i->status)
+                                        <option value="{{ $i->id }}">Active Month: {{ $i->name}}</option>
+                                    @else
+                                        <option value="{{ $i->id }}">{{ $i->name}}</option>
+                                    @endif
+                                @endforeach
+                            </select>
+                        </div>
+                        <div class="col-auto">
+                            <button
+                                type="submit"
+                                class="btn btn-primary"
+                                :disabled="$store.app.isLoading">
+                                <i data-lucide="check"></i>
+                                <span x-text="$store.app.isLoading ? 'Selecting...' : 'Select'"></span>
+                            </button>
+                        </div>
+                        <div class="col-auto">
+                            <button
+                                type="button"
+                                class="btn btn-success"
+                                @click="const modal = new bootstrap.Modal(document.getElementById('newInvoiceGroupModal')); modal.show();">
+                                <i data-lucide="plus"></i> New
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
         </div>
-    </div>
-    </form>
 
-    <div class="row">&nbsp;</div>
-    <a href="invoice/excel" target="_blank"><button type="button" class="btn btn-outline btn-primary"><i class="fa fa-file-excel-o fa-fw">  </i>Export to Excel</button></a>
-    <a href="invoice/pdf" target="_blank"><button type="button" class="btn btn-outline btn-primary"><i class="fa fa-file-pdf-o fa-fw">  </i>Export to PDF</button></a>
-    <a href="invoice/sepa" target="_blank"><button type="button" class="btn btn-outline btn-primary"><i class="fa fa-file-pdf-o fa-fw">  </i>Export to SEPA</button></a>
-    <div class="row">&nbsp;</div>
+        <!-- Export Buttons -->
+        <div class="card mb-3">
+            <div class="card-body">
+                <div class="row g-2">
+                    <div class="col-auto">
+                        <a href="invoice/excel" target="_blank" class="btn btn-outline-success">
+                            <i data-lucide="file-spreadsheet"></i> Export to Excel
+                        </a>
+                    </div>
+                    <div class="col-auto">
+                        <a href="invoice/pdf" target="_blank" class="btn btn-outline-danger">
+                            <i data-lucide="file-text"></i> Export to PDF
+                        </a>
+                    </div>
+                    <div class="col-auto">
+                        <a href="invoice/sepa" target="_blank" class="btn btn-outline-primary">
+                            <i data-lucide="file-text"></i> Export to SEPA
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
 
-     @foreach($members as $m)
+        <!-- Member Invoices -->
+        @foreach($members as $m)
 
-        <table class="table table-striped">
-            <thead>
-                <tr>
-                    <th colspan="4"><h3><b>{{ $m->firstname . ' ' . $m->lastname }}</b></h3></th>
-                </tr>
-                <tr>
-                    <th>Product</th>
-                    <th>Description</th>
-                    <th class="col-sm-1">Amount</th>
-                    <th class="col-sm-1">TotalPrice</th>
-                </tr>
-            </thead>
+        <div class="card mb-3">
+            <div class="card-header">
+                <h3 class="card-title">{{ $m->firstname . ' ' . $m->lastname }}</h3>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-vcenter card-table">
+                    <thead>
+                        <tr>
+                            <th>Product</th>
+                            <th>Description</th>
+                            <th>Amount</th>
+                            <th>TotalPrice</th>
+                        </tr>
+                    </thead>
             <tbody>
                 <?php $total = 0; ?>
-                @foreach($m->orders()->where('invoice_group_id', '=', $currentmonth->id)->get() as $o)
+                @foreach($m->orders as $o)
                     @if(isset($products[$o->product_id]))
                         <?php $price = $o->amount * $products[$o->product_id]['price']; $total += $price; ?>
                         <tr>
                             <td> {{ $products[$o->product_id]['name'] }}</td>
                             <td> {{ $products[$o->product_id]['name'] }}</td>
                             <td> {{ $o->amount }}</td>
-                            <td>&euro;{{ money_format('%.2n', $price)  }}</td>
+                            <td>&euro;{{ number_format($price, 2, ".", ",")  }}</td>
                         </tr>
                     @else
                         <tr>
@@ -96,7 +104,7 @@
                     @endif
                 @endforeach
 
-                @foreach($m->groups()->where('invoice_group_id', '=', $currentmonth->id)->get() as $g)
+                @foreach($m->groups as $g)
                         <?php $totalprice = 0; ?>
 
 
@@ -113,7 +121,7 @@
                         <td>{{ $g->name }}</td>
                         <td>Groupmembers: {{ $totalmebers }} Total price: &euro;{{ $totalprice }}</td>
                         <td>1</td>
-                        <td>&euro;{{ money_format('%.2n', $price)  }}</td>
+                        <td>&euro;{{ number_format($price, 2, ".", ",")  }}</td>
                     </tr>
 
 
@@ -126,51 +134,84 @@
                             <td>{{ $il->productprice->product->name }}</td>
                             <td>{{ $il->productprice->description }}</td>
                             <td>1</td>
-                            <td>&euro;{{ money_format('%.2n', $price)  }}</td>
+                            <td>&euro;{{ number_format($price, 2, ".", ",")  }}</td>
                         </tr>
                     @endif
                 @endforeach
 
             </tbody>
-            <tfoot>
-                <tr class="info">
-                    <td colspan="3" align="right"><b>Total:</b></td>
-                    <td align="left"><b>&euro;{{ money_format('%.2n', $total)}}</b></td>
-                </tr>
-            </tfoot>
+                    <tfoot>
+                        <tr>
+                            <td colspan="3" class="text-end"><strong>Total:</strong></td>
+                            <td><strong>&euro;{{ number_format($total, 2, ".", ",")}}</strong></td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+        </div>
+        @endforeach
 
-
-        </table>
-        <div class="row">&nbsp;</div>
-        <div class="row">&nbsp;</div>
-    @endforeach
-
-
+        <!-- Pagination -->
+        @if($members->hasPages())
+        <div class="card">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div class="d-flex align-items-center">
+                        <label for="per_page" class="me-2 mb-0">Show:</label>
+                        <select id="per_page" class="form-select form-select-sm w-auto" onchange="window.location.href='?per_page=' + this.value">
+                            <option value="10" {{ request('per_page', 10) == 10 ? 'selected' : '' }}>10</option>
+                            <option value="25" {{ request('per_page', 10) == 25 ? 'selected' : '' }}>25</option>
+                            <option value="50" {{ request('per_page', 10) == 50 ? 'selected' : '' }}>50</option>
+                            <option value="100" {{ request('per_page', 10) == 100 ? 'selected' : '' }}>100</option>
+                        </select>
+                        <span class="ms-2 text-muted">per page</span>
+                    </div>
+                    <div>
+                        {{ $members->links() }}
+                    </div>
+                </div>
+            </div>
+        </div>
+        @endif
+    </div>
 
 @stop
 
 @section('modal')
-
-    <div id="newInvoiceGroupModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
-    	<div class="modal-dialog" >
-     		<div class="modal-content">
-    			<div class="modal-header">
-    				<button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
-    				<h4 class="modal-title">New Month</h4>
-    			</div>
-    			<div class="modal-body">
-    				<form id="NewInvoiceGroupForm"  class="form-inline" action="invoice/storeinvoicegroup" method="post">
-    			        <div class="form-group">
-    			            Select Month and year:
-    						<input type="text" id="invoiceMonth" name="invoiceMonth" class="form-control" value="" >
-    						<input type="hidden" name="_token" value="{{ csrf_token() }}">
-    						<button type="button" class="btn btn-outline btn-primary" data-ajax-submit="#NewInvoiceGroupForm" data-ajax-callback-function="reload"><i class="fa fa-save fa-fw">  </i>New Month</button>
-
-    					</div>
-    				</form>
-    			</div>
-    		</div><!-- /.modal-content -->
-    	</div><!-- /.modal-dialog -->
-    </div><!-- /.modal -->
+<div class="modal modal-blur fade" id="newInvoiceGroupModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content" x-data="invoiceManager">
+            <div class="modal-header">
+                <h5 class="modal-title">New Month</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="new-month-form" x-ref="newMonthForm" @submit.prevent="createNewMonth" method="post">
+                    <div class="mb-3">
+                        <label for="invoiceMonth" class="form-label">Select Month and year:</label>
+                        <input
+                            type="text"
+                            x-ref="invoiceMonthPicker"
+                            id="invoiceMonth"
+                            name="invoiceMonth"
+                            class="form-control"
+                            required>
+                    </div>
+                    <input type="hidden" name="_token" value="{{ csrf_token() }}">
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button
+                    type="submit"
+                    form="new-month-form"
+                    class="btn btn-primary"
+                    :disabled="$store.app.isLoading">
+                    <i data-lucide="save"></i>
+                    <span x-text="$store.app.isLoading ? 'Creating...' : 'New Month'"></span>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
 
 @stop

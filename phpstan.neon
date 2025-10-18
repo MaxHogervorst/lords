@@ -1,0 +1,19 @@
+parameters:
+    level: 5
+    paths:
+        - app
+    excludePaths:
+        - app/Http/Middleware/VerifyCsrfToken.php
+    ignoreErrors:
+        - '#Call to an undefined method Illuminate\\.*#'
+        - '#Call to static method .* on an unknown class Sentinel#'
+        - '#Call to static method .* on an unknown class Illuminate\\Support\\Facades\\Input#'
+        - '#Call to an undefined static method App\\Models\\.*#'
+        - '#Access to an undefined property App\\Models\\.*#'
+        - '#Method .* should return .* but returns .*#'
+        - '#Call to an undefined static method Maatwebsite\\Excel\\Facades\\Excel::.*#'
+        - '#Variable \$i might not be defined#'
+        - '#PHPDoc tag @param references unknown parameter#'
+        - '#Call to an undefined static method anlutro\\LaravelSettings\\Facade::.*#'
+    bootstrapFiles:
+        - bootstrap/autoload.php
