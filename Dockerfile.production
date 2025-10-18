@@ -117,14 +117,17 @@ RUN echo '#!/bin/sh' > /start.sh && \
     echo '# Regenerate composer autoloader to ensure controllers load' >> /start.sh && \
     echo 'composer dump-autoload --optimize --no-dev' >> /start.sh && \
     echo '' >> /start.sh && \
-    echo '# Clear OPcache (critical with validate_timestamps=0)' >> /start.sh && \
-    echo 'php -r "if (function_exists(\"opcache_reset\")) { opcache_reset(); echo \"OPcache cleared\\n\"; }"' >> /start.sh && \
+    echo '# CRITICAL: Clear OPcache TWICE - before and after cache regeneration' >> /start.sh && \
+    echo '# First clear: Remove stale opcache from previous deployment' >> /start.sh && \
+    echo 'php -r "if (function_exists(\"opcache_reset\")) { opcache_reset(); echo \"OPcache cleared (1/2)\\n\"; }"' >> /start.sh && \
     echo '' >> /start.sh && \
     echo '# Regenerate optimized caches' >> /start.sh && \
     echo 'php artisan config:cache' >> /start.sh && \
-    echo '# Temporarily disable route:cache to debug 404 issues' >> /start.sh && \
-    echo '# php artisan route:cache' >> /start.sh && \
+    echo 'php artisan route:cache' >> /start.sh && \
     echo 'php artisan view:cache' >> /start.sh && \
+    echo '' >> /start.sh && \
+    echo '# Second clear: Ensure fresh opcache with new route definitions' >> /start.sh && \
+    echo 'php -r "if (function_exists(\"opcache_reset\")) { opcache_reset(); echo \"OPcache cleared (2/2)\\n\"; }"' >> /start.sh && \
     echo '' >> /start.sh && \
     echo '# Run migrations' >> /start.sh && \
     echo 'php artisan migrate --force' >> /start.sh && \
