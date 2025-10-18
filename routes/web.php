@@ -64,11 +64,11 @@ Route::middleware('auth')->group(function () {
         }
     });
 
-    // Test route to debug - controller
-    Route::get('test-home', [HomeController::class, 'getIndex'])->name('test.home');
+    // Test route to debug - controller with string syntax
+    Route::get('test-home', 'App\Http\Controllers\HomeController@getIndex')->name('test.home');
 
     // Home
-    Route::get('/', [HomeController::class, 'getIndex'])->name('home');
+    Route::get('/', 'App\Http\Controllers\HomeController@getIndex')->name('home');
 
     // Orders
     Route::post('order/store/{type}', [OrderController::class, 'postStore'])->name('order.store');
