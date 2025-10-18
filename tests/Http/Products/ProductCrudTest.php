@@ -42,15 +42,18 @@ test('create product validates required fields', function () {
     $response->assertJsonStructure(['errors']);
 });
 
-test('edit product page loads', function () {
+test('edit product returns JSON with product data', function () {
     $product = Product::factory()->create();
 
     $response = $this
-        ->get("/product/{$product->id}/edit");
+        ->json('GET', "/product/{$product->id}/edit");
 
     $response->assertStatus(200)
-        ->assertViewIs('product.edit')
-        ->assertViewHas('product');
+        ->assertJsonStructure([
+            'id',
+            'name',
+            'price',
+        ]);
 });
 
 test('update product successfully', function () {

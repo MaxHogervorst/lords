@@ -42,24 +42,32 @@ test('create member validates required fields', function () {
     $response->assertJsonStructure(['errors']);
 });
 
-test('show member page loads', function () {
+test('show member returns JSON with member data', function () {
     $member = Member::factory()->create();
 
-    $response = $this->get("/member/{$member->id}");
+    $response = $this->json('GET', "/member/{$member->id}");
 
     $response->assertStatus(200)
-        ->assertViewIs('member.order')
-        ->assertViewHas('member');
+        ->assertJsonStructure([
+            'member',
+            'products',
+            'orders',
+            'orderTotals',
+            'currentMonth',
+        ]);
 });
 
-test('edit member page loads', function () {
+test('edit member returns JSON with member data', function () {
     $member = Member::factory()->create();
 
-    $response = $this->get("/member/{$member->id}/edit");
+    $response = $this->json('GET', "/member/{$member->id}/edit");
 
     $response->assertStatus(200)
-        ->assertViewIs('member.edit')
-        ->assertViewHas('member');
+        ->assertJsonStructure([
+            'id',
+            'firstname',
+            'lastname',
+        ]);
 });
 
 test('update member successfully', function () {

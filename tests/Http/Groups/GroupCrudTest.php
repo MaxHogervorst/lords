@@ -39,30 +39,39 @@ test('create group validates required fields', function () {
     $response->assertJsonStructure(['errors']);
 });
 
-test('show group page loads with products and members', function () {
+test('show group returns JSON with group data', function () {
     $group = Group::factory()->create([
         'invoice_group_id' => $this->invoiceGroup->id,
     ]);
 
     $response = $this
-        ->get("/group/{$group->id}");
+        ->json('GET', "/group/{$group->id}");
 
     $response->assertStatus(200)
-        ->assertViewIs('group.order')
-        ->assertViewHas(['group', 'products', 'members', 'currentmonth']);
+        ->assertJsonStructure([
+            'group',
+            'products',
+            'members',
+            'groupMembers',
+            'orders',
+            'orderTotals',
+            'currentMonth',
+        ]);
 });
 
-test('edit group page loads', function () {
+test('edit group returns JSON with group data', function () {
     $group = Group::factory()->create([
         'invoice_group_id' => $this->invoiceGroup->id,
     ]);
 
     $response = $this
-        ->get("/group/{$group->id}/edit");
+        ->json('GET', "/group/{$group->id}/edit");
 
     $response->assertStatus(200)
-        ->assertViewIs('group.edit')
-        ->assertViewHas('group');
+        ->assertJsonStructure([
+            'id',
+            'name',
+        ]);
 });
 
 test('update group successfully', function () {
@@ -130,7 +139,7 @@ test('remove member from group successfully', function () {
     ]);
 
     $response = $this
-        ->get("/group/deletegroupmember/{$groupMember->id}");
+        ->json('DELETE', "/group/groupmember/{$groupMember->id}");
 
     $response->assertJson(['success' => true]);
 

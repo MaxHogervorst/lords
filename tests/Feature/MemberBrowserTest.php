@@ -45,23 +45,23 @@ describe('member edit modal', function () {
         ]);
 
         actingAs($this->user)
-            ->get("/member/{$member->id}/edit")
+            ->json('GET', "/member/{$member->id}/edit")
             ->assertOk()
-            ->assertViewIs('member.edit')
-            ->assertViewHas('member', $member)
-            ->assertSee('Jane')
-            ->assertSee('Smith')
-            ->assertSee('INGBNL2A')
-            ->assertSee('NL12INGB0001234567');
+            ->assertJsonFragment([
+                'firstname' => 'Jane',
+                'lastname' => 'Smith',
+                'bic' => 'INGBNL2A',
+                'iban' => 'NL12INGB0001234567',
+            ]);
     });
 
-    it('shows had collection checkbox', function () {
+    it('returns had_collection field in JSON', function () {
         $member = Member::factory()->create(['had_collection' => true]);
 
         actingAs($this->user)
-            ->get("/member/{$member->id}/edit")
+            ->json('GET', "/member/{$member->id}/edit")
             ->assertOk()
-            ->assertSee('Had Collection');
+            ->assertJsonFragment(['had_collection' => true]);
     });
 });
 
@@ -118,27 +118,25 @@ describe('member deletion', function () {
 });
 
 describe('member order modal', function () {
-    it('loads order modal for a member', function () {
+    it('loads order data for a member via JSON', function () {
         $member = Member::factory()->create();
         $invoiceGroup = \App\Models\InvoiceGroup::factory()->create(['status' => true]);
 
         actingAs($this->user)
-            ->get("/member/{$member->id}")
+            ->json('GET', "/member/{$member->id}")
             ->assertOk()
-            ->assertViewIs('member.order');
+            ->assertJsonStructure(['member', 'products', 'orders', 'orderTotals', 'currentMonth']);
     });
 
-    it('displays order form with products', function () {
+    it('returns products in JSON response', function () {
         $member = Member::factory()->create();
         $product = \App\Models\Product::factory()->create(['name' => 'Test Product']);
         $invoiceGroup = \App\Models\InvoiceGroup::factory()->create(['status' => true]);
 
         actingAs($this->user)
-            ->get("/member/{$member->id}")
+            ->json('GET', "/member/{$member->id}")
             ->assertOk()
-            ->assertSee('Test Product')
-            ->assertSee('Select Product')
-            ->assertSee('Amount');
+            ->assertJsonFragment(['name' => 'Test Product']);
     });
 
     it('can place an order for a member', function () {
@@ -160,7 +158,7 @@ describe('member order modal', function () {
             ->exists())->toBeTrue();
     });
 
-    it('shows order history for current month', function () {
+    it('returns order history for current month in JSON', function () {
         $member = Member::factory()->create();
         $product = \App\Models\Product::factory()->create(['name' => 'Beer']);
         $invoiceGroup = \App\Models\InvoiceGroup::factory()->create(['status' => true]);
@@ -174,11 +172,9 @@ describe('member order modal', function () {
         ]);
 
         actingAs($this->user)
-            ->get("/member/{$member->id}")
+            ->json('GET', "/member/{$member->id}")
             ->assertOk()
-            ->assertSee('Order History')
-            ->assertSee('Beer')
-            ->assertSee('3');
+            ->assertJsonFragment(['product_name' => 'Beer', 'amount' => 3]);
     });
 });
 

@@ -172,9 +172,8 @@ class GroupTest extends TestCase
             'member_id' => $member->id,
         ]);
 
-        $this->json('GET', '/group/deletegroupmember/' . $group_member->id)
-            ->assertDontSee('Whoops')
-            ->assertSee('Unauthorized.');
+        $this->json('DELETE', '/group/groupmember/' . $group_member->id)
+            ->assertStatus(401);
 
         $user = \App\Models\User::factory()->create([
             'email' => 'groupmemberdelete@example.com',
@@ -183,7 +182,7 @@ class GroupTest extends TestCase
 
         $this->actingAs($user)
             ->withSession([])
-            ->json('GET', '/group/deletegroupmember/' . $group_member->id)
+            ->json('DELETE', '/group/groupmember/' . $group_member->id)
             ->assertDontSee('Whoops')
             ->assertJson([
                 'success' => true,

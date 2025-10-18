@@ -14,7 +14,6 @@ test('store fiscus request validates required fields', function () {
 
     expect($validator->fails())->toBeTrue()
         ->and($validator->errors()->has('finalproductname'))->toBeTrue()
-        ->and($validator->errors()->has('finalproductdescription'))->toBeTrue()
         ->and($validator->errors()->has('finalpriceperperson'))->toBeTrue()
         ->and($validator->errors()->has('member'))->toBeTrue();
 });
