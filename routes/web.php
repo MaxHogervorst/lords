@@ -50,24 +50,18 @@ Route::middleware('auth')->group(function () {
     // Auth
     Route::get('auth/logout', [AuthController::class, 'getLogout'])->name('auth.logout');
 
-    // Test route to debug - simple response
+    // Test route to debug - actually call the controller method
     Route::get('test-simple', function () {
-        $error = null;
-        $canInstantiate = false;
-
         try {
             $controller = app()->make(\App\Http\Controllers\HomeController::class);
-            $canInstantiate = true;
+            $response = $controller->getIndex();
+            return 'SUCCESS! Controller method executed. Response type: ' . get_class($response);
         } catch (\Exception $e) {
-            $error = $e->getMessage();
+            return response()->json([
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
         }
-
-        return response()->json([
-            'auth' => auth()->check(),
-            'homecontroller_class_exists' => class_exists('App\Http\Controllers\HomeController'),
-            'can_instantiate_controller' => $canInstantiate,
-            'instantiate_error' => $error,
-        ]);
     });
 
     // Test route to debug - controller
