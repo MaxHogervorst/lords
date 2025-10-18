@@ -17,14 +17,11 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/health',
     )
     ->withMiddleware(function (Middleware $middleware) {
-        // Trust proxies for Digital Ocean
-        // Trust Proto and Port to fix HTTPS detection, but NOT Host/Prefix
-        $middleware->trustProxies(
-            at: '*',
-            headers: \Illuminate\Http\Request::HEADER_X_FORWARDED_FOR |
-                     \Illuminate\Http\Request::HEADER_X_FORWARDED_PROTO |
-                     \Illuminate\Http\Request::HEADER_X_FORWARDED_PORT
-        );
+        // Use Digital Ocean's official TrustProxies configuration
+        // This middleware handles all X-Forwarded-* headers properly
+        $middleware->use([
+            \App\Http\Middleware\TrustProxies::class,
+        ]);
 
         // Global middleware
         $middleware->use([
