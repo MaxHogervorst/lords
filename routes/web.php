@@ -21,6 +21,7 @@ Route::middleware('guest')->group(function () {
 
 // Public invoice check
 Route::get('check-bill', [InvoiceController::class, 'getPerPerson'])->name('invoice.check-bill');
+Route::post('check-bill', [InvoiceController::class, 'postCheckBill'])->name('invoice.check-bill.post');
 Route::post('invoice/setperson', [InvoiceController::class, 'postSetPerson'])->name('invoice.setperson');
 Route::post('invoice/setpersonalinvoicegroup', [InvoiceController::class, 'postSetPersonalInvoiceGroup'])->name('invoice.setpersonalinvoicegroup');
 

@@ -270,8 +270,10 @@ class InvoiceControllerTest extends TestCase
             ->assertDontSee('Unauthorized')
             ->assertDontSee('Whoops')
             ->assertSee('Check Your Bill')
-            ->assertSee('Select Invoice Month')
-            ->assertSee('Last Name');
+            ->assertSee('Lookup Your Invoice')
+            ->assertSee('Last Name')
+            ->assertSee('IBAN')
+            ->assertSee('Invoice Month');
     }
 
     /**
@@ -288,6 +290,44 @@ class InvoiceControllerTest extends TestCase
 
         $response->assertStatus(200)
             ->assertSee('Public Test Month');
+    }
+
+    /**
+     * Test combined check-bill lookup with valid data
+     */
+    public function test_check_bill_combined_lookup_success()
+    {
+        $invoiceGroup = InvoiceGroup::factory()->create(['status' => true]);
+        $member = Member::factory()->create([
+            'lastname' => 'TestUser',
+            'iban' => 'NL91ABNA0417164300',
+        ]);
+
+        $response = $this->post('/check-bill', [
+            'name' => 'TestUser',
+            'iban' => 'NL91ABNA0417164300',
+            'invoiceGroup' => $invoiceGroup->id,
+        ]);
+
+        $response->assertRedirect(route('invoice.check-bill'))
+            ->assertSessionMissing('error');
+    }
+
+    /**
+     * Test combined check-bill lookup with invalid member
+     */
+    public function test_check_bill_combined_lookup_invalid_member()
+    {
+        $invoiceGroup = InvoiceGroup::factory()->create(['status' => true]);
+
+        $response = $this->post('/check-bill', [
+            'name' => 'NonExistent',
+            'iban' => 'NL91ABNA0417164300',
+            'invoiceGroup' => $invoiceGroup->id,
+        ]);
+
+        $response->assertRedirect(route('invoice.check-bill'))
+            ->assertSessionHas('error');
     }
 
     /**

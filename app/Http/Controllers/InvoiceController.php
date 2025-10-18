@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\CheckBillRequest;
 use App\Repositories\InvoiceRepository;
 use App\Repositories\MemberRepository;
 use App\Repositories\ProductRepository;
@@ -11,6 +12,7 @@ use App\Services\InvoiceCalculationService;
 use App\Services\InvoiceExportService;
 use App\Services\SepaGenerationService;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\View\View;
@@ -212,6 +214,41 @@ class InvoiceController extends Controller
         }
 
         return response()->json(['success' => true]);
+    }
+
+    /**
+     * Combined endpoint for check-bill page: lookup member by name, IBAN, and invoice group.
+     */
+    public function postCheckBill(CheckBillRequest $request): RedirectResponse
+    {
+        $validated = $request->validated();
+
+        $member = $this->memberRepository->findByLastnameAndIban(
+            $validated['name'],
+            $validated['iban']
+        );
+
+        if (is_null($member)) {
+            return redirect()
+                ->route('invoice.check-bill')
+                ->with('error', 'Could not find member with the provided last name and IBAN');
+        }
+
+        $invoiceGroup = $this->invoiceRepository->find((int) $validated['invoiceGroup']);
+
+        if (is_null($invoiceGroup)) {
+            return redirect()
+                ->route('invoice.check-bill')
+                ->with('error', 'Could not find the selected invoice month');
+        }
+
+        // Store both in session
+        session([
+            'member_id' => $member->id,
+            'personal_invoice_group_id' => $invoiceGroup->id,
+        ]);
+
+        return redirect()->route('invoice.check-bill');
     }
 
 }

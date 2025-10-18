@@ -21,99 +21,82 @@
         <p class="text-muted">View your personal invoice for GSRC Lords</p>
     </div>
 
-    <!-- Month Selection Card -->
-    <div class="card mb-3" x-data="{
-        async selectMonth() {
-            const formData = new FormData(document.getElementById('invoicegroupForm'));
-            try {
-                const response = await http.post('invoice/setpersonalinvoicegroup', formData);
-                if (response.data.success) {
-                    location.reload();
-                }
-            } catch (error) {
-                Alpine.store('notifications').error('Error selecting month');
-            }
-        }
-    }">
-        <div class="card-header">
-            <h3 class="card-title">Select Invoice Month</h3>
+    @if(session('error'))
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            {{ session('error') }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
-        <div class="card-body">
-            <form id="invoicegroupForm" method="post" action="invoice/setpersonalinvoicegroup">
-                <input type="hidden" name="_token" value="{{ csrf_token() }}">
-                <div class="row g-2">
-                    <div class="col">
-                        <select id="invoiceGroup" name="invoiceGroup" class="form-select" autocomplete="off">
-                            <option value="">Search and select month</option>
-                            @foreach($invoicegroups as $i)
-                                @if($i->status)
-                                    <option value="{{ $i->id }}" {{ $currentmonth->id == $i->id ? 'selected' : '' }}>Active Month: {{ $i->name }}</option>
-                                @else
-                                    <option value="{{ $i->id }}" {{ $currentmonth->id == $i->id ? 'selected' : '' }}>{{ $i->name }}</option>
-                                @endif
-                            @endforeach
-                        </select>
-                    </div>
-                    <div class="col-auto">
-                        <button type="button" class="btn btn-primary" @click="selectMonth">
-                            <i data-lucide="check"></i>
-                            Select
-                        </button>
-                    </div>
-                </div>
-            </form>
+    @endif
+
+    @if(!is_null($m))
+        <div class="alert alert-info">
+            <strong>Viewing:</strong> {{ $currentmonth->name }} - {{ $m->firstname . ' ' . $m->lastname }}
         </div>
-    </div>
+    @endif
 
-    <div class="alert alert-info">
-        <strong>Viewing:</strong> {{ $currentmonth->name }}
-    </div>
-
-    <!-- Person Lookup Card -->
+    <!-- Invoice Lookup Card -->
     <div class="card mb-3">
         <div class="card-header">
             <h3 class="card-title">Lookup Your Invoice</h3>
         </div>
         <div class="card-body">
-            <form id="invoicePersonGroup" method="post" action="invoice/setperson" x-data="{
-                async lookupPerson() {
-                    const formData = new FormData(document.getElementById('invoicePersonGroup'));
-                    try {
-                        const response = await http.post('invoice/setperson', formData);
-                        if (response.data.success) {
-                            location.reload();
-                        }
-                    } catch (error) {
-                        Alpine.store('notifications').error('Error looking up person');
-                    }
-                }
-            }">
-                <input type="hidden" name="_token" value="{{ csrf_token() }}">
+            <form method="post" action="{{ route('invoice.check-bill.post') }}">
+                @csrf
                 <div class="row g-3">
-                    <div class="col-md-5">
+                    <div class="col-md-4">
                         <label class="form-label">Last Name</label>
                         <input
                             type="text"
                             name="name"
-                            class="form-control"
+                            class="form-control @error('name') is-invalid @enderror"
                             placeholder="Enter your last name"
-                            autocomplete="off">
+                            value="{{ old('name') }}"
+                            autocomplete="off"
+                            required>
+                        @error('name')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
                     </div>
-                    <div class="col-md-5">
+                    <div class="col-md-4">
                         <label class="form-label">IBAN</label>
                         <input
                             type="text"
                             name="iban"
-                            class="form-control"
+                            class="form-control @error('iban') is-invalid @enderror"
                             placeholder="Enter your IBAN"
-                            autocomplete="off">
+                            value="{{ old('iban') }}"
+                            autocomplete="off"
+                            required>
+                        @error('iban')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
                     </div>
-                    <div class="col-md-2 d-flex align-items-end">
-                        <button type="button" class="btn btn-primary w-100" @click="lookupPerson">
-                            <i data-lucide="search"></i>
-                            Look Up
-                        </button>
+                    <div class="col-md-4">
+                        <label class="form-label">Invoice Month</label>
+                        <select id="invoiceGroup" name="invoiceGroup" class="form-select @error('invoiceGroup') is-invalid @enderror" autocomplete="off" required>
+                            <option value="">Select month</option>
+                            @foreach($invoicegroups as $i)
+                                @if($i->status)
+                                    <option value="{{ $i->id }}" {{ (old('invoiceGroup') == $i->id || (!old('invoiceGroup') && $currentmonth->id == $i->id)) ? 'selected' : '' }}>
+                                        Active: {{ $i->name }}
+                                    </option>
+                                @else
+                                    <option value="{{ $i->id }}" {{ old('invoiceGroup') == $i->id ? 'selected' : '' }}>
+                                        {{ $i->name }}
+                                    </option>
+                                @endif
+                            @endforeach
+                        </select>
+                        @error('invoiceGroup')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
                     </div>
+                </div>
+                <div class="mt-3">
+                    <button type="submit" class="btn btn-primary">
+                        <i data-lucide="search"></i>
+                        Look Up Invoice
+                    </button>
                 </div>
             </form>
         </div>
