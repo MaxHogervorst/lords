@@ -80,6 +80,9 @@ Route::middleware('auth')->group(function () {
     });
     Route::resource('group', GroupController::class);
 
+    // Test explicit member route
+    Route::get('member-test', [MemberController::class, 'index'])->name('member.test');
+
     // Resources
     Route::resource('product', ProductController::class);
     Route::resource('member', MemberController::class);
