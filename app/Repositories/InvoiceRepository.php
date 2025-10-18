@@ -48,15 +48,9 @@ class InvoiceRepository extends BaseRepository
         // Deactivate all other groups
         $this->model->newQuery()->where('status', true)->update(['status' => false]);
 
-        // Clear cache
-        Cache::forget('invoice_group');
-
         // Activate the selected group
         $invoiceGroup->status = true;
         $invoiceGroup->save();
-
-        // Update cache
-        Cache::put('invoice_group', $invoiceGroup, 1);
 
         return $invoiceGroup;
     }
@@ -73,17 +67,11 @@ class InvoiceRepository extends BaseRepository
         // Deactivate all other groups
         $this->model->newQuery()->where('status', true)->update(['status' => false]);
 
-        // Clear cache
-        Cache::forget('invoice_group');
-
         // Create new active group
         $invoiceGroup = new InvoiceGroup();
         $invoiceGroup->name = $formattedName;
         $invoiceGroup->status = true;
         $invoiceGroup->save();
-
-        // Update cache
-        Cache::put('invoice_group', $invoiceGroup, 1);
 
         return $invoiceGroup;
     }

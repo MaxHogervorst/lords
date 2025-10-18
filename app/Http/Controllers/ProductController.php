@@ -9,7 +9,6 @@ use App\Models\Product;
 use App\Repositories\ProductRepository;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Cache;
 use Illuminate\View\View;
 
 class ProductController extends Controller
@@ -43,8 +42,6 @@ class ProductController extends Controller
         ]);
 
         if ($product->exists) {
-            $this->updateProductCache();
-
             return response()->json(['success' => true, 'id' => $product->id, 'name' => $product->name, 'price' => $product->price]);
         } else {
             return response()->json(['errors' => 'Could not be added to the database']);
@@ -71,8 +68,6 @@ class ProductController extends Controller
             'price' => $validated['productPrice'],
         ]);
 
-        $this->updateProductCache();
-
         return response()->json(['success' => true, 'message' => $product->name . ' Successfully edited']);
     }
 
@@ -83,18 +78,9 @@ class ProductController extends Controller
         $deleted = $this->productRepository->delete($product);
 
         if ($deleted) {
-            $this->updateProductCache();
-
             return response()->json(['success' => true, 'message' => $product->name . ' Successfully deleted']);
         } else {
             return response()->json(['errors' => 'Could not be deleted']);
-        }
-    }
-
-    private function updateProductCache(): void
-    {
-        if (Cache::has('products')) {
-            Cache::forget('products');
         }
     }
 }

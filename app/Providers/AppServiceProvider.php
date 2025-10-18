@@ -2,6 +2,10 @@
 
 namespace App\Providers;
 
+use App\Models\InvoiceGroup;
+use App\Models\Product;
+use App\Observers\InvoiceGroupObserver;
+use App\Observers\ProductObserver;
 use App\Repositories\GroupRepository;
 use App\Repositories\InvoiceLineRepository;
 use App\Repositories\InvoiceProductPriceRepository;
@@ -20,6 +24,10 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        // Register model observers
+        Product::observe(ProductObserver::class);
+        InvoiceGroup::observe(InvoiceGroupObserver::class);
+
         // Force HTTPS in production
         if ($this->app->environment('production')) {
             URL::forceScheme('https');

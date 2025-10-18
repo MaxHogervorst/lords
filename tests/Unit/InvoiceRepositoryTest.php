@@ -29,8 +29,11 @@ test('creates invoice group with month name format', function () {
 test('sets new invoice group as active', function () {
     $invoiceGroup = $this->repository->createAndSetActive('10-25');
 
-    expect($invoiceGroup->status)->toBeTrue()
-        ->and(Cache::get('invoice_group')->id)->toBe($invoiceGroup->id);
+    expect($invoiceGroup->status)->toBeTrue();
+
+    // Verify the active invoice group can be retrieved from repository
+    $currentMonth = $this->repository->getCurrentMonth();
+    expect($currentMonth->id)->toBe($invoiceGroup->id);
 });
 
 test('deactivates previous invoice groups when creating new one', function () {
@@ -76,12 +79,18 @@ test('preserves already formatted month names', function () {
     expect($invoiceGroup->name)->toBe('October 2025');
 });
 
-test('updates cache after creating invoice group', function () {
-    Cache::forget('invoice_group');
+test('clears cache after creating invoice group', function () {
+    // Populate cache with old data
+    Cache::put('invoice_group', ['old' => 'data'], 1);
+    expect(Cache::has('invoice_group'))->toBeTrue();
 
     $invoiceGroup = $this->repository->createAndSetActive('10-25');
 
-    expect(Cache::has('invoice_group'))->toBeTrue()
-        ->and(Cache::get('invoice_group')->id)->toBe($invoiceGroup->id);
+    // Cache should be cleared by observer (not repopulated)
+    expect(Cache::has('invoice_group'))->toBeFalse();
+
+    // But getCurrentMonth should repopulate it and return the correct group
+    $currentMonth = $this->repository->getCurrentMonth();
+    expect($currentMonth->id)->toBe($invoiceGroup->id);
 });
 

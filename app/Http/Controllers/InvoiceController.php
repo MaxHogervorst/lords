@@ -12,7 +12,6 @@ use App\Services\InvoiceExportService;
 use App\Services\SepaGenerationService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\View\View;
 
@@ -152,8 +151,6 @@ class InvoiceController extends Controller
             return response()->json(['errors' => 'Could not be added to the database']);
         }
 
-        Cache::forget('invoice_group');
-
         return response()->json(['success' => true, 'id' => $invoicegroup->id, 'name' => $invoicegroup->name]);
     }
 
@@ -213,8 +210,6 @@ class InvoiceController extends Controller
         if (is_null($currentMonth)) {
             return response()->json(['errors' => 'Could not be added to the database']);
         }
-
-        Cache::forget('invoice_group');
 
         return response()->json(['success' => true]);
     }
