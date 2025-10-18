@@ -61,15 +61,22 @@ Route::middleware('auth')->group(function () {
             ];
         });
 
-        $homeRoutes = $routes->filter(function($route) {
-            return str_contains($route['uri'], '/') ||
-                   str_contains($route['action'], 'HomeController') ||
-                   str_contains(strtolower($route['name'] ?? ''), 'home');
+        $memberRoutes = $routes->filter(function($route) {
+            return str_contains($route['action'], 'MemberController') ||
+                   str_contains($route['uri'], 'member');
         });
+
+        $missingRoutes = [
+            'member_index_exists' => $routes->contains(fn($r) => $r['name'] === 'member.index'),
+            'product_index_exists' => $routes->contains(fn($r) => $r['name'] === 'product.index'),
+            'group_index_exists' => $routes->contains(fn($r) => $r['name'] === 'group.index'),
+            'member_test_exists' => $routes->contains(fn($r) => $r['name'] === 'member.test'),
+        ];
 
         return response()->json([
             'total_routes' => $routes->count(),
-            'home_related_routes' => $homeRoutes->values(),
+            'member_routes' => $memberRoutes->values(),
+            'missing_index_routes' => $missingRoutes,
         ]);
     });
 
