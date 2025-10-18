@@ -117,7 +117,8 @@ RUN echo '#!/bin/sh' > /start.sh && \
     echo '' >> /start.sh && \
     echo '# Regenerate optimized caches' >> /start.sh && \
     echo 'php artisan config:cache' >> /start.sh && \
-    echo 'php artisan route:cache' >> /start.sh && \
+    echo '# Temporarily disable route:cache to debug 404 issues' >> /start.sh && \
+    echo '# php artisan route:cache' >> /start.sh && \
     echo 'php artisan view:cache' >> /start.sh && \
     echo '' >> /start.sh && \
     echo '# Run migrations' >> /start.sh && \
