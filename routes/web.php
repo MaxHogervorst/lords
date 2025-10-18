@@ -52,14 +52,21 @@ Route::middleware('auth')->group(function () {
 
     // Test route to debug - simple response
     Route::get('test-simple', function () {
-        $autoloadExists = file_exists(base_path('vendor/autoload.php'));
-        $composerExists = file_exists(base_path('vendor/composer/autoload_classmap.php'));
+        $error = null;
+        $canInstantiate = false;
+
+        try {
+            $controller = app()->make(\App\Http\Controllers\HomeController::class);
+            $canInstantiate = true;
+        } catch (\Exception $e) {
+            $error = $e->getMessage();
+        }
 
         return response()->json([
             'auth' => auth()->check(),
-            'autoload_exists' => $autoloadExists,
-            'composer_classmap_exists' => $composerExists,
             'homecontroller_class_exists' => class_exists('App\Http\Controllers\HomeController'),
+            'can_instantiate_controller' => $canInstantiate,
+            'instantiate_error' => $error,
         ]);
     });
 
