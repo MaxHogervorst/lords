@@ -30,6 +30,7 @@ return Application::configure(basePath: dirname(__DIR__))
 
         // Global middleware
         $middleware->use([
+            \App\Http\Middleware\ForceHttpsScheme::class,
             \Illuminate\Foundation\Http\Middleware\CheckForMaintenanceMode::class,
         ]);
 
