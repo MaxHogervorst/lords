@@ -132,9 +132,6 @@ RUN echo '#!/bin/sh' > /start.sh && \
     echo '# Run migrations' >> /start.sh && \
     echo 'php artisan migrate --force' >> /start.sh && \
     echo '' >> /start.sh && \
-    echo '# Start Nightwatch agent in background' >> /start.sh && \
-    echo 'php artisan nightwatch:agent &' >> /start.sh && \
-    echo '' >> /start.sh && \
     echo '# Start supervisord (nginx + php-fpm)' >> /start.sh && \
     echo 'supervisord -c /etc/supervisor/conf.d/supervisord.conf' >> /start.sh && \
     chmod +x /start.sh
