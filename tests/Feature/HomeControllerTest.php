@@ -16,8 +16,6 @@ class HomeControllerTest extends TestCase
     {
         parent::setUp();
 
-        // Clear cache before each test
-        \Cache::flush();
 
         // Create at least one product to avoid issues
         Product::factory()->create();

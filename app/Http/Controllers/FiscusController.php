@@ -81,6 +81,7 @@ class FiscusController extends Controller
 
     public function getInvoiceprices(InvoiceProduct $invoiceProduct): JsonResponse
     {
+        $invoiceProduct->load('productprice');
         return response()->json($invoiceProduct->productprice);
     }
 
@@ -93,6 +94,7 @@ class FiscusController extends Controller
 
     public function getSpecificinvoicelines(InvoiceProductPrice $invoiceProductPrice): JsonResponse
     {
+        $invoiceProductPrice->load('invoiceline');
         return response()->json($invoiceProductPrice->invoiceline);
     }
 

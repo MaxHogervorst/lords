@@ -73,12 +73,12 @@ class FiscusService
         return DB::transaction(function () use ($invoiceProduct) {
             $name = $invoiceProduct->name;
 
-            foreach ($invoiceProduct->productprice as $price) {
-                foreach ($price->invoiceline as $line) {
-                    $line->delete();
-                }
-                $price->delete();
-            }
+            // Bulk delete invoice lines for all prices of this product
+            $priceIds = $invoiceProduct->productprice()->pluck('id');
+            InvoiceLine::whereIn('invoice_product_price_id', $priceIds)->delete();
+
+            // Bulk delete all prices for this product
+            InvoiceProductPrice::where('invoice_product_id', $invoiceProduct->id)->delete();
 
             $invoiceProduct->delete();
 
@@ -88,17 +88,18 @@ class FiscusService
 
     private function createInvoiceLines(int $priceId, array $memberIds): int
     {
-        $count = 0;
-        foreach ($memberIds as $memberId) {
-            $invoiceline = new InvoiceLine();
-            $invoiceline->invoice_product_price_id = $priceId;
-            $invoiceline->member_id = $memberId;
-            $invoiceline->save();
-            if ($invoiceline->exists) {
-                $count++;
-            }
-        }
+        // Prepare bulk insert data
+        $now = now();
+        $data = array_map(fn ($memberId) => [
+            'invoice_product_price_id' => $priceId,
+            'member_id' => $memberId,
+            'created_at' => $now,
+            'updated_at' => $now,
+        ], $memberIds);
 
-        return $count;
+        // Bulk insert all invoice lines
+        InvoiceLine::insert($data);
+
+        return count($memberIds);
     }
 }

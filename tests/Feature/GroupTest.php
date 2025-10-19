@@ -15,8 +15,6 @@ class GroupTest extends TestCase
     {
         parent::setUp();
 
-        // Clear cache
-        \Cache::flush();
 
         // Create required data for tests
         Product::factory()->create();

@@ -9,8 +9,6 @@ class OrderTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        // Clear cache before each test
-        \Cache::flush();
 
         // Create an active invoice group for tests that need it
         factory(\App\Models\InvoiceGroup::class)->create(['status' => true]);

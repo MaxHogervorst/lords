@@ -21,8 +21,6 @@ class ExcelExportTest extends TestCase
     {
         parent::setUp();
 
-        // Clear cache before each test
-        \Cache::flush();
 
         // Create at least one product
         Product::factory()->create();
@@ -79,7 +77,6 @@ class ExcelExportTest extends TestCase
         ]);
 
         // Refresh product cache
-        \Cache::forget('products');
         Product::toArrayIdAsKey();
 
         // Create order
@@ -134,7 +131,6 @@ class ExcelExportTest extends TestCase
         ]);
 
         // Refresh product cache
-        \Cache::forget('products');
         Product::toArrayIdAsKey();
 
         // Create group order
@@ -225,7 +221,6 @@ class ExcelExportTest extends TestCase
         $member = Member::factory()->create();
         $product = Product::factory()->create(['price' => 5.00]);
 
-        \Cache::forget('products');
         Product::toArrayIdAsKey();
 
         // Create multiple orders

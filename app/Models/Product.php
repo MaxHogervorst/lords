@@ -7,7 +7,6 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Facades\Cache;
 
 class Product extends Model
 {
@@ -23,13 +22,7 @@ class Product extends Model
 
     public static function toArrayIdAsKey(): array
     {
-        if (! Cache::has('products')) {
-            // Use keyBy for better performance than foreach loop
-            $products = self::all()->keyBy('id')->all();
-            Cache::put('products', $products, 1);
-        }
-
-        return Cache::get('products');
+        return self::all()->keyBy('id')->all();
     }
 
     /**

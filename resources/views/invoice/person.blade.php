@@ -122,7 +122,7 @@
                         <?php $total = 0; ?>
 
                         {{-- Individual Orders --}}
-                        @foreach($m->orders()->where('invoice_group_id', '=', $currentmonth->id)->get() as $o)
+                        @foreach($m->orders->where('invoice_group_id', $currentmonth->id) as $o)
                             <?php $price = $o->amount * $products[$o->product_id]['price']; $total += $price; ?>
                             <tr>
                                 <td>{{ $products[$o->product_id]['name'] }}</td>
@@ -133,7 +133,7 @@
                         @endforeach
 
                         {{-- Group Orders --}}
-                        @foreach($m->groups()->where('invoice_group_id', '=', $currentmonth->id)->get() as $g)
+                        @foreach($m->groups->where('invoice_group_id', $currentmonth->id) as $g)
                             <?php $totalprice = 0; ?>
                             @foreach($g->orders as $o)
                                 <?php $totalprice += $o->amount * $products[$o->product_id]['price']; ?>

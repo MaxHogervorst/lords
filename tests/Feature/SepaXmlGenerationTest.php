@@ -16,8 +16,6 @@ class SepaXmlGenerationTest extends TestCase
     {
         parent::setUp();
 
-        // Clear cache
-        \Cache::flush();
 
         // Create required data for tests
         Product::factory()->create();
@@ -66,8 +64,6 @@ class SepaXmlGenerationTest extends TestCase
         $user = \App\Models\User::factory()->create(['is_admin' => true]);
 
         $invoiceGroup = InvoiceGroup::factory()->create(['status' => true]);
-        \Cache::put('currentmonth', $invoiceGroup->id, 60);
-        \Cache::put('invoice_group', $invoiceGroup, 60);
 
         // Create member with RCUR mandate
         $member = Member::factory()->create([
@@ -79,7 +75,6 @@ class SepaXmlGenerationTest extends TestCase
         ]);
 
         $product = Product::factory()->create(['price' => 10.50]);
-        \Cache::forget('products');
         Product::toArrayIdAsKey();
 
         Order::factory()->create([
@@ -125,8 +120,6 @@ class SepaXmlGenerationTest extends TestCase
         $user = \App\Models\User::factory()->create(['is_admin' => true]);
 
         $invoiceGroup = InvoiceGroup::factory()->create(['status' => true]);
-        \Cache::put('currentmonth', $invoiceGroup->id, 60);
-        \Cache::put('invoice_group', $invoiceGroup, 60);
 
         $member = Member::factory()->create([
             'iban' => 'NL20INGB0001234567',
@@ -135,7 +128,6 @@ class SepaXmlGenerationTest extends TestCase
         ]);
 
         $product = Product::factory()->create(['price' => 5.00]);
-        \Cache::forget('products');
         Product::toArrayIdAsKey();
 
         Order::factory()->create([
@@ -183,8 +175,6 @@ class SepaXmlGenerationTest extends TestCase
         $user = \App\Models\User::factory()->create(['is_admin' => true]);
 
         $invoiceGroup = InvoiceGroup::factory()->create(['status' => true]);
-        \Cache::put('currentmonth', $invoiceGroup->id, 60);
-        \Cache::put('invoice_group', $invoiceGroup, 60);
 
         $member = Member::factory()->create([
             'firstname' => 'Jane',
@@ -195,7 +185,6 @@ class SepaXmlGenerationTest extends TestCase
         ]);
 
         $product = Product::factory()->create(['price' => 15.75]);
-        \Cache::forget('products');
         Product::toArrayIdAsKey();
 
         Order::factory()->create([
@@ -238,8 +227,6 @@ class SepaXmlGenerationTest extends TestCase
         $user = \App\Models\User::factory()->create(['is_admin' => true]);
 
         $invoiceGroup = InvoiceGroup::factory()->create(['status' => true]);
-        \Cache::put('currentmonth', $invoiceGroup->id, 60);
-        \Cache::put('invoice_group', $invoiceGroup, 60);
 
         $member = Member::factory()->create([
             'iban' => 'NL20INGB0001234567',
@@ -248,7 +235,6 @@ class SepaXmlGenerationTest extends TestCase
         ]);
 
         $product = Product::factory()->create(['price' => 7.50]);
-        \Cache::forget('products');
         Product::toArrayIdAsKey();
 
         Order::factory()->create([
@@ -286,8 +272,6 @@ class SepaXmlGenerationTest extends TestCase
         $user = \App\Models\User::factory()->create(['is_admin' => true]);
 
         $invoiceGroup = InvoiceGroup::factory()->create(['status' => true]);
-        \Cache::put('currentmonth', $invoiceGroup->id, 60);
-        \Cache::put('invoice_group', $invoiceGroup, 60);
 
         $member = Member::factory()->create([
             'iban' => 'NL20INGB0001234567',
@@ -296,7 +280,6 @@ class SepaXmlGenerationTest extends TestCase
         ]);
 
         $product = Product::factory()->create(['price' => 5.00]);
-        \Cache::forget('products');
         Product::toArrayIdAsKey();
 
         Order::factory()->create([
@@ -331,8 +314,6 @@ class SepaXmlGenerationTest extends TestCase
         $user = \App\Models\User::factory()->create(['is_admin' => true]);
 
         $invoiceGroup = InvoiceGroup::factory()->create(['status' => true]);
-        \Cache::put('currentmonth', $invoiceGroup->id, 60);
-        \Cache::put('invoice_group', $invoiceGroup, 60);
 
         $member = Member::factory()->create([
             'iban' => 'NL20INGB0001234567',
@@ -341,7 +322,6 @@ class SepaXmlGenerationTest extends TestCase
         ]);
 
         $product = Product::factory()->create(['price' => 5.00]);
-        \Cache::forget('products');
         Product::toArrayIdAsKey();
 
         Order::factory()->create([
@@ -376,8 +356,6 @@ class SepaXmlGenerationTest extends TestCase
         $user = \App\Models\User::factory()->create(['is_admin' => true]);
 
         $invoiceGroup = InvoiceGroup::factory()->create(['status' => true]);
-        \Cache::put('currentmonth', $invoiceGroup->id, 60);
-        \Cache::put('invoice_group', $invoiceGroup, 60);
 
         $member = Member::factory()->create([
             'iban' => 'NL20INGB0001234567',
@@ -386,7 +364,6 @@ class SepaXmlGenerationTest extends TestCase
         ]);
 
         $product = Product::factory()->create(['price' => 5.00]);
-        \Cache::forget('products');
         Product::toArrayIdAsKey();
 
         Order::factory()->create([
@@ -423,8 +400,6 @@ class SepaXmlGenerationTest extends TestCase
         $user = \App\Models\User::factory()->create(['is_admin' => true]);
 
         $invoiceGroup = InvoiceGroup::factory()->create(['status' => true]);
-        \Cache::put('currentmonth', $invoiceGroup->id, 60);
-        \Cache::put('invoice_group', $invoiceGroup, 60);
 
         // Member with bank info
         $memberWithBank = Member::factory()->create([
@@ -444,7 +419,6 @@ class SepaXmlGenerationTest extends TestCase
         ]);
 
         $product = Product::factory()->create(['price' => 5.00]);
-        \Cache::forget('products');
         Product::toArrayIdAsKey();
 
         Order::factory()->create([
@@ -488,8 +462,6 @@ class SepaXmlGenerationTest extends TestCase
         $user = \App\Models\User::factory()->create(['is_admin' => true]);
 
         $invoiceGroup = InvoiceGroup::factory()->create(['status' => true]);
-        \Cache::put('currentmonth', $invoiceGroup->id, 60);
-        \Cache::put('invoice_group', $invoiceGroup, 60);
 
         $member = Member::factory()->create([
             'iban' => 'NL20INGB0001234567',
@@ -498,7 +470,6 @@ class SepaXmlGenerationTest extends TestCase
         ]);
 
         $product = Product::factory()->create(['price' => 5.00]);
-        \Cache::forget('products');
         Product::toArrayIdAsKey();
 
         Order::factory()->create([
@@ -532,11 +503,8 @@ class SepaXmlGenerationTest extends TestCase
         $user = \App\Models\User::factory()->create(['is_admin' => true]);
 
         $invoiceGroup = InvoiceGroup::factory()->create(['status' => true]);
-        \Cache::put('currentmonth', $invoiceGroup->id, 60);
-        \Cache::put('invoice_group', $invoiceGroup, 60);
 
         $product = Product::factory()->create(['price' => 5.00]);
-        \Cache::forget('products');
         Product::toArrayIdAsKey();
 
         // Create 3 members with orders

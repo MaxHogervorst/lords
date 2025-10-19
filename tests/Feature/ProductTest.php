@@ -5,8 +5,6 @@ use App\Models\Product;
 use App\Models\User;
 
 beforeEach(function () {
-    // Clear cache
-    \Cache::flush();
 
     // Create required data for tests
     Product::factory()->create();

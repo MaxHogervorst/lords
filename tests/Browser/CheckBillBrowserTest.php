@@ -20,7 +20,6 @@ beforeEach(function () {
     ]);
 
     // Refresh product cache
-    \Cache::forget('products');
     Product::toArrayIdAsKey();
 
     // Create test member with orders
@@ -78,7 +77,6 @@ test('displays group orders correctly', function () {
     $group->members()->attach([$this->member->id, $member2->id]);
 
     // Refresh product cache
-    \Cache::forget('products');
     Product::toArrayIdAsKey();
 
     // Create a group order

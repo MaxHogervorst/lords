@@ -7,7 +7,6 @@ namespace App\Repositories;
 use App\Models\InvoiceGroup;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Facades\Cache;
 
 class InvoiceRepository extends BaseRepository
 {
@@ -21,15 +20,7 @@ class InvoiceRepository extends BaseRepository
      */
     public function getCurrentMonth(): ?InvoiceGroup
     {
-        if (! Cache::has('invoice_group')) {
-            $invoiceGroup = $this->model->newQuery()->where('status', true)->first();
-
-            if ($invoiceGroup) {
-                Cache::put('invoice_group', $invoiceGroup, 1);
-            }
-        }
-
-        return Cache::get('invoice_group');
+        return $this->model->newQuery()->where('status', true)->first();
     }
 
     /**

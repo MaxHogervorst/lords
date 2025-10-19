@@ -19,8 +19,6 @@ class InvoiceControllerTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        // Clear cache before each test to avoid stale product cache
-        \Cache::flush();
 
         // Create at least one product to avoid count() issues with Product::all()
         Product::factory()->create();
@@ -126,7 +124,6 @@ class InvoiceControllerTest extends TestCase
         ]);
 
         // Set current month in cache
-        \Cache::put('currentmonth', $invoiceGroup->id, 60);
 
         $this->actingAs($user)
             ->get('/invoice/pdf')
@@ -151,7 +148,6 @@ class InvoiceControllerTest extends TestCase
             'status' => true,
         ]);
 
-        \Cache::put('currentmonth', $invoiceGroup->id, 60);
 
         $response = $this->actingAs($user)
             ->call('GET', '/invoice/sepa');
@@ -450,7 +446,6 @@ class InvoiceControllerTest extends TestCase
         ]);
 
         // Refresh product cache
-        \Cache::forget('products');
         Product::toArrayIdAsKey();
 
         // Create order
@@ -503,7 +498,6 @@ class InvoiceControllerTest extends TestCase
         ]);
 
         // Refresh product cache
-        \Cache::forget('products');
         Product::toArrayIdAsKey();
 
         // Create group order
@@ -540,8 +534,6 @@ class InvoiceControllerTest extends TestCase
             'name' => 'SEPA Test Month',
             'status' => true,
         ]);
-        \Cache::put('currentmonth', $invoiceGroup->id, 60);
-        \Cache::put('invoice_group', $invoiceGroup, 60);
 
         // Set up SEPA settings
         \Settings::set('creditorName', 'Test Creditor');
@@ -571,7 +563,6 @@ class InvoiceControllerTest extends TestCase
         ]);
 
         // Refresh product cache after creating product
-        \Cache::forget('products');
         Product::toArrayIdAsKey();
 
         // Create an order for the member

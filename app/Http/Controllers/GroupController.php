@@ -56,7 +56,7 @@ class GroupController extends Controller
 
     public function show(string $id): JsonResponse
     {
-        $group = $this->groupRepository->find((int) $id);
+        $group = $this->groupRepository->find((int) $id, ['*'], ['members']);
         $products = $this->productRepository->all();
         $members = $this->memberRepository->all();
         $currentmonth = $this->invoiceRepository->getCurrentMonth();

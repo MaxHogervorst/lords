@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 use App\Models\InvoiceGroup;
 use App\Repositories\InvoiceRepository;
-use Illuminate\Support\Facades\Cache;
 
 uses()->group('unit', 'invoice');
 
@@ -62,7 +61,6 @@ test('formats various date inputs correctly', function () {
     foreach ($testCases as $input => $expected) {
         // Clean up before each test
         InvoiceGroup::query()->delete();
-        Cache::forget('invoice_group');
 
         $invoiceGroup = $this->repository->createAndSetActive($input);
 
@@ -79,18 +77,11 @@ test('preserves already formatted month names', function () {
     expect($invoiceGroup->name)->toBe('October 2025');
 });
 
-test('clears cache after creating invoice group', function () {
-    // Populate cache with old data
-    Cache::put('invoice_group', ['old' => 'data'], 1);
-    expect(Cache::has('invoice_group'))->toBeTrue();
-
+test('getCurrentMonth returns active invoice group', function () {
     $invoiceGroup = $this->repository->createAndSetActive('10-25');
 
-    // Cache should be cleared by observer (not repopulated)
-    expect(Cache::has('invoice_group'))->toBeFalse();
-
-    // But getCurrentMonth should repopulate it and return the correct group
     $currentMonth = $this->repository->getCurrentMonth();
-    expect($currentMonth->id)->toBe($invoiceGroup->id);
+    expect($currentMonth->id)->toBe($invoiceGroup->id)
+        ->and((bool) $currentMonth->status)->toBeTrue();
 });
 
