@@ -6,9 +6,14 @@ services:
     image: lords-app
     container_name: lords-app
     restart: unless-stopped
-    working_dir: /var/www
+    working_dir: /app
     ports:
       - "8080:8080"
+    environment:
+      - OCTANE_SERVER=frankenphp
+      - OCTANE_HTTPS=false
+      - LARAVEL_STORAGE_PATH=/app/storage
+      # Note: Set OCTANE_HTTPS=true in production when behind HTTPS load balancer
     networks:
       - lords-network
     depends_on:

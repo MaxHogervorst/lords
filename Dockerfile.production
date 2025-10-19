@@ -20,9 +20,9 @@ COPY vite.config.js ./
 RUN npm run build
 
 # ============================================
-# Stage 2: Build PHP application
+# Stage 2: Build PHP application with FrankenPHP
 # ============================================
-FROM php:8.4-fpm-alpine AS base
+FROM dunglas/frankenphp:1-php8.4-alpine AS base
 
 # Install system dependencies
 RUN apk add --no-cache \
@@ -36,19 +36,29 @@ RUN apk add --no-cache \
     libzip-dev \
     postgresql-client \
     postgresql-dev \
-    nginx \
-    supervisor \
     freetype-dev \
     libjpeg-turbo-dev \
     linux-headers
 
-# Install PHP extensions
-RUN docker-php-ext-configure gd --with-freetype --with-jpeg \
-    && docker-php-ext-install pdo_pgsql pgsql mbstring exif pcntl bcmath gd zip sockets opcache
+# Install PHP extensions required by Laravel and Octane
+RUN install-php-extensions \
+    pdo_pgsql \
+    pgsql \
+    mbstring \
+    exif \
+    pcntl \
+    bcmath \
+    gd \
+    zip \
+    sockets \
+    opcache
 
-# Configure OPcache for production (optimized for 512MB RAM)
+# Configure OPcache for Octane production (optimized for 512MB RAM)
+# Note: With Octane, preloading is not needed since app stays bootstrapped
+# Note: Reduced memory from 128MB to 64MB (no preload overhead)
 RUN { \
     echo 'opcache.enable=1'; \
+    echo 'opcache.enable_cli=1'; \
     echo 'opcache.memory_consumption=64'; \
     echo 'opcache.interned_strings_buffer=8'; \
     echo 'opcache.max_accelerated_files=10000'; \
@@ -62,9 +72,9 @@ RUN { \
     echo 'expose_php=Off'; \
     echo 'display_errors=Off'; \
     echo 'log_errors=On'; \
-    echo 'error_log=/var/www/storage/logs/php-error.log'; \
+    echo 'error_log=/app/storage/logs/php-error.log'; \
     echo 'max_execution_time=30'; \
-    echo 'memory_limit=128M'; \
+    echo 'memory_limit=256M'; \
     echo 'post_max_size=20M'; \
     echo 'upload_max_filesize=20M'; \
     } > /usr/local/etc/php/conf.d/production.ini
@@ -73,7 +83,7 @@ RUN { \
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
 # Set working directory
-WORKDIR /var/www
+WORKDIR /app
 
 # Copy composer files
 COPY composer.json composer.lock ./
@@ -87,61 +97,45 @@ COPY . .
 # Copy built frontend assets from frontend-builder stage
 COPY --from=frontend-builder /build/public/build ./public/build
 
-# Generate optimized autoload files (optimize without strict classmap)
+# Generate optimized autoload files
 RUN composer dump-autoload --optimize --no-dev
 
 # Create cache and log directories and set permissions
-RUN mkdir -p /var/www/storage/framework/{sessions,views,cache} \
-    && mkdir -p /var/www/bootstrap/cache \
-    && mkdir -p /var/log/supervisor \
-    && chown -R www-data:www-data /var/www \
-    && chmod -R 755 /var/www/storage \
-    && chmod -R 755 /var/www/bootstrap/cache
+RUN mkdir -p /app/storage/framework/{sessions,views,cache} \
+    && mkdir -p /app/bootstrap/cache \
+    && chown -R www-data:www-data /app \
+    && chmod -R 755 /app/storage \
+    && chmod -R 755 /app/bootstrap/cache
 
-# Copy nginx configuration
-COPY docker/nginx/production.conf /etc/nginx/http.d/default.conf
-
-# Copy PHP-FPM pool configuration (optimized for 512MB RAM)
-COPY docker/php-fpm/www.conf /usr/local/etc/php-fpm.d/www.conf
-
-# Copy supervisor configuration
-COPY docker/supervisor/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
-
-# Create startup script with OPcache clear
+# Create startup script
 RUN echo '#!/bin/sh' > /start.sh && \
-    echo '# Clear only specific caches, NOT autoloader' >> /start.sh && \
+    echo 'set -e' >> /start.sh && \
+    echo '' >> /start.sh && \
+    echo '# Clear old caches to ensure fresh config from .env' >> /start.sh && \
     echo 'php artisan config:clear' >> /start.sh && \
-    echo 'php artisan route:clear' >> /start.sh && \
-    echo 'php artisan view:clear' >> /start.sh && \
     echo '' >> /start.sh && \
-    echo '# Regenerate composer autoloader to ensure controllers load' >> /start.sh && \
-    echo 'composer dump-autoload --optimize --no-dev' >> /start.sh && \
+    echo '# Run migrations with fresh config' >> /start.sh && \
+    echo 'php artisan migrate --force' >> /start.sh && \
     echo '' >> /start.sh && \
-    echo '# CRITICAL: Clear OPcache TWICE - before and after cache regeneration' >> /start.sh && \
-    echo '# First clear: Remove stale opcache from previous deployment' >> /start.sh && \
-    echo 'php -r "if (function_exists(\"opcache_reset\")) { opcache_reset(); echo \"OPcache cleared (1/2)\\n\"; }"' >> /start.sh && \
-    echo '' >> /start.sh && \
-    echo '# Regenerate optimized caches' >> /start.sh && \
+    echo '# Build optimized caches (Octane workers will load these)' >> /start.sh && \
     echo 'php artisan config:cache' >> /start.sh && \
     echo 'php artisan route:cache' >> /start.sh && \
     echo 'php artisan view:cache' >> /start.sh && \
+    echo 'php artisan event:cache' >> /start.sh && \
     echo '' >> /start.sh && \
-    echo '# Second clear: Ensure fresh opcache with new route definitions' >> /start.sh && \
-    echo 'php -r "if (function_exists(\"opcache_reset\")) { opcache_reset(); echo \"OPcache cleared (2/2)\\n\"; }"' >> /start.sh && \
+    echo '# Start Nightwatch agent in background' >> /start.sh && \
+    echo 'php artisan nightwatch:agent &' >> /start.sh && \
     echo '' >> /start.sh && \
-    echo '# Run migrations' >> /start.sh && \
-    echo 'php artisan migrate --force' >> /start.sh && \
-    echo '' >> /start.sh && \
-    echo '# Start supervisord (nginx + php-fpm)' >> /start.sh && \
-    echo 'supervisord -c /etc/supervisor/conf.d/supervisord.conf' >> /start.sh && \
+    echo '# Start Octane (FrankenPHP) in foreground' >> /start.sh && \
+    echo 'exec php artisan octane:frankenphp --host=0.0.0.0 --port=8080 --workers=1 --max-requests=500' >> /start.sh && \
     chmod +x /start.sh
 
-# Expose port
+# Expose port (FrankenPHP default is 8000, but we'll use 8080 to match existing setup)
 EXPOSE 8080
 
 # Add healthcheck
 HEALTHCHECK --interval=30s --timeout=3s --start-period=40s --retries=3 \
     CMD wget --no-verbose --tries=1 --spider http://localhost:8080/health || exit 1
 
-# Start supervisord (manages nginx + php-fpm)
+# Start the application
 CMD ["/start.sh"]

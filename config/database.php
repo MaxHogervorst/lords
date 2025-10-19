@@ -79,7 +79,14 @@ return [
             'charset' => 'utf8',
             'prefix' => '',
             'schema' => 'public',
-            'sslmode' => 'prefer',
+            'sslmode' => env('DB_SSLMODE', 'require'),
+            // Explicitly disable client certificate files to prevent permission errors
+            'sslcert' => '',
+            'sslkey' => '',
+            'sslrootcert' => '',
+            'options' => extension_loaded('pdo_pgsql') ? [
+                PDO::PGSQL_ATTR_DISABLE_PREPARES => true,
+            ] : [],
         ],
 
     ],
