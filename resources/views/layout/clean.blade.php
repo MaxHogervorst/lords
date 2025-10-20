@@ -26,9 +26,9 @@
 
 </head>
 
-<body class="d-flex flex-column">
-    <div class="page page-center">
-        <div class="container container-tight py-4">
+<body class="d-flex flex-column min-vh-100">
+    <div class="page flex-fill d-flex align-items-center">
+        <div class="container-fluid py-4">
             @yield('content')
         </div>
     </div>

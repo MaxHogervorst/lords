@@ -69,3 +69,7 @@ tests/Browser/Videos/
 .phpunit.cache
 
 storage/
+
+# Vite build output
+public/build/
+public/hot

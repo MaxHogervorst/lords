@@ -17,12 +17,17 @@ class MemberRepository extends BaseRepository
 
     /**
      * Find member by lastname and IBAN.
+     * Performs case-insensitive search and normalizes IBAN (removes spaces).
      */
     public function findByLastnameAndIban(string $lastname, string $iban): ?Member
     {
+        // Normalize inputs
+        $lastname = trim($lastname);
+        $iban = strtoupper(str_replace(' ', '', trim($iban)));
+
         return $this->model->newQuery()
-            ->where('lastname', $lastname)
-            ->where('iban', $iban)
+            ->whereRaw('LOWER(TRIM(lastname)) = ?', [strtolower($lastname)])
+            ->whereRaw('REPLACE(UPPER(iban), \' \', \'\') = ?', [$iban])
             ->first();
     }
 

@@ -224,7 +224,8 @@ class InvoiceController extends Controller
         if (is_null($member)) {
             return redirect()
                 ->route('invoice.check-bill')
-                ->with('error', 'Could not find member with the provided last name and IBAN');
+                ->withInput()
+                ->with('error', 'We could not find a member with this combination of last name and IBAN. Please check your information and try again.');
         }
 
         $invoiceGroup = $this->invoiceRepository->find((int) $validated['invoiceGroup']);
@@ -232,7 +233,8 @@ class InvoiceController extends Controller
         if (is_null($invoiceGroup)) {
             return redirect()
                 ->route('invoice.check-bill')
-                ->with('error', 'Could not find the selected invoice month');
+                ->withInput()
+                ->with('error', 'The selected invoice month could not be found. Please try selecting a different month.');
         }
 
         // Store both in session
