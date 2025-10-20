@@ -105,16 +105,9 @@ class InvoiceController extends Controller
             ->with('products', $products);
     }
 
-    public function getPdf(): View
+    public function getPdf(): \Symfony\Component\HttpFoundation\Response
     {
-        $currentmonth = $this->invoiceRepository->getCurrentMonth();
-
-        return view('invoice.pdf')
-            ->with('currentmonth', $currentmonth)
-            ->with('members', $this->memberRepository->all(
-                ['*'],
-                ['orders.product', 'groups.orders.product', 'groups.members', 'invoice_lines.productprice.product']
-            ));
+        return $this->exportService->exportToPdf();
     }
 
     public function getExcel(): \Symfony\Component\HttpFoundation\BinaryFileResponse

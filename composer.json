@@ -13,7 +13,8 @@
         "digitick/sepa-xml" : "^2.3",
         "maatwebsite/excel": "^3.1",
         "laravel/nightwatch": "^1.15",
-        "laravel/octane": "^2.0"
+        "laravel/octane": "^2.0",
+        "barryvdh/laravel-dompdf": "^3.1"
     },
     "require-dev": {
         "spatie/laravel-ignition": "^2.4",
