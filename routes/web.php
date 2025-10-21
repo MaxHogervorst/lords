@@ -25,6 +25,21 @@ Route::post('check-bill', [InvoiceController::class, 'postCheckBill'])->name('in
 Route::post('invoice/setperson', [InvoiceController::class, 'postSetPerson'])->name('invoice.setperson');
 Route::post('invoice/setpersonalinvoicegroup', [InvoiceController::class, 'postSetPersonalInvoiceGroup'])->name('invoice.setpersonalinvoicegroup');
 
+// Debug route to check proxy headers and IP detection
+Route::get('debug/headers', function () {
+    return response()->json([
+        'client_ip' => request()->ip(),
+        'server_remote_addr' => $_SERVER['REMOTE_ADDR'] ?? 'not set',
+        'x_forwarded_for' => request()->header('X-Forwarded-For'),
+        'x_forwarded_proto' => request()->header('X-Forwarded-Proto'),
+        'x_forwarded_host' => request()->header('X-Forwarded-Host'),
+        'x_forwarded_port' => request()->header('X-Forwarded-Port'),
+        'x_real_ip' => request()->header('X-Real-IP'),
+        'all_headers' => request()->headers->all(),
+        'trusted_proxies_config' => config('app.debug') ? 'Check bootstrap/app.php' : 'hidden in production',
+    ], JSON_PRETTY_PRINT);
+})->name('debug.headers');
+
 // Authenticated routes
 Route::middleware('auth')->group(function () {
     // Auth

@@ -97,6 +97,9 @@ COPY . .
 # Copy built frontend assets from frontend-builder stage
 COPY --from=frontend-builder /build/public/build ./public/build
 
+# Copy custom Caddyfile for FrankenPHP trusted proxy configuration
+COPY Caddyfile /app/Caddyfile
+
 # Generate optimized autoload files
 RUN composer dump-autoload --optimize --no-dev
 
@@ -126,8 +129,8 @@ RUN echo '#!/bin/sh' > /start.sh && \
     echo '# Start Nightwatch agent in background' >> /start.sh && \
     echo 'php artisan nightwatch:agent &' >> /start.sh && \
     echo '' >> /start.sh && \
-    echo '# Start Octane (FrankenPHP) in foreground' >> /start.sh && \
-    echo 'exec php artisan octane:frankenphp --host=0.0.0.0 --port=8080 --workers=1 --max-requests=500' >> /start.sh && \
+    echo '# Start Octane (FrankenPHP) with custom Caddyfile for trusted proxies' >> /start.sh && \
+    echo 'exec php artisan octane:frankenphp --host=0.0.0.0 --port=8080 --workers=1 --max-requests=500 --caddyfile=/app/Caddyfile' >> /start.sh && \
     chmod +x /start.sh
 
 # Expose port (FrankenPHP default is 8000, but we'll use 8080 to match existing setup)

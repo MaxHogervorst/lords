@@ -1,0 +1,31 @@
+{
+	admin off
+
+	# Global options for FrankenPHP
+	frankenphp {
+		worker {
+			file public/frankenphp-worker.php
+			num 1
+		}
+	}
+}
+
+:8080 {
+	log {
+		level INFO
+	}
+
+	# Trust private IP ranges and common proxy sources
+	# This allows Caddy to properly read X-Forwarded-* headers
+	# from Digital Ocean load balancers
+	trusted_proxies static private_ranges
+
+	root * public
+	encode zstd br gzip
+
+	php_server {
+		index frankenphp-worker.php
+		try_files {path} frankenphp-worker.php
+		resolve_root_symlink
+	}
+}
