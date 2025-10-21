@@ -7,6 +7,8 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.dev
+    ports:
+      - "9001:9001"  # Octane FrankenPHP port for local testing
     volumes:
       # Mount code for live development
       - ./:/var/www

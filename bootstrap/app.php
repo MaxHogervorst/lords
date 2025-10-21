@@ -17,20 +17,12 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/health',
     )
     ->withMiddleware(function (Middleware $middleware) {
-        // Use Digital Ocean's official TrustProxies configuration
-        // Trust all proxies with all headers (matching Digital Ocean sample)
-        $middleware->trustProxies(
-            at: '*',
-            headers: \Illuminate\Http\Request::HEADER_X_FORWARDED_FOR |
-                     \Illuminate\Http\Request::HEADER_X_FORWARDED_HOST |
-                     \Illuminate\Http\Request::HEADER_X_FORWARDED_PORT |
-                     \Illuminate\Http\Request::HEADER_X_FORWARDED_PROTO |
-                     \Illuminate\Http\Request::HEADER_X_FORWARDED_AWS_ELB
-        );
-
-        // Global middleware
+        // Global middleware - order matters!
+        // 1. SetCloudflareIp extracts real IP from CF-Connecting-IP header
+        // 2. TrustProxies processes proxy headers
         $middleware->use([
-            \App\Http\Middleware\ForceHttpsScheme::class,
+            \App\Http\Middleware\SetCloudflareIp::class,
+            \App\Http\Middleware\TrustProxies::class,
             \Illuminate\Foundation\Http\Middleware\CheckForMaintenanceMode::class,
         ]);
 

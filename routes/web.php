@@ -25,6 +25,83 @@ Route::post('check-bill', [InvoiceController::class, 'postCheckBill'])->name('in
 Route::post('invoice/setperson', [InvoiceController::class, 'postSetPerson'])->name('invoice.setperson');
 Route::post('invoice/setpersonalinvoicegroup', [InvoiceController::class, 'postSetPersonalInvoiceGroup'])->name('invoice.setpersonalinvoicegroup');
 
+// Debug routes to check proxy headers and IP detection
+Route::get('debug/test', function () {
+    return response('DEBUG TEST WORKING - ' . now(), 200)
+        ->header('Content-Type', 'text/plain');
+});
+
+Route::get('debug/raw', function () {
+    $request = request();
+
+    $output = "=== RAW SERVER VARS ===\n\n";
+    $output .= "REMOTE_ADDR: " . ($_SERVER['REMOTE_ADDR'] ?? 'not set') . "\n";
+    $output .= "HTTP_X_FORWARDED_FOR: " . ($_SERVER['HTTP_X_FORWARDED_FOR'] ?? 'not set') . "\n";
+    $output .= "HTTP_X_FORWARDED_PROTO: " . ($_SERVER['HTTP_X_FORWARDED_PROTO'] ?? 'not set') . "\n";
+    $output .= "HTTP_X_FORWARDED_HOST: " . ($_SERVER['HTTP_X_FORWARDED_HOST'] ?? 'not set') . "\n";
+    $output .= "HTTP_X_FORWARDED_PORT: " . ($_SERVER['HTTP_X_FORWARDED_PORT'] ?? 'not set') . "\n";
+    $output .= "HTTP_X_REAL_IP: " . ($_SERVER['HTTP_X_REAL_IP'] ?? 'not set') . "\n";
+
+    $output .= "\n=== LARAVEL REQUEST ===\n\n";
+    $output .= "request()->ip(): " . $request->ip() . "\n";
+    $output .= "request()->secure(): " . ($request->secure() ? 'true' : 'false') . "\n";
+    $output .= "request()->getScheme(): " . $request->getScheme() . "\n";
+    $output .= "request()->getClientIp(): " . $request->getClientIp() . "\n";
+
+    $output .= "\n=== TRUST PROXIES DEBUG ===\n\n";
+    $output .= "getTrustedProxies(): " . json_encode($request->getTrustedProxies()) . "\n";
+    $output .= "getTrustedHeaderSet(): " . $request->getTrustedHeaderSet() . "\n";
+    $output .= "getClientIps(): " . json_encode($request->getClientIps()) . "\n";
+
+    return response($output, 200)
+        ->header('Content-Type', 'text/plain');
+});
+
+Route::get('debug/headers', function () {
+    try {
+        $data = [
+            'status' => 'success',
+            'timestamp' => now()->toIso8601String(),
+            'client_ip' => request()->ip(),
+            'server_remote_addr' => $_SERVER['REMOTE_ADDR'] ?? 'not set',
+            'x_forwarded_for' => request()->header('X-Forwarded-For'),
+            'x_forwarded_proto' => request()->header('X-Forwarded-Proto'),
+            'x_forwarded_host' => request()->header('X-Forwarded-Host'),
+            'x_forwarded_port' => request()->header('X-Forwarded-Port'),
+            'x_real_ip' => request()->header('X-Real-IP'),
+            'cf_connecting_ip' => request()->header('CF-Connecting-IP'),  // Check if Cloudflare sends this
+            'is_secure' => request()->secure(),
+            'scheme' => request()->getScheme(),
+            'server_vars' => [
+                'REMOTE_ADDR' => $_SERVER['REMOTE_ADDR'] ?? null,
+                'HTTP_X_FORWARDED_FOR' => $_SERVER['HTTP_X_FORWARDED_FOR'] ?? null,
+                'HTTP_X_FORWARDED_PROTO' => $_SERVER['HTTP_X_FORWARDED_PROTO'] ?? null,
+                'HTTP_X_REAL_IP' => $_SERVER['HTTP_X_REAL_IP'] ?? null,
+                'HTTP_CF_CONNECTING_IP' => $_SERVER['HTTP_CF_CONNECTING_IP'] ?? null,
+            ],
+            'cloudflare_headers' => [
+                'cf-connecting-ip' => request()->header('CF-Connecting-IP'),
+                'cf-ipcountry' => request()->header('CF-IPCountry'),
+                'cf-ray' => request()->header('CF-Ray'),
+                'cf-visitor' => request()->header('CF-Visitor'),
+            ],
+            'digitalocean_headers' => [
+                'do-connecting-ip' => request()->header('DO-Connecting-IP'),
+                'x-real-ip' => request()->header('X-Real-IP'),
+            ],
+        ];
+
+        return response()->json($data, 200, ['Content-Type' => 'application/json'], JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
+    } catch (\Throwable $e) {
+        return response()->json([
+            'status' => 'error',
+            'message' => $e->getMessage(),
+            'line' => $e->getLine(),
+            'file' => $e->getFile(),
+        ], 500, ['Content-Type' => 'application/json']);
+    }
+})->name('debug.headers');
+
 // Authenticated routes
 Route::middleware('auth')->group(function () {
     // Auth
