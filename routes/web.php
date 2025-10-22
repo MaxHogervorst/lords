@@ -25,19 +25,60 @@ Route::post('check-bill', [InvoiceController::class, 'postCheckBill'])->name('in
 Route::post('invoice/setperson', [InvoiceController::class, 'postSetPerson'])->name('invoice.setperson');
 Route::post('invoice/setpersonalinvoicegroup', [InvoiceController::class, 'postSetPersonalInvoiceGroup'])->name('invoice.setpersonalinvoicegroup');
 
-// Debug route to check proxy headers and IP detection
+// Debug routes to check proxy headers and IP detection
+Route::get('debug/test', function () {
+    return response('DEBUG TEST WORKING - ' . now(), 200)
+        ->header('Content-Type', 'text/plain');
+});
+
+Route::get('debug/raw', function () {
+    $output = "=== RAW SERVER VARS ===\n\n";
+    $output .= "REMOTE_ADDR: " . ($_SERVER['REMOTE_ADDR'] ?? 'not set') . "\n";
+    $output .= "HTTP_X_FORWARDED_FOR: " . ($_SERVER['HTTP_X_FORWARDED_FOR'] ?? 'not set') . "\n";
+    $output .= "HTTP_X_FORWARDED_PROTO: " . ($_SERVER['HTTP_X_FORWARDED_PROTO'] ?? 'not set') . "\n";
+    $output .= "HTTP_X_FORWARDED_HOST: " . ($_SERVER['HTTP_X_FORWARDED_HOST'] ?? 'not set') . "\n";
+    $output .= "HTTP_X_FORWARDED_PORT: " . ($_SERVER['HTTP_X_FORWARDED_PORT'] ?? 'not set') . "\n";
+    $output .= "HTTP_X_REAL_IP: " . ($_SERVER['HTTP_X_REAL_IP'] ?? 'not set') . "\n";
+    $output .= "\n=== LARAVEL REQUEST ===\n\n";
+    $output .= "request()->ip(): " . request()->ip() . "\n";
+    $output .= "request()->secure(): " . (request()->secure() ? 'true' : 'false') . "\n";
+    $output .= "request()->getScheme(): " . request()->getScheme() . "\n";
+
+    return response($output, 200)
+        ->header('Content-Type', 'text/plain');
+});
+
 Route::get('debug/headers', function () {
-    return response()->json([
-        'client_ip' => request()->ip(),
-        'server_remote_addr' => $_SERVER['REMOTE_ADDR'] ?? 'not set',
-        'x_forwarded_for' => request()->header('X-Forwarded-For'),
-        'x_forwarded_proto' => request()->header('X-Forwarded-Proto'),
-        'x_forwarded_host' => request()->header('X-Forwarded-Host'),
-        'x_forwarded_port' => request()->header('X-Forwarded-Port'),
-        'x_real_ip' => request()->header('X-Real-IP'),
-        'all_headers' => request()->headers->all(),
-        'trusted_proxies_config' => config('app.debug') ? 'Check bootstrap/app.php' : 'hidden in production',
-    ], JSON_PRETTY_PRINT);
+    try {
+        $data = [
+            'status' => 'success',
+            'timestamp' => now()->toIso8601String(),
+            'client_ip' => request()->ip(),
+            'server_remote_addr' => $_SERVER['REMOTE_ADDR'] ?? 'not set',
+            'x_forwarded_for' => request()->header('X-Forwarded-For'),
+            'x_forwarded_proto' => request()->header('X-Forwarded-Proto'),
+            'x_forwarded_host' => request()->header('X-Forwarded-Host'),
+            'x_forwarded_port' => request()->header('X-Forwarded-Port'),
+            'x_real_ip' => request()->header('X-Real-IP'),
+            'is_secure' => request()->secure(),
+            'scheme' => request()->getScheme(),
+            'server_vars' => [
+                'REMOTE_ADDR' => $_SERVER['REMOTE_ADDR'] ?? null,
+                'HTTP_X_FORWARDED_FOR' => $_SERVER['HTTP_X_FORWARDED_FOR'] ?? null,
+                'HTTP_X_FORWARDED_PROTO' => $_SERVER['HTTP_X_FORWARDED_PROTO'] ?? null,
+                'HTTP_X_REAL_IP' => $_SERVER['HTTP_X_REAL_IP'] ?? null,
+            ],
+        ];
+
+        return response()->json($data, 200, ['Content-Type' => 'application/json'], JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
+    } catch (\Throwable $e) {
+        return response()->json([
+            'status' => 'error',
+            'message' => $e->getMessage(),
+            'line' => $e->getLine(),
+            'file' => $e->getFile(),
+        ], 500, ['Content-Type' => 'application/json']);
+    }
 })->name('debug.headers');
 
 // Authenticated routes
