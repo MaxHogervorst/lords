@@ -17,8 +17,11 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/health',
     )
     ->withMiddleware(function (Middleware $middleware) {
-        // Use Laravel's built-in TrustProxies middleware (configured via App\Http\Middleware\TrustProxies)
+        // Global middleware - order matters!
+        // 1. SetCloudflareIp extracts real IP from CF-Connecting-IP header
+        // 2. TrustProxies processes proxy headers
         $middleware->use([
+            \App\Http\Middleware\SetCloudflareIp::class,
             \App\Http\Middleware\TrustProxies::class,
             \Illuminate\Foundation\Http\Middleware\CheckForMaintenanceMode::class,
         ]);

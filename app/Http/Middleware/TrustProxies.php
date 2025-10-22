@@ -10,9 +10,24 @@ class TrustProxies extends Middleware
     /**
      * The trusted proxies for this application.
      *
+     * We trust only private network ranges (Digital Ocean load balancer).
+     * Cloudflare's real client IP is handled by SetCloudflareIp middleware
+     * which reads the CF-Connecting-IP header.
+     *
+     * This approach requires zero maintenance - no need to update Cloudflare IP ranges.
+     *
      * @var array<int, string>|string|null
      */
-    protected $proxies = '*';
+    protected $proxies = [
+        // Private network ranges (Digital Ocean load balancer)
+        '10.0.0.0/8',
+        '172.16.0.0/12',
+        '192.168.0.0/16',
+
+        // Localhost/loopback
+        '127.0.0.0/8',
+        '::1',
+    ];
 
     /**
      * The headers that should be used to detect proxies.
@@ -26,3 +41,4 @@ class TrustProxies extends Middleware
         Request::HEADER_X_FORWARDED_PROTO |
         Request::HEADER_X_FORWARDED_PREFIX;
 }
+
