@@ -17,20 +17,9 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/health',
     )
     ->withMiddleware(function (Middleware $middleware) {
-        // Use Digital Ocean's official TrustProxies configuration
-        // Trust all proxies with all headers (matching Digital Ocean sample)
-        $middleware->trustProxies(
-            at: '*',
-            headers: \Illuminate\Http\Request::HEADER_X_FORWARDED_FOR |
-                     \Illuminate\Http\Request::HEADER_X_FORWARDED_HOST |
-                     \Illuminate\Http\Request::HEADER_X_FORWARDED_PORT |
-                     \Illuminate\Http\Request::HEADER_X_FORWARDED_PROTO |
-                     \Illuminate\Http\Request::HEADER_X_FORWARDED_AWS_ELB
-        );
-
-        // Global middleware
+        // Use Laravel's built-in TrustProxies middleware (configured via App\Http\Middleware\TrustProxies)
         $middleware->use([
-            \App\Http\Middleware\ForceHttpsScheme::class,
+            \App\Http\Middleware\TrustProxies::class,
             \Illuminate\Foundation\Http\Middleware\CheckForMaintenanceMode::class,
         ]);
 

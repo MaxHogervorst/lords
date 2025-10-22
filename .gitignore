@@ -73,3 +73,6 @@ storage/
 # Vite build output
 public/build/
 public/hot
+**/caddy
+frankenphp
+frankenphp-worker.php

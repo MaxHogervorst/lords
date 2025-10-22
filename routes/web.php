@@ -32,6 +32,8 @@ Route::get('debug/test', function () {
 });
 
 Route::get('debug/raw', function () {
+    $request = request();
+
     $output = "=== RAW SERVER VARS ===\n\n";
     $output .= "REMOTE_ADDR: " . ($_SERVER['REMOTE_ADDR'] ?? 'not set') . "\n";
     $output .= "HTTP_X_FORWARDED_FOR: " . ($_SERVER['HTTP_X_FORWARDED_FOR'] ?? 'not set') . "\n";
@@ -39,10 +41,17 @@ Route::get('debug/raw', function () {
     $output .= "HTTP_X_FORWARDED_HOST: " . ($_SERVER['HTTP_X_FORWARDED_HOST'] ?? 'not set') . "\n";
     $output .= "HTTP_X_FORWARDED_PORT: " . ($_SERVER['HTTP_X_FORWARDED_PORT'] ?? 'not set') . "\n";
     $output .= "HTTP_X_REAL_IP: " . ($_SERVER['HTTP_X_REAL_IP'] ?? 'not set') . "\n";
+
     $output .= "\n=== LARAVEL REQUEST ===\n\n";
-    $output .= "request()->ip(): " . request()->ip() . "\n";
-    $output .= "request()->secure(): " . (request()->secure() ? 'true' : 'false') . "\n";
-    $output .= "request()->getScheme(): " . request()->getScheme() . "\n";
+    $output .= "request()->ip(): " . $request->ip() . "\n";
+    $output .= "request()->secure(): " . ($request->secure() ? 'true' : 'false') . "\n";
+    $output .= "request()->getScheme(): " . $request->getScheme() . "\n";
+    $output .= "request()->getClientIp(): " . $request->getClientIp() . "\n";
+
+    $output .= "\n=== TRUST PROXIES DEBUG ===\n\n";
+    $output .= "getTrustedProxies(): " . json_encode($request->getTrustedProxies()) . "\n";
+    $output .= "getTrustedHeaderSet(): " . $request->getTrustedHeaderSet() . "\n";
+    $output .= "getClientIps(): " . json_encode($request->getClientIps()) . "\n";
 
     return response($output, 200)
         ->header('Content-Type', 'text/plain');
