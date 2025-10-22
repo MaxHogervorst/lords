@@ -11,10 +11,10 @@ class TrustProxies extends Middleware
      * The trusted proxies for this application.
      *
      * We trust only private network ranges (Digital Ocean load balancer).
-     * Cloudflare's real client IP is handled by SetCloudflareIp middleware
-     * which reads the CF-Connecting-IP header.
+     * Real client IP is extracted by SetCloudflareIp middleware
+     * which reads the DO-Connecting-IP header from Digital Ocean's load balancer.
      *
-     * This approach requires zero maintenance - no need to update Cloudflare IP ranges.
+     * This approach requires zero maintenance - no need to update IP ranges.
      *
      * @var array<int, string>|string|null
      */

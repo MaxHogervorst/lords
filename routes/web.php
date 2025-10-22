@@ -85,6 +85,10 @@ Route::get('debug/headers', function () {
                 'cf-ray' => request()->header('CF-Ray'),
                 'cf-visitor' => request()->header('CF-Visitor'),
             ],
+            'digitalocean_headers' => [
+                'do-connecting-ip' => request()->header('DO-Connecting-IP'),
+                'x-real-ip' => request()->header('X-Real-IP'),
+            ],
         ];
 
         return response()->json($data, 200, ['Content-Type' => 'application/json'], JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);

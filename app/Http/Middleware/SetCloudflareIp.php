@@ -7,10 +7,10 @@ use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
 /**
- * Cloudflare-specific middleware to extract the real client IP from CF-Connecting-IP header.
+ * Extract the real client IP from Digital Ocean's DO-Connecting-IP header.
  *
- * This is more reliable than maintaining a list of Cloudflare IP ranges.
- * Cloudflare always sends the CF-Connecting-IP header with the real client IP.
+ * Digital Ocean load balancers send the real client IP in the DO-Connecting-IP header.
+ * This is more reliable than maintaining lists of Cloudflare IP ranges.
  *
  * This middleware should run BEFORE TrustProxies.
  */
@@ -21,11 +21,11 @@ class SetCloudflareIp
      */
     public function handle(Request $request, Closure $next): Response
     {
-        // If CF-Connecting-IP header exists (request came through Cloudflare)
-        if ($cfIp = $request->header('CF-Connecting-IP')) {
+        // Check for DO-Connecting-IP header (Digital Ocean load balancer)
+        if ($realIp = $request->header('DO-Connecting-IP')) {
             // Replace X-Forwarded-For with the real client IP
             // This ensures TrustProxies extracts the correct IP
-            $request->headers->set('X-Forwarded-For', $cfIp);
+            $request->headers->set('X-Forwarded-For', $realIp);
 
             // Keep REMOTE_ADDR as the load balancer IP (trusted proxy)
             // so TrustProxies middleware will process the headers
