@@ -23,15 +23,32 @@ class SetCloudflareIp
     {
         // If CF-Connecting-IP header exists (request came through Cloudflare)
         if ($cfIp = $request->header('CF-Connecting-IP')) {
-            // Prepend the real IP to X-Forwarded-For
-            $existingForwardedFor = $request->header('X-Forwarded-For', '');
-            $newForwardedFor = $existingForwardedFor
-                ? "{$cfIp},{$existingForwardedFor}"
-                : $cfIp;
+            // Replace X-Forwarded-For with the real client IP
+            // This ensures TrustProxies extracts the correct IP
+            $request->headers->set('X-Forwarded-For', $cfIp);
 
-            $request->headers->set('X-Forwarded-For', $newForwardedFor);
+            // Keep REMOTE_ADDR as the load balancer IP (trusted proxy)
+            // so TrustProxies middleware will process the headers
+            // If REMOTE_ADDR is not already set to a private IP, set it to a trusted one
+            $remoteAddr = $request->server->get('REMOTE_ADDR');
+            if (!$this->isPrivateIp($remoteAddr)) {
+                // Set to a trusted private IP so TrustProxies will trust it
+                $request->server->set('REMOTE_ADDR', '10.0.0.1');
+            }
         }
 
         return $next($request);
+    }
+
+    /**
+     * Check if an IP is in private ranges.
+     */
+    private function isPrivateIp(?string $ip): bool
+    {
+        if (!$ip) {
+            return false;
+        }
+
+        return filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE) === false;
     }
 }

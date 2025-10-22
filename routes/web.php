@@ -69,6 +69,7 @@ Route::get('debug/headers', function () {
             'x_forwarded_host' => request()->header('X-Forwarded-Host'),
             'x_forwarded_port' => request()->header('X-Forwarded-Port'),
             'x_real_ip' => request()->header('X-Real-IP'),
+            'cf_connecting_ip' => request()->header('CF-Connecting-IP'),  // Check if Cloudflare sends this
             'is_secure' => request()->secure(),
             'scheme' => request()->getScheme(),
             'server_vars' => [
@@ -76,6 +77,13 @@ Route::get('debug/headers', function () {
                 'HTTP_X_FORWARDED_FOR' => $_SERVER['HTTP_X_FORWARDED_FOR'] ?? null,
                 'HTTP_X_FORWARDED_PROTO' => $_SERVER['HTTP_X_FORWARDED_PROTO'] ?? null,
                 'HTTP_X_REAL_IP' => $_SERVER['HTTP_X_REAL_IP'] ?? null,
+                'HTTP_CF_CONNECTING_IP' => $_SERVER['HTTP_CF_CONNECTING_IP'] ?? null,
+            ],
+            'cloudflare_headers' => [
+                'cf-connecting-ip' => request()->header('CF-Connecting-IP'),
+                'cf-ipcountry' => request()->header('CF-IPCountry'),
+                'cf-ray' => request()->header('CF-Ray'),
+                'cf-visitor' => request()->header('CF-Visitor'),
             ],
         ];
 
