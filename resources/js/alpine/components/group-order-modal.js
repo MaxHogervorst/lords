@@ -94,21 +94,26 @@ export default {
                 _token: tokenInput?.value || ''
             };
 
-            const response = await http.post('/groupmembers', data);
+            const response = await http.post('/group/addmember', data);
 
             if (response.data.success) {
                 Alpine.store('notifications').success(
                     response.data.message || 'Member added to group successfully'
                 );
 
+                // Add new member to the group members list
+                const newMember = {
+                    id: response.data.memberid,
+                    firstname: response.data.firstname,
+                    lastname: response.data.lastname,
+                    pivot_id: response.data.id
+                };
+                Alpine.store('modals').orderModal.groupMembers.push(newMember);
+
                 // Clear the form
                 form.reset();
 
-                // Close modal
-                const modalEl = this.$el.closest('.modal');
-                if (modalEl) {
-                    window.closeModal(modalEl.id);
-                }
+                // Don't close modal - allow adding multiple members
             }
         } catch (error) {
             Alpine.store('notifications').error(

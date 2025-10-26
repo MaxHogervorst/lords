@@ -164,7 +164,19 @@ class GroupController extends Controller
         );
 
         if (!$v->passes()) {
-            return response()->json(['errors' => $v->errors()]);
+            return response()->json(['errors' => $v->errors()], 422);
+        }
+
+        // Check if member is already in the group
+        $existingMember = GroupMember::where('group_id', $request->get('groupid'))
+            ->where('member_id', $request->get('member'))
+            ->first();
+
+        if ($existingMember) {
+            return response()->json([
+                'success' => false,
+                'message' => 'This member is already in the group'
+            ], 422);
         }
 
         $groupmember = new GroupMember();
@@ -176,8 +188,9 @@ class GroupController extends Controller
 
         return response()->json([
             'success' => true,
-            'membername' => $member->firstname . ' ' . $member->lastname,
             'memberid' => $member->id,
+            'firstname' => $member->firstname,
+            'lastname' => $member->lastname,
             'id' => $groupmember->id
         ]);
     }
