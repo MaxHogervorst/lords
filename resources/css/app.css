@@ -113,3 +113,73 @@
         font-size: 1.25rem !important;
     }
 }
+
+/* Searchable Dropdown Styles */
+.searchable-dropdown {
+    position: relative;
+}
+
+.searchable-dropdown-menu {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    z-index: 1050;
+    max-height: 250px;
+    overflow-y: auto;
+    background-color: #ffffff;
+    border: 1px solid #dee2e6;
+    border-radius: 0.25rem;
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+    margin-top: 0.125rem;
+}
+
+.searchable-dropdown-item {
+    padding: 0.5rem 1rem;
+    cursor: pointer;
+    transition: background-color 0.15s ease-in-out;
+    color: #212529;
+}
+
+.searchable-dropdown-item:hover:not(.disabled) {
+    background-color: #f8f9fa;
+}
+
+.searchable-dropdown-item:active:not(.disabled) {
+    background-color: #e9ecef;
+}
+
+.searchable-dropdown-item.disabled {
+    cursor: default;
+    color: #6c757d;
+    background-color: #ffffff;
+}
+
+/* Ensure dropdown appears above modal content */
+.modal .searchable-dropdown-menu {
+    z-index: 1060;
+}
+
+/* Smooth dropdown animation */
+.searchable-dropdown-menu[x-transition] {
+    transition: opacity 0.15s ease-in-out;
+}
+
+/* Scrollbar styling for dropdown */
+.searchable-dropdown-menu::-webkit-scrollbar {
+    width: 8px;
+}
+
+.searchable-dropdown-menu::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 0.25rem;
+}
+
+.searchable-dropdown-menu::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 0.25rem;
+}
+
+.searchable-dropdown-menu::-webkit-scrollbar-thumb:hover {
+    background: #555;
+}

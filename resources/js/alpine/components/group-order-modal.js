@@ -18,13 +18,13 @@ export default {
 
             // Manually read form field values and send as JSON
             const amountInput = form.querySelector('input[name="amount"]');
-            const productSelect = form.querySelector('select[name="product"]');
+            const productInput = form.querySelector('input[name="product"]');
             const memberIdInput = form.querySelector('input[name="memberId"]');
             const tokenInput = form.querySelector('input[name="_token"]');
 
             const data = {
                 amount: amountInput?.value || '1',
-                product: productSelect?.value || '',
+                product: productInput?.value || '',
                 memberId: memberIdInput?.value || '',
                 _token: tokenInput?.value || ''
             };
@@ -84,12 +84,12 @@ export default {
             const form = document.getElementById('add-groupmembers-form');
 
             // Manually read form field values and send as JSON
-            const memberSelect = form.querySelector('select[name="member"]');
+            const memberInput = form.querySelector('input[name="member"]');
             const groupidInput = form.querySelector('input[name="groupid"]');
             const tokenInput = form.querySelector('input[name="_token"]');
 
             const data = {
-                member: memberSelect?.value || '',
+                member: memberInput?.value || '',
                 groupid: groupidInput?.value || '',
                 _token: tokenInput?.value || ''
             };

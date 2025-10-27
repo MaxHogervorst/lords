@@ -38,6 +38,7 @@ import productEditModal from './alpine/components/product-edit-modal.js';
 import invoiceManager from './alpine/components/invoice.js';
 import groupsManager from './alpine/components/groups.js';
 import confirmModal from './alpine/components/confirm-modal.js';
+import searchableDropdown from './alpine/components/searchable-dropdown.js';
 
 // Configure ky with CSRF token and default headers
 const http = ky.create({
@@ -257,6 +258,7 @@ document.addEventListener('alpine:init', () => {
     Alpine.data('invoiceManager', invoiceManager);
     Alpine.data('groupsManager', groupsManager);
     Alpine.data('confirmModal', confirmModal);
+    Alpine.data('searchableDropdown', searchableDropdown);
 });
 
 // Start Alpine

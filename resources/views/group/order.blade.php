@@ -22,12 +22,43 @@
                         <input type="number" id="amount" name="amount" value="1" autocomplete="off" class="form-control" placeholder="Amount" data-testid="order-amount-input">
                     </div>
                     <div class="col">
-                        <select id="product-select" name="product" class="form-select" data-testid="order-product-select">
-                            <option value="">Select Product</option>
-                            <template x-for="product in $store.modals.orderModal.products" :key="product.id">
-                                <option :value="product.id" x-text="product.name"></option>
-                            </template>
-                        </select>
+                        <div x-data="searchableDropdown()"
+                             x-init="placeholder = 'Search products...'"
+                             x-effect="options = $store.modals.orderModal.products || []"
+                             @option-selected="$el.querySelector('input[name=product]').value = $event.detail.value"
+                             class="searchable-dropdown">
+                            <div class="position-relative">
+                                <input
+                                    type="text"
+                                    x-model="search"
+                                    @click="isOpen = true"
+                                    @keydown="handleKeydown"
+                                    :placeholder="selectedLabel || placeholder"
+                                    class="form-control"
+                                    autocomplete="off"
+                                    x-ref="searchInput"
+                                    data-testid="order-product-select">
+                                <input type="hidden" name="product" id="product-select">
+
+                                <div x-show="isOpen && filteredOptions.length > 0"
+                                     @click.outside="closeDropdown"
+                                     class="searchable-dropdown-menu"
+                                     x-transition>
+                                    <template x-for="option in filteredOptions" :key="getOptionValue(option)">
+                                        <div class="searchable-dropdown-item"
+                                             @click="selectOption(option)"
+                                             x-text="getOptionLabel(option)">
+                                        </div>
+                                    </template>
+                                </div>
+
+                                <template x-if="isOpen && filteredOptions.length === 0 && search">
+                                    <div class="searchable-dropdown-menu">
+                                        <div class="searchable-dropdown-item disabled">No products found</div>
+                                    </div>
+                                </template>
+                            </div>
+                        </div>
                     </div>
                     <div class="col-auto">
                         <button type="submit" :disabled="isLoading" class="btn btn-primary" data-testid="order-submit-button">
@@ -98,12 +129,43 @@
             <form id="add-groupmembers-form" @submit.prevent="addGroupMember" class="mb-4">
                 <div class="row g-2">
                     <div class="col">
-                        <select id="member-select" name="member" class="form-select" data-testid="group-member-select">
-                            <option value="">Select Member</option>
-                            <template x-for="member in $store.modals.orderModal.members" :key="member.id">
-                                <option :value="member.id" x-text="member.firstname + ' ' + member.lastname"></option>
-                            </template>
-                        </select>
+                        <div x-data="searchableDropdown()"
+                             x-init="placeholder = 'Search members...'"
+                             x-effect="options = $store.modals.orderModal.members || []"
+                             @option-selected="$el.querySelector('input[name=member]').value = $event.detail.value"
+                             class="searchable-dropdown">
+                            <div class="position-relative">
+                                <input
+                                    type="text"
+                                    x-model="search"
+                                    @click="isOpen = true"
+                                    @keydown="handleKeydown"
+                                    :placeholder="selectedLabel || placeholder"
+                                    class="form-control"
+                                    autocomplete="off"
+                                    x-ref="searchInput"
+                                    data-testid="group-member-select">
+                                <input type="hidden" name="member" id="member-select">
+
+                                <div x-show="isOpen && filteredOptions.length > 0"
+                                     @click.outside="closeDropdown"
+                                     class="searchable-dropdown-menu"
+                                     x-transition>
+                                    <template x-for="option in filteredOptions" :key="getOptionValue(option)">
+                                        <div class="searchable-dropdown-item"
+                                             @click="selectOption(option)"
+                                             x-text="getOptionLabel(option)">
+                                        </div>
+                                    </template>
+                                </div>
+
+                                <template x-if="isOpen && filteredOptions.length === 0 && search">
+                                    <div class="searchable-dropdown-menu">
+                                        <div class="searchable-dropdown-item disabled">No members found</div>
+                                    </div>
+                                </template>
+                            </div>
+                        </div>
                     </div>
                     <div class="col-auto">
                         <button type="submit" :disabled="isLoading" class="btn btn-primary" data-testid="group-member-submit-button">
