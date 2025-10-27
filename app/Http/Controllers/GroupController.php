@@ -167,18 +167,6 @@ class GroupController extends Controller
             return response()->json(['errors' => $v->errors()], 422);
         }
 
-        // Check if member is already in the group
-        $existingMember = GroupMember::where('group_id', $request->get('groupid'))
-            ->where('member_id', $request->get('member'))
-            ->first();
-
-        if ($existingMember) {
-            return response()->json([
-                'success' => false,
-                'message' => 'This member is already in the group'
-            ], 422);
-        }
-
         $groupmember = new GroupMember();
         $groupmember->group_id = $request->get('groupid');
         $groupmember->member_id = $request->get('member');

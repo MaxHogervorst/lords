@@ -19,7 +19,7 @@
             <form id="order-form" action="{{ url('order/store/Group') }}" @submit.prevent="saveOrder" class="mb-4">
                 <div class="row g-2">
                     <div class="col">
-                        <input type="number" id="amount" name="amount" value="1" min="1" autocomplete="off" class="form-control" placeholder="Amount" data-testid="order-amount-input">
+                        <input type="number" id="amount" name="amount" value="1" autocomplete="off" class="form-control" placeholder="Amount" data-testid="order-amount-input">
                     </div>
                     <div class="col">
                         <select id="product-select" name="product" class="form-select" data-testid="order-product-select">
