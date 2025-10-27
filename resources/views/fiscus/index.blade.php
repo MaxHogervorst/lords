@@ -2,46 +2,61 @@
 
 
 @section('content')
-    <div class="card mb-3">
-        <div class="card-body">
-            <form id="product-form" name="member-form" action="{{ url('product') }}" method="post">
+    @php
+        $productsData = ($invoice_products ?? collect())->map(fn($p) => ['id' => $p->id, 'name' => $p->name])->values();
+    @endphp
+    <div x-data="fiscusManager(@js($productsData))" x-cloak>
+        <!-- Search Form -->
+        <div class="card mb-3">
+            <div class="card-body">
                 <div class="row g-2">
                     <div class="col">
-                        <input type="search" id="filter" name="name" placeholder="Search or Add" class="form-control" autofocus="" autocomplete="off">
+                        <input
+                            type="search"
+                            x-model="searchQuery"
+                            x-ref="searchInput"
+                            placeholder="Search products"
+                            class="form-control"
+                            autofocus
+                            autocomplete="off">
                     </div>
                 </div>
-                <input type="hidden" name="_token" value="{{ csrf_token() }}">
-            </form>
+            </div>
+        </div>
+
+        <!-- Products Table -->
+        <div class="card">
+            <div class="table-responsive">
+                <table class="table table-vcenter card-table">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th class="w-1">Actions</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        <template x-for="product in filteredProducts" :key="product.id">
+                            <tr>
+                                <td x-text="product.name"></td>
+                                <td class="text-nowrap">
+                                    <a :href="`{{ url('fiscus/edit') }}?product=${product.id}`" class="btn btn-sm btn-ghost-primary">
+                                        <i data-lucide="edit"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                        </template>
+
+                        <template x-if="filteredProducts.length === 0">
+                            <tr>
+                                <td colspan="2" class="text-center text-muted">
+                                    No products found
+                                </td>
+                            </tr>
+                        </template>
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
-
-    <div class="card">
-        <div class="table-responsive">
-            <table class="table table-vcenter card-table" id="products">
-                <thead>
-                    <tr>
-                        <th>Name</th>
-                        <th class="w-1">Actions</th>
-                    </tr>
-                </thead>
-
-                <tbody>
-                @foreach ($invoice_products as $m)
-                    <tr id="{{ $m->id }}">
-                        <td>{{ $m->name }}</td>
-
-                        <td class="text-nowrap">
-                            <a href="{{ url('fiscus/edit') }}?product={{ $m->id }}" class="btn btn-sm btn-ghost-primary">
-                                <i data-lucide="edit"></i>
-                            </a>
-                        </td>
-
-                    </tr>
-                @endforeach
-                </tbody>
-
-            </table>
-        </div>
-    </div>
-
 @stop

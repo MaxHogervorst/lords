@@ -37,6 +37,7 @@ import productsManager from './alpine/components/products.js';
 import productEditModal from './alpine/components/product-edit-modal.js';
 import invoiceManager from './alpine/components/invoice.js';
 import groupsManager from './alpine/components/groups.js';
+import fiscusManager from './alpine/components/fiscus.js';
 import confirmModal from './alpine/components/confirm-modal.js';
 import searchableDropdown from './alpine/components/searchable-dropdown.js';
 
@@ -257,6 +258,7 @@ document.addEventListener('alpine:init', () => {
     Alpine.data('productEditModal', productEditModal);
     Alpine.data('invoiceManager', invoiceManager);
     Alpine.data('groupsManager', groupsManager);
+    Alpine.data('fiscusManager', fiscusManager);
     Alpine.data('confirmModal', confirmModal);
     Alpine.data('searchableDropdown', searchableDropdown);
 });

@@ -20,6 +20,23 @@ export default (initialGroups = []) => ({
                 });
             }
         });
+
+        // Watch search query and refresh icons when results change
+        this.$watch('searchQuery', () => {
+            this.$nextTick(() => {
+                window.refreshIcons?.();
+            });
+        });
+
+        // Listen for group updated event
+        window.addEventListener('group:updated', (event) => {
+            this.updateGroup(event.detail);
+        });
+
+        // Listen for group deleted event
+        window.addEventListener('group:deleted', (event) => {
+            this.removeGroup(event.detail.id);
+        });
     },
 
     /**
@@ -152,6 +169,23 @@ export default (initialGroups = []) => ({
         const index = this.groups.findIndex(g => g.id === updatedGroup.id);
         if (index !== -1) {
             this.groups[index] = { ...this.groups[index], ...updatedGroup };
+
+            // Refresh icons after updating DOM
+            this.$nextTick(() => {
+                window.refreshIcons?.();
+            });
         }
+    },
+
+    /**
+     * Remove group from list after delete (optimistic update)
+     */
+    removeGroup(groupId) {
+        this.groups = this.groups.filter(g => g.id !== groupId);
+
+        // Refresh icons after updating DOM
+        this.$nextTick(() => {
+            window.refreshIcons?.();
+        });
     }
 });

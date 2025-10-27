@@ -11,7 +11,22 @@ export default (initialProducts = []) => ({
      * Initialize component
      */
     init() {
-        // Component initialization
+        // Watch search query and refresh icons when results change
+        this.$watch('searchQuery', () => {
+            this.$nextTick(() => {
+                window.refreshIcons?.();
+            });
+        });
+
+        // Listen for product updated event
+        window.addEventListener('product:updated', (event) => {
+            this.updateProduct(event.detail);
+        });
+
+        // Listen for product deleted event
+        window.addEventListener('product:deleted', (event) => {
+            this.removeProduct(event.detail.id);
+        });
     },
 
     /**
@@ -122,6 +137,11 @@ export default (initialProducts = []) => ({
         const index = this.products.findIndex(p => p.id === updatedProduct.id);
         if (index !== -1) {
             this.products[index] = { ...this.products[index], ...updatedProduct };
+
+            // Refresh icons after updating DOM
+            this.$nextTick(() => {
+                window.refreshIcons?.();
+            });
         }
     },
 
@@ -130,6 +150,11 @@ export default (initialProducts = []) => ({
      */
     removeProduct(productId) {
         this.products = this.products.filter(p => p.id !== productId);
+
+        // Refresh icons after updating DOM
+        this.$nextTick(() => {
+            window.refreshIcons?.();
+        });
     },
 
     /**

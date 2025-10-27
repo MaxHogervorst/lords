@@ -13,11 +13,36 @@ export default (initialMembers = []) => ({
      * Initialize component
      */
     init() {
-        // Watch for ESC key to clear filters
+        // Watch for ESC key to clear filters and refresh icons
         this.$watch('searchFirstName', () => {
             if (this.searchFirstName === '') {
                 this.$nextTick(() => this.$refs.firstNameSearch?.focus());
             }
+            // Refresh icons after search filter changes
+            this.$nextTick(() => {
+                window.refreshIcons?.();
+            });
+        });
+
+        // Watch last name search and refresh icons
+        this.$watch('searchLastName', () => {
+            this.$nextTick(() => {
+                window.refreshIcons?.();
+            });
+        });
+
+        // Watch bank info filter and refresh icons
+        this.$watch('filterBankInfo', () => {
+            this.$nextTick(() => {
+                window.refreshIcons?.();
+            });
+        });
+
+        // Watch collection filter and refresh icons
+        this.$watch('filterCollection', () => {
+            this.$nextTick(() => {
+                window.refreshIcons?.();
+            });
         });
 
         // Listen for member updated event
