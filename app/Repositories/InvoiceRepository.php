@@ -7,6 +7,7 @@ namespace App\Repositories;
 use App\Models\InvoiceGroup;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\DB;
 
 class InvoiceRepository extends BaseRepository
 {
@@ -50,14 +51,16 @@ class InvoiceRepository extends BaseRepository
      */
     public function setAsActive(InvoiceGroup $invoiceGroup): InvoiceGroup
     {
-        // Deactivate all other groups
-        $this->model->newQuery()->where('status', true)->update(['status' => false]);
+        return DB::transaction(function () use ($invoiceGroup) {
+            // Deactivate all other groups
+            $this->model->newQuery()->where('status', true)->update(['status' => false]);
 
-        // Activate the selected group
-        $invoiceGroup->status = true;
-        $invoiceGroup->save();
+            // Activate the selected group
+            $invoiceGroup->status = true;
+            $invoiceGroup->save();
 
-        return $invoiceGroup;
+            return $invoiceGroup;
+        });
     }
 
     /**
@@ -66,19 +69,21 @@ class InvoiceRepository extends BaseRepository
      */
     public function createAndSetActive(string $name): InvoiceGroup
     {
-        // Convert date format to month name (e.g., "10-25" → "October 2025")
-        $formattedName = $this->formatInvoiceGroupName($name);
+        return DB::transaction(function () use ($name) {
+            // Convert date format to month name (e.g., "10-25" → "October 2025")
+            $formattedName = $this->formatInvoiceGroupName($name);
 
-        // Deactivate all other groups
-        $this->model->newQuery()->where('status', true)->update(['status' => false]);
+            // Deactivate all other groups
+            $this->model->newQuery()->where('status', true)->update(['status' => false]);
 
-        // Create new active group
-        $invoiceGroup = new InvoiceGroup();
-        $invoiceGroup->name = $formattedName;
-        $invoiceGroup->status = true;
-        $invoiceGroup->save();
+            // Create new active group
+            $invoiceGroup = new InvoiceGroup();
+            $invoiceGroup->name = $formattedName;
+            $invoiceGroup->status = true;
+            $invoiceGroup->save();
 
-        return $invoiceGroup;
+            return $invoiceGroup;
+        });
     }
 
     /**

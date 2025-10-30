@@ -12,6 +12,7 @@ use App\Models\Product;
 use App\Repositories\OrderRepository;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\DB;
 
 class OrderService
 {
@@ -145,13 +146,15 @@ class OrderService
      */
     public function bulkCreateOrders(array $ordersData): Collection
     {
-        $orders = collect();
+        return DB::transaction(function () use ($ordersData) {
+            $orders = collect();
 
-        foreach ($ordersData as $orderData) {
-            $order = $this->orderRepository->create($orderData);
-            $orders->push($order);
-        }
+            foreach ($ordersData as $orderData) {
+                $order = $this->orderRepository->create($orderData);
+                $orders->push($order);
+            }
 
-        return $orders;
+            return $orders;
+        });
     }
 }
