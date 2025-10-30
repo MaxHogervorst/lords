@@ -17,10 +17,24 @@ class InvoiceRepository extends BaseRepository
 
     /**
      * Get current active invoice group.
+     * If no active invoice group exists, automatically activates the latest one.
      */
     public function getCurrentMonth(): ?InvoiceGroup
     {
-        return $this->model->newQuery()->where('status', true)->first();
+        $current = $this->model->newQuery()->where('status', true)->first();
+
+        // If no active invoice group, activate the latest one
+        if ($current === null) {
+            $latest = $this->model->newQuery()->orderBy('id', 'desc')->first();
+
+            if ($latest !== null) {
+                $latest->status = true;
+                $latest->save();
+                $current = $latest;
+            }
+        }
+
+        return $current;
     }
 
     /**
