@@ -254,7 +254,7 @@ test('unauthorized users cannot access fiscus modal', function () {
     $response->assertForbidden();
 });
 
-test('index table displays member count, per person price, and total price', function () {
+test('index table displays created date, member count, per person price, and total price', function () {
     // Create product with price and members
     $product = InvoiceProduct::factory()->create([
         'name' => 'Test Product',
@@ -277,6 +277,7 @@ test('index table displays member count, per person price, and total price', fun
     $response = $this->get('/fiscus');
 
     $response->assertStatus(200)
+        ->assertSee('Created')
         ->assertSee('Members')
         ->assertSee('Per Person')
         ->assertSee('Total');

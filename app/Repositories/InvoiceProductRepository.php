@@ -27,7 +27,7 @@ class InvoiceProductRepository extends BaseRepository
             $query->with($relations);
         }
 
-        return $query->get();
+        return $query->orderBy('created_at', 'desc')->get();
     }
 
     /**

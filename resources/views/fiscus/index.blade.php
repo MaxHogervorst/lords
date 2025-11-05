@@ -15,7 +15,8 @@
                 'name' => $p->name,
                 'member_count' => $memberCount,
                 'price_per_person' => $pricePerPerson,
-                'total_price' => $totalPrice
+                'total_price' => $totalPrice,
+                'created_at' => $p->created_at->format('d-m-Y')
             ];
         })->values();
 
@@ -54,6 +55,7 @@
                     <thead>
                         <tr>
                             <th>Name</th>
+                            <th style="width: 100px;">Created</th>
                             <th class="text-center" style="width: 80px;">Members</th>
                             <th class="text-end" style="width: 120px;">Per Person</th>
                             <th class="text-end" style="width: 120px;">Total</th>
@@ -65,6 +67,7 @@
                         <template x-for="product in filteredProducts" :key="product.id">
                             <tr>
                                 <td x-text="product.name"></td>
+                                <td class="text-muted" x-text="product.created_at"></td>
                                 <td class="text-center">
                                     <span x-text="product.member_count" class="badge bg-blue-lt"></span>
                                 </td>
@@ -80,7 +83,7 @@
 
                         <template x-if="filteredProducts.length === 0">
                             <tr>
-                                <td colspan="5" class="text-center text-muted">
+                                <td colspan="6" class="text-center text-muted">
                                     No products found
                                 </td>
                             </tr>
