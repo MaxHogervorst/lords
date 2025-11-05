@@ -78,10 +78,13 @@ export default (initialGroups = []) => ({
 
             if (response.data.success) {
                 // Add new group to list
+                const today = new Date();
+                const formattedDate = `${String(today.getDate()).padStart(2, '0')}-${String(today.getMonth() + 1).padStart(2, '0')}-${today.getFullYear()}`;
+
                 this.groups.unshift({
                     id: response.data.id,
                     name: response.data.name,
-                    date: response.data.date
+                    created_at: formattedDate
                 });
 
                 // Clear form

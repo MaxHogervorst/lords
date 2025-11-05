@@ -55,7 +55,7 @@
                     <thead>
                         <tr>
                             <th>Name</th>
-                            <th style="width: 100px;">Created</th>
+                            <th style="width: 120px;">Created</th>
                             <th class="text-center" style="width: 80px;">Members</th>
                             <th class="text-end" style="width: 120px;">Per Person</th>
                             <th class="text-end" style="width: 120px;">Total</th>

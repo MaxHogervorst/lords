@@ -54,6 +54,7 @@
                 <thead>
                     <tr>
                         <th>Group Name</th>
+                        <th style="width: 120px;">Created</th>
                         <th class="w-1">Actions</th>
                     </tr>
                 </thead>
@@ -62,6 +63,7 @@
                     <template x-for="group in filteredGroups" :key="group.id">
                         <tr>
                             <td x-text="group.name"></td>
+                            <td class="text-muted" x-text="group.created_at"></td>
                             <td class="text-nowrap">
                                 <button
                                     type="button"
@@ -85,7 +87,7 @@
 
                     <template x-if="filteredGroups.length === 0">
                         <tr>
-                            <td colspan="2" class="text-center text-muted">No groups found</td>
+                            <td colspan="3" class="text-center text-muted">No groups found</td>
                         </tr>
                     </template>
                 </tbody>

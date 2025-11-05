@@ -31,7 +31,16 @@ class GroupController extends Controller
         $currentMonth = $this->invoiceRepository->getCurrentMonth();
         $groups = $this->groupRepository->getByInvoiceGroup($currentMonth);
 
-        return view('group.index')->withResults([$groups, date('d-m-Y')]);
+        // Format groups data with created_at
+        $groupsData = $groups->map(function ($group) {
+            return [
+                'id' => $group->id,
+                'name' => $group->name,
+                'created_at' => $group->created_at->format('d-m-Y'),
+            ];
+        });
+
+        return view('group.index')->withResults([$groupsData, date('d-m-Y')]);
     }
 
     public function store(StoreGroupRequest $request): JsonResponse
