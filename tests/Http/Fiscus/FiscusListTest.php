@@ -39,19 +39,12 @@ test('fiscus index displays invoice products', function () {
     }
 });
 
-test('fiscus create page loads', function () {
-    $response = $this->get('/fiscus/create');
+test('fiscus index has members data for modal', function () {
+    $response = $this->get('/fiscus');
 
     $response->assertStatus(200)
-        ->assertViewIs('fiscus.create')
+        ->assertViewIs('fiscus.index')
         ->assertViewHas('members');
-});
-
-test('fiscus edit page loads', function () {
-    $response = $this->get('/fiscus/edit');
-
-    $response->assertStatus(200)
-        ->assertViewIs('fiscus.edit');
 });
 
 test('fiscus requires admin authentication', function () {

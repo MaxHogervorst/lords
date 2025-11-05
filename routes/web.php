@@ -2,7 +2,6 @@
 
 declare(strict_types=1);
 
-use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\FiscusController;
 use App\Http\Controllers\GroupController;
@@ -12,6 +11,7 @@ use App\Http\Controllers\MemberController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\SepaController;
+use Illuminate\Support\Facades\Route;
 
 // Guest routes
 Route::middleware('guest')->group(function () {
@@ -35,23 +35,23 @@ Route::get('debug/raw', function () {
     $request = request();
 
     $output = "=== RAW SERVER VARS ===\n\n";
-    $output .= "REMOTE_ADDR: " . ($_SERVER['REMOTE_ADDR'] ?? 'not set') . "\n";
-    $output .= "HTTP_X_FORWARDED_FOR: " . ($_SERVER['HTTP_X_FORWARDED_FOR'] ?? 'not set') . "\n";
-    $output .= "HTTP_X_FORWARDED_PROTO: " . ($_SERVER['HTTP_X_FORWARDED_PROTO'] ?? 'not set') . "\n";
-    $output .= "HTTP_X_FORWARDED_HOST: " . ($_SERVER['HTTP_X_FORWARDED_HOST'] ?? 'not set') . "\n";
-    $output .= "HTTP_X_FORWARDED_PORT: " . ($_SERVER['HTTP_X_FORWARDED_PORT'] ?? 'not set') . "\n";
-    $output .= "HTTP_X_REAL_IP: " . ($_SERVER['HTTP_X_REAL_IP'] ?? 'not set') . "\n";
+    $output .= 'REMOTE_ADDR: ' . ($_SERVER['REMOTE_ADDR'] ?? 'not set') . "\n";
+    $output .= 'HTTP_X_FORWARDED_FOR: ' . ($_SERVER['HTTP_X_FORWARDED_FOR'] ?? 'not set') . "\n";
+    $output .= 'HTTP_X_FORWARDED_PROTO: ' . ($_SERVER['HTTP_X_FORWARDED_PROTO'] ?? 'not set') . "\n";
+    $output .= 'HTTP_X_FORWARDED_HOST: ' . ($_SERVER['HTTP_X_FORWARDED_HOST'] ?? 'not set') . "\n";
+    $output .= 'HTTP_X_FORWARDED_PORT: ' . ($_SERVER['HTTP_X_FORWARDED_PORT'] ?? 'not set') . "\n";
+    $output .= 'HTTP_X_REAL_IP: ' . ($_SERVER['HTTP_X_REAL_IP'] ?? 'not set') . "\n";
 
     $output .= "\n=== LARAVEL REQUEST ===\n\n";
-    $output .= "request()->ip(): " . $request->ip() . "\n";
-    $output .= "request()->secure(): " . ($request->secure() ? 'true' : 'false') . "\n";
-    $output .= "request()->getScheme(): " . $request->getScheme() . "\n";
-    $output .= "request()->getClientIp(): " . $request->getClientIp() . "\n";
+    $output .= 'request()->ip(): ' . $request->ip() . "\n";
+    $output .= 'request()->secure(): ' . ($request->secure() ? 'true' : 'false') . "\n";
+    $output .= 'request()->getScheme(): ' . $request->getScheme() . "\n";
+    $output .= 'request()->getClientIp(): ' . $request->getClientIp() . "\n";
 
     $output .= "\n=== TRUST PROXIES DEBUG ===\n\n";
-    $output .= "getTrustedProxies(): " . json_encode($request->getTrustedProxies()) . "\n";
-    $output .= "getTrustedHeaderSet(): " . $request->getTrustedHeaderSet() . "\n";
-    $output .= "getClientIps(): " . json_encode($request->getClientIps()) . "\n";
+    $output .= 'getTrustedProxies(): ' . json_encode($request->getTrustedProxies()) . "\n";
+    $output .= 'getTrustedHeaderSet(): ' . $request->getTrustedHeaderSet() . "\n";
+    $output .= 'getClientIps(): ' . json_encode($request->getClientIps()) . "\n";
 
     return response($output, 200)
         ->header('Content-Type', 'text/plain');
@@ -138,9 +138,8 @@ Route::middleware(['auth', 'can:admin'])->group(function () {
         Route::get('invoiceprices/{invoiceProduct}', [FiscusController::class, 'getInvoiceprices'])->name('invoiceprices');
         Route::get('allinvoicelines/{invoiceProduct}', [FiscusController::class, 'getAllinvoicelines'])->name('allinvoicelines');
         Route::get('specificinvoicelines/{invoiceProductPrice}', [FiscusController::class, 'getSpecificinvoicelines'])->name('specificinvoicelines');
-        Route::get('edit', [FiscusController::class, 'getEdit'])->name('edit');
     });
-    Route::resource('fiscus', FiscusController::class)->except(['edit'])->parameters(['fiscus' => 'invoiceProduct']);
+    Route::resource('fiscus', FiscusController::class)->only(['index', 'store', 'update', 'destroy'])->parameters(['fiscus' => 'invoiceProduct']);
 
     // Invoice admin
     Route::prefix('invoice')->name('invoice.')->group(function () {

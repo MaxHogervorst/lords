@@ -66,24 +66,9 @@
 
                         @can('admin')
                             <li class="nav-item">
-                                <span class="nav-link">
+                                <a class="nav-link {!! (Request::is('*fiscus*') ? 'active' : '') !!}" href="{{ url('fiscus') }}">
                                     <span class="nav-link-icon d-md-none d-lg-inline-block"><i data-lucide="dollar-sign"></i></span>
                                     <span class="nav-link-title">Fiscus</span>
-                                </span>
-                            </li>
-                            <li class="nav-item ms-3">
-                                <a class="nav-link {!! (Request::is('*fiscus') && !Request::is('*fiscus/create') && !Request::is('*fiscus/edit') ? 'active' : '') !!}" href="{{ url('fiscus') }}">
-                                    <span class="nav-link-title">View</span>
-                                </a>
-                            </li>
-                            <li class="nav-item ms-3">
-                                <a class="nav-link {!! (Request::is('*fiscus/create') ? 'active' : '') !!}" href="{{ url('fiscus/create') }}">
-                                    <span class="nav-link-title">New</span>
-                                </a>
-                            </li>
-                            <li class="nav-item ms-3">
-                                <a class="nav-link {!! (Request::is('*fiscus/edit') ? 'active' : '') !!}" href="{{ url('fiscus/edit') }}">
-                                    <span class="nav-link-title">Edit</span>
                                 </a>
                             </li>
                             <li class="nav-item">

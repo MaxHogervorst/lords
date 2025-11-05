@@ -33,19 +33,15 @@ class FiscusController extends Controller
     public function index(): View
     {
         $currentMonth = $this->invoiceRepository->getCurrentMonth();
-        $invoice_products = $this->invoiceProductRepository->getByInvoiceGroup($currentMonth);
-
-        return view('fiscus.index')->with('invoice_products', $invoice_products);
-    }
-
-    /**
-     * Display a listing of the resource.
-     */
-    public function create(): View
-    {
+        $invoice_products = $this->invoiceProductRepository->getByInvoiceGroup(
+            $currentMonth,
+            ['productprice.invoiceline.member']
+        );
         $members = $this->memberRepository->all();
 
-        return view('fiscus.create')->with('members', $members);
+        return view('fiscus.index')
+            ->with('invoice_products', $invoice_products)
+            ->with('members', $members);
     }
 
     /**
@@ -64,19 +60,6 @@ class FiscusController extends Controller
                         . $result['price'] . ' per person.'
                         . $result['member_count'] . ' Total persons',
         ]);
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function getEdit(): View
-    {
-        $members = $this->memberRepository->all();
-        $currentMonth = $this->invoiceRepository->getCurrentMonth();
-        $invoiceproducts = $this->invoiceProductRepository->getByInvoiceGroup($currentMonth);
-
-        return view('fiscus.edit')->with('members', $members)
-            ->with('products', $invoiceproducts);
     }
 
     public function getInvoiceprices(InvoiceProduct $invoiceProduct): JsonResponse
