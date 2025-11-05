@@ -33,7 +33,7 @@ test('group index displays groups', function () {
     $response->assertStatus(200);
 
     foreach ($groups as $group) {
-        $response->assertSee($group->name);
+        $response->assertSee($group->name, false); // false = don't escape, check raw HTML
     }
 });
 

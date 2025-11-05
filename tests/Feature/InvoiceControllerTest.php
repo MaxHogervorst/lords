@@ -529,11 +529,8 @@ class InvoiceControllerTest extends TestCase
             'is_admin' => true,
         ]);
 
-        // Create invoice group and set as current month
-        $invoiceGroup = InvoiceGroup::factory()->create([
-            'name' => 'SEPA Test Month',
-            'status' => true,
-        ]);
+        // Use the invoice group from setUp (already has status = true)
+        $invoiceGroup = InvoiceGroup::where('status', true)->first();
 
         // Set up SEPA settings
         \Settings::set('creditorName', 'Test Creditor');

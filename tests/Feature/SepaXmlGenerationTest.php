@@ -16,11 +16,6 @@ class SepaXmlGenerationTest extends TestCase
     {
         parent::setUp();
 
-
-        // Create required data for tests
-        Product::factory()->create();
-        InvoiceGroup::factory()->create(['status' => true]);
-
         // Configure SEPA settings
         \Settings::set('creditorName', 'Test Creditor Organization');
         \Settings::set('creditorAccountIBAN', 'NL91ABNA0417164300');
