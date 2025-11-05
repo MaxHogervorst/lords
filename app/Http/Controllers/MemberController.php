@@ -60,7 +60,7 @@ class MemberController extends Controller
             ->where('invoice_group_id', '=', $currentmonth->id)
             ->with('product')
             ->get()
-            ->map(fn($order) => [
+            ->map(fn ($order) => [
                 'id' => $order->id,
                 'created_at' => $order->created_at->format('Y-m-d H:i'),
                 'product_name' => $order->product->name,
@@ -74,7 +74,7 @@ class MemberController extends Controller
             ->groupBy('product_id')
             ->with('product')
             ->get()
-            ->map(fn($total) => [
+            ->map(fn ($total) => [
                 'product_id' => $total->product_id,
                 'product_name' => $total->product->name,
                 'count' => $total->count
@@ -86,7 +86,7 @@ class MemberController extends Controller
                 'firstname' => $member->firstname,
                 'lastname' => $member->lastname
             ],
-            'products' => $products->map(fn($p) => [
+            'products' => $products->map(fn ($p) => [
                 'id' => $p->id,
                 'name' => $p->name
             ]),

@@ -18,7 +18,6 @@ class LinkCheckTest extends TestCase
     {
         parent::setUp();
 
-
         // Create required data for tests
         Product::factory()->create();
         InvoiceGroup::factory()->create(['status' => true]);

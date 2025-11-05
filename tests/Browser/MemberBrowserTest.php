@@ -2,10 +2,11 @@
 
 use App\Models\InvoiceGroup;
 use App\Models\Member;
-use App\Models\Product;
 use App\Models\User;
-use Tests\Browser\Pages\MemberPage;
+
 use function Pest\Laravel\{actingAs};
+
+use Tests\Browser\Pages\MemberPage;
 
 beforeEach(function () {
     $this->user = User::factory()->create();
@@ -137,4 +138,3 @@ test('can delete a member and see optimistic removal', function () {
     // Verify optimistic removal from UI
     $page->assertDontSee('ToDelete Member');
 });
-

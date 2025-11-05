@@ -21,7 +21,6 @@ class ExcelExportTest extends TestCase
     {
         parent::setUp();
 
-
         // Create at least one product
         Product::factory()->create();
     }

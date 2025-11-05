@@ -66,7 +66,7 @@ class GroupController extends Controller
             ->where('invoice_group_id', '=', $currentmonth->id)
             ->with('product')
             ->get()
-            ->map(fn($order) => [
+            ->map(fn ($order) => [
                 'id' => $order->id,
                 'created_at' => $order->created_at->format('Y-m-d H:i'),
                 'product_name' => $order->product->name,
@@ -80,14 +80,14 @@ class GroupController extends Controller
             ->groupBy('product_id')
             ->with('product')
             ->get()
-            ->map(fn($total) => [
+            ->map(fn ($total) => [
                 'product_id' => $total->product_id,
                 'product_name' => $total->product->name,
                 'count' => $total->count
             ]);
 
         // Get current group members with pivot id
-        $groupMembers = $group->members->map(fn($member) => [
+        $groupMembers = $group->members->map(fn ($member) => [
             'id' => $member->id,
             'firstname' => $member->firstname,
             'lastname' => $member->lastname,
@@ -99,11 +99,11 @@ class GroupController extends Controller
                 'id' => $group->id,
                 'name' => $group->name
             ],
-            'products' => $products->map(fn($p) => [
+            'products' => $products->map(fn ($p) => [
                 'id' => $p->id,
                 'name' => $p->name
             ]),
-            'members' => $members->map(fn($m) => [
+            'members' => $members->map(fn ($m) => [
                 'id' => $m->id,
                 'firstname' => $m->firstname,
                 'lastname' => $m->lastname

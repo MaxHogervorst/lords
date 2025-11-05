@@ -3,6 +3,7 @@
 use App\Models\InvoiceGroup;
 use App\Models\Product;
 use App\Models\User;
+
 use function Pest\Laravel\{actingAs};
 
 beforeEach(function () {

@@ -16,7 +16,6 @@ class HomeControllerTest extends TestCase
     {
         parent::setUp();
 
-
         // Create at least one product to avoid issues
         Product::factory()->create();
 

@@ -84,4 +84,3 @@ test('getCurrentMonth returns active invoice group', function () {
     expect($currentMonth->id)->toBe($invoiceGroup->id)
         ->and((bool) $currentMonth->status)->toBeTrue();
 });
-

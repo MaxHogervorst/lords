@@ -148,7 +148,6 @@ class InvoiceControllerTest extends TestCase
             'status' => true,
         ]);
 
-
         $response = $this->actingAs($user)
             ->call('GET', '/invoice/sepa');
 

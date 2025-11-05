@@ -8,6 +8,7 @@ use App\Models\Member;
 use App\Models\Order;
 use App\Models\Product;
 use App\Models\User;
+
 use function Pest\Laravel\{actingAs};
 
 beforeEach(function () {
@@ -131,8 +132,8 @@ test('pagination displays correctly with many members', function () {
 
     for ($i = 1; $i <= 15; $i++) {
         $member = Member::factory()->create([
-            'firstname' => "Member",
-            'lastname' => sprintf("Test%02d", $i), // Test01, Test02, etc.
+            'firstname' => 'Member',
+            'lastname' => sprintf('Test%02d', $i), // Test01, Test02, etc.
         ]);
         Order::factory()->create([
             'ownerable_id' => $member->id,
@@ -169,8 +170,8 @@ test('can change items per page', function () {
 
     for ($i = 1; $i <= 30; $i++) {
         $member = Member::factory()->create([
-            'firstname' => "Member",
-            'lastname' => sprintf("Test%02d", $i), // Test01, Test02, etc.
+            'firstname' => 'Member',
+            'lastname' => sprintf('Test%02d', $i), // Test01, Test02, etc.
         ]);
         Order::factory()->create([
             'ownerable_id' => $member->id,
@@ -201,8 +202,8 @@ test('pagination preserves per_page parameter across pages', function () {
 
     for ($i = 1; $i <= 30; $i++) {
         $member = Member::factory()->create([
-            'firstname' => "Member",
-            'lastname' => sprintf("Test%02d", $i), // Test01, Test02, etc.
+            'firstname' => 'Member',
+            'lastname' => sprintf('Test%02d', $i), // Test01, Test02, etc.
         ]);
         Order::factory()->create([
             'ownerable_id' => $member->id,
@@ -234,8 +235,8 @@ test('does not show pagination with few members', function () {
 
     for ($i = 1; $i <= 5; $i++) {
         $member = Member::factory()->create([
-            'firstname' => "Member",
-            'lastname' => sprintf("Test%02d", $i), // Test01, Test02, etc.
+            'firstname' => 'Member',
+            'lastname' => sprintf('Test%02d', $i), // Test01, Test02, etc.
         ]);
         Order::factory()->create([
             'ownerable_id' => $member->id,
