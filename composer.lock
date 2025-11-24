@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "319b8e747b047b22f3452a65a815433d",
+    "content-hash": "37d2dde5f0054dd36511502258c29fb7",
     "packages": [
         {
             "name": "anlutro/l4-settings",
@@ -148,16 +148,16 @@
         },
         {
             "name": "brick/math",
-            "version": "0.14.0",
+            "version": "0.14.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/brick/math.git",
-                "reference": "113a8ee2656b882d4c3164fa31aa6e12cbb7aaa2"
+                "reference": "f05858549e5f9d7bb45875a75583240a38a281d0"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/brick/math/zipball/113a8ee2656b882d4c3164fa31aa6e12cbb7aaa2",
-                "reference": "113a8ee2656b882d4c3164fa31aa6e12cbb7aaa2",
+                "url": "https://api.github.com/repos/brick/math/zipball/f05858549e5f9d7bb45875a75583240a38a281d0",
+                "reference": "f05858549e5f9d7bb45875a75583240a38a281d0",
                 "shasum": ""
             },
             "require": {
@@ -196,7 +196,7 @@
             ],
             "support": {
                 "issues": "https://github.com/brick/math/issues",
-                "source": "https://github.com/brick/math/tree/0.14.0"
+                "source": "https://github.com/brick/math/tree/0.14.1"
             },
             "funding": [
                 {
@@ -204,7 +204,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2025-08-29T12:40:03+00:00"
+            "time": "2025-11-24T14:40:29+00:00"
         },
         {
             "name": "carbonphp/carbon-doctrine-types",
@@ -508,16 +508,16 @@
         },
         {
             "name": "digitick/sepa-xml",
-            "version": "2.3.2",
+            "version": "3.0.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/php-sepa-xml/php-sepa-xml.git",
-                "reference": "ba18a2c65631a5b0210b0638bb0236559d27b00e"
+                "reference": "e6d957e91d93c5ceb40cdc828166665fa2948524"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/php-sepa-xml/php-sepa-xml/zipball/ba18a2c65631a5b0210b0638bb0236559d27b00e",
-                "reference": "ba18a2c65631a5b0210b0638bb0236559d27b00e",
+                "url": "https://api.github.com/repos/php-sepa-xml/php-sepa-xml/zipball/e6d957e91d93c5ceb40cdc828166665fa2948524",
+                "reference": "e6d957e91d93c5ceb40cdc828166665fa2948524",
                 "shasum": ""
             },
             "require": {
@@ -567,9 +567,9 @@
             ],
             "support": {
                 "issues": "https://github.com/php-sepa-xml/php-sepa-xml/issues",
-                "source": "https://github.com/php-sepa-xml/php-sepa-xml/tree/2.3.2"
+                "source": "https://github.com/php-sepa-xml/php-sepa-xml/tree/3.0.0"
             },
-            "time": "2025-08-26T19:57:16+00:00"
+            "time": "2025-11-11T06:04:03+00:00"
         },
         {
             "name": "doctrine/inflector",
