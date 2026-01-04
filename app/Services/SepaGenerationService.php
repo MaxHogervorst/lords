@@ -173,7 +173,7 @@ class SepaGenerationService
 
             // Check if transaction exceeds limit
             if ($memberInfo['amount'] > $maxMoneyPerTransaction) {
-                $batchFailedMembers[] = $memberInfo;
+                $batchFailedMembers[] = $memberInfo['m'];
             } else {
                 $this->addTransferToBatch($currentBatch, $memberInfo);
                 $batchTotalMoney += $memberInfo['amount'];
