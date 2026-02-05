@@ -31,7 +31,7 @@ test('product index displays products', function () {
     $response->assertStatus(200);
 
     foreach ($products as $product) {
-        $response->assertSee($product->name);
+        $response->assertSee($product->name, false);
     }
 });
 
