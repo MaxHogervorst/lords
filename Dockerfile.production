@@ -1,7 +1,7 @@
 # ============================================
 # Stage 1: Build frontend assets with Node.js
 # ============================================
-FROM node:20-alpine AS frontend-builder
+FROM node:25-alpine AS frontend-builder
 
 WORKDIR /build
 
