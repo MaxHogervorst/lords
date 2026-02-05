@@ -106,7 +106,7 @@ jobs:
         DB_PASSWORD: secret
 
     - name: Run Pest tests (Unit, Feature, HTTP)
-      run: vendor/bin/pest --ci --parallel --exclude-path=tests/Browser --log-junit=junit-results.xml
+      run: vendor/bin/pest --ci --parallel --log-junit=junit-results.xml
       env:
         DB_CONNECTION: pgsql
         DB_HOST: localhost
