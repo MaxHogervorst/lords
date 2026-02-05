@@ -102,7 +102,7 @@ test('can open edit modal and load product data', function () {
     expect($productName)->toBe('Test Beer Product');
 
     $pricePerPerson = $page->script('Alpine.$data(document.querySelector("[x-data]")).form.productPricePerPerson');
-    expect($pricePerPerson)->toBe(5.50);
+    expect((float)$pricePerPerson)->toBe(5.50);
 
     // Verify member is pre-selected
     $selectedMembers = $page->script('Alpine.$data(document.querySelector("[x-data]")).form.selectedMembers');
@@ -129,7 +129,7 @@ test('modal form shows summary with calculated values', function () {
 
     // Verify calculated total price
     $calculatedTotal = $page->script('Alpine.$data(document.querySelector("[x-data]")).calculatedTotalPrice');
-    expect($calculatedTotal)->toBe(21.0); // 2 members * 10.50
+    expect((float)$calculatedTotal)->toBe(21.0); // 2 members * 10.50
 
     // Verify member count
     $memberCount = $page->script('Alpine.$data(document.querySelector("[x-data]")).selectedMemberCount');
