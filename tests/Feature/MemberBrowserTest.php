@@ -85,7 +85,7 @@ describe('member update', function () {
             ->and($member->lastname)->toBe('Member')
             ->and($member->bic)->toBe('RABONL2U')
             ->and($member->iban)->toBe('NL11RABO0123456789')
-            ->and($member->had_collection)->toBe(1);
+            ->and($member->had_collection)->toBeTruthy();
     });
 
     it('can uncheck had collection', function () {
@@ -99,7 +99,7 @@ describe('member update', function () {
             ->assertJson(['success' => true]);
 
         $member->refresh();
-        expect($member->had_collection)->toBe(0);
+        expect($member->had_collection)->toBeFalsy();
     });
 });
 

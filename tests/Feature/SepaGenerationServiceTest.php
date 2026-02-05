@@ -71,9 +71,9 @@ class SepaGenerationServiceTest extends TestCase
 
         // Get member info as generateMemberInfo does
         $member->load([
-            'orders' => fn($q) => $q->where('invoice_group_id', $invoiceGroup->id),
+            'orders' => fn ($q) => $q->where('invoice_group_id', $invoiceGroup->id),
             'orders.product',
-            'groups' => fn($q) => $q->where('invoice_group_id', $invoiceGroup->id),
+            'groups' => fn ($q) => $q->where('invoice_group_id', $invoiceGroup->id),
             'groups.orders',
             'groups.orders.product',
             'groups.members',
@@ -140,9 +140,9 @@ class SepaGenerationServiceTest extends TestCase
         ]);
 
         $member->load([
-            'orders' => fn($q) => $q->where('invoice_group_id', $invoiceGroup->id),
+            'orders' => fn ($q) => $q->where('invoice_group_id', $invoiceGroup->id),
             'orders.product',
-            'groups' => fn($q) => $q->where('invoice_group_id', $invoiceGroup->id),
+            'groups' => fn ($q) => $q->where('invoice_group_id', $invoiceGroup->id),
             'groups.orders',
             'groups.orders.product',
             'groups.members',

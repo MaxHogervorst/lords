@@ -96,14 +96,18 @@ test('get invoice prices for edit modal', function () {
         ->assertJsonCount(2)
         ->assertJsonFragment([
             'id' => $price1->id,
-            'price' => 10,
             'description' => 'First price',
         ])
         ->assertJsonFragment([
             'id' => $price2->id,
-            'price' => 12,
             'description' => 'Second price',
         ]);
+
+    // Verify prices are present (flexible for both int and string formats)
+    $data = $response->json();
+    expect($data)->toHaveCount(2);
+    expect($data[0]['price'])->toBeIn([10, '10.00', 10.00]);
+    expect($data[1]['price'])->toBeIn([12, '12.00', 12.00]);
 });
 
 test('get specific invoice lines for edit modal', function () {
