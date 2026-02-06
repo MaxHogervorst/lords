@@ -62,11 +62,18 @@ return [
             'database' => env('DB_DATABASE', 'root'),
             'username' => env('DB_USERNAME', 'root'),
             'password' => env('DB_PASSWORD', 'lords2'),
-            'charset' => 'utf8',
-            'collation' => 'utf8_unicode_ci',
+            'charset' => 'utf8mb4',
+            'collation' => 'utf8mb4_unicode_ci',
             'prefix' => '',
             'strict' => true,
             'engine' => null,
+            'options' => extension_loaded('pdo_mysql') ? array_filter([
+                // SSL Configuration for TiDB Cloud
+                // If MYSQL_ATTR_SSL_CA is set, use it for certificate verification
+                PDO::MYSQL_ATTR_SSL_CA => env('MYSQL_ATTR_SSL_CA'),
+                // If DB_SSLMODE is VERIFY_IDENTITY, verify the certificate
+                PDO::MYSQL_ATTR_SSL_VERIFY_SERVER_CERT => env('DB_SSLMODE') === 'VERIFY_IDENTITY',
+            ]) : [],
         ],
 
         'pgsql' => [
