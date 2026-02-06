@@ -10,8 +10,7 @@ RUN apk add --no-cache \
     zip \
     unzip \
     libzip-dev \
-    postgresql-client \
-    postgresql-dev \
+    mysql-client \
     freetype-dev \
     libjpeg-turbo-dev \
     linux-headers \
@@ -20,8 +19,8 @@ RUN apk add --no-cache \
 
 # Install PHP extensions required by Laravel and Octane
 RUN install-php-extensions \
-    pdo_pgsql \
-    pgsql \
+    pdo_mysql \
+    mysqli \
     mbstring \
     exif \
     pcntl \
