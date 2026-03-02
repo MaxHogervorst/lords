@@ -2,12 +2,14 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\HasManualAutoIncrement;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class InvoiceGroup extends Model
 {
     use HasFactory;
+    use HasManualAutoIncrement;
 
     protected $table = 'invoice_groups';
 
