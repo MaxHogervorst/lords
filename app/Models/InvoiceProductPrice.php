@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\HasManualAutoIncrement;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -10,6 +11,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class InvoiceProductPrice extends Model
 {
     use HasFactory;
+    use HasManualAutoIncrement;
 
     protected $table = 'invoice_product_prices';
 
