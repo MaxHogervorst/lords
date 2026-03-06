@@ -22,7 +22,7 @@
                         <td>{{ $m->created_at }}</td>
                         <td>{{ isset($m->ownerable) ? isset($m->ownerable->name) ?  $m->ownerable->name : $m->ownerable->firstname . ' ' . $m->ownerable->lastname : 'verwijderd' }}</td>
                         <td>{{ $m->amount }}</td>
-                        <td>{{ $m->product->name }}</td>
+                        <td>{{ $m->product?->name ?? 'deleted' }}</td>
                     </tr>
                 @endforeach
                 </tbody>
