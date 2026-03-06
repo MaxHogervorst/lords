@@ -89,13 +89,18 @@ class FiscusService
     private function createInvoiceLines(int $priceId, array $memberIds): int
     {
         // Prepare bulk insert data
+        // Note: insert() bypasses Eloquent events so IDs must be assigned manually (TiDB lacks AUTO_INCREMENT)
         $now = now();
-        $data = array_map(fn ($memberId) => [
-            'invoice_product_price_id' => $priceId,
-            'member_id' => $memberId,
-            'created_at' => $now,
-            'updated_at' => $now,
-        ], $memberIds);
+        $nextId = (int) DB::table('invoice_lines')->max('id') + 1;
+        $data = array_map(function ($memberId) use ($priceId, $now, &$nextId) {
+            return [
+                'id' => $nextId++,
+                'invoice_product_price_id' => $priceId,
+                'member_id' => $memberId,
+                'created_at' => $now,
+                'updated_at' => $now,
+            ];
+        }, $memberIds);
 
         // Bulk insert all invoice lines
         InvoiceLine::insert($data);
